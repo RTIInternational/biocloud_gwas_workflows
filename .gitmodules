@@ -1,0 +1,3 @@
+[submodule "biocloud_wdl_tools"]
+	path = biocloud_wdl_tools
+	url = https://github.com/RTIInternational/biocloud_wdl_tools.git
