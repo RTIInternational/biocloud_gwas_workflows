@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This living document details the Center for Omics Discovery and Epidemiology (CODE) analysis workflow for performing association testing for unrelated individuals in Rvtests for binary or linear outcomes. It is intended to serve as the standard data processing workflow and reference guide across CODE projects. An automated pipeline, developed using WDL, Cromwell, and Docker, is available for this workflow.
+This document details the standard analysis workflow for performing association testing for unrelated individuals in Rvtests for binary or linear outcomes. An automated pipeline, developed using WDL, Cromwell, and Docker, is available for this workflow.
 
 This workflow takes genotypes in vcf format and phenotypes and covariates in Rvtests format as inputs and produces the following outputs:
 
@@ -18,15 +18,15 @@ Optional minor allele frequency (MAF) and imputation quality (RSQ) filters can b
 The steps in this workflow are as follows:
 
 1. Perform association testing in Rvtests.
-2. Add chr, position, and standard error to Rvtests results.
+2. Add chr, position, and standard error to Rvtests results and convert to standard format for GWAS results (see appendix).
 3. (Optional) Convert variant IDs to a different format.
 4. (Optional) Filter by MAF in reference population.
 5. (Optional) Filter by MAF in study population.
 6. (Optional) Filter by imputation RSQ.
-7. Generate Q-Q and Manhattan plots.
-8. Filter summary statistics by p-value.
+7. Filter summary statistics by p-value.
+8. Generate Q-Q and Manhattan plots.
 
-Each of these steps in described in detail below.
+Each of these steps in described in detail below. Steps 1-6 are run separately for each chromosome. Steps 7 and 8 merge all chromosomes together.
 
 
 ### 1. Perform association testing in Rvtests.
@@ -38,8 +38,7 @@ rvtest \
     --pheno [INPUT_PHENO_FILE] \
     --pheno-name [PHENO_COL] \
     --covar [INPUT_COVAR_FILE] \
-    --covar-name [COVAR_COL_1],[COVAR_COL_2],...,[COVAR_COL_X] \
-    --covar-name sex,EV1,EV6 \
+    --covar-name [COVAR_COL_1],...,[COVAR_COL_X] \
     --meta score \
     --dosage DS \
     --out [OUTPUT_PREFIX]
@@ -53,7 +52,7 @@ rvtest \
     --pheno [INPUT_PHENO_FILE] \
     --pheno-name [PHENO_COL] \
     --covar [INPUT_COVAR_FILE] \
-    --covar-name [COVAR_COL_1],[COVAR_COL_2],...,[COVAR_COL_X] \
+    --covar-name [COVAR_COL_1],...,[COVAR_COL_X] \
     --meta score \
     --dosage DS \
     --useResidualAsPhenotype \
@@ -62,3 +61,116 @@ rvtest \
     --out [OUTPUT_PREFIX]
 ```
 
+Input Files:
+FILE | DESCRIPTION
+--- | ---
+INPUT_VCF_FILE | Genotype file in standard VCF format (see appendix)
+INPUT_PHENO_FILE | Phenotype file in standard Rvtest format (see appendix)
+INPUT_COVAR_FILE | Covariate file in standard Rvtest format (see appendix); may be the same as PHENO file
+
+
+Output Files:
+FILE | DESCRIPTION
+--- | ---
+[OUTPUT_PREFIX].MetaScore.assoc.gz | Association testing results
+[OUTPUT_PREFIX].MetaScore.assoc.gz.tbi | tabix index file for association test results
+[OUTPUT_PREFIX].log | Log file for rvtest run
+
+
+Parameters:
+PARAMETER | DESCRIPTION
+--- | ---
+`--inVcf [INPUT_VCF_FILE]` | Genotypes in VCF format (see appendix)
+`--pheno [INPUT_PHENO_FILE]` | Phenotypes in rvtest format (see appendix)
+`--covar [INPUT_COVAR_FILE]` | Covariates in rvtest format (see appendix)
+`--out [OUTPUT_PREFIX]` | Prefix for output files
+`--pheno-name [PHENO_COL]` | Name of the column in INPUT_PHENO_FILE to use as outcome for association testing
+`--covar-name [COVAR_COL_1],...,[COVAR_COL_X]` | Name of the column(s) in INPUT_COVAR_FILE to use as covariates for association testing
+`--meta [MODEL]` | Model for association testing (score, dominant, or recessive)
+`--dosage [DOSAGE_TAG]` | Tag for dosage in VCF file
+`--useResidualAsPhenotype` | Fit regression model of phenotype on covariates and use residuals for association testing; typically used for continuous traits; usually used with `--inverseNormal` parameter
+`--inverseNormal` | Inverse normalize residuals generated with `--useResidualAsPhenotype`; typically used for continuous traits
+`--qtl` | Parameter indicating that the phenotype is a continuous trait
+`--noweb` | Skip check for remote version
+
+
+Full documentation for Rvtests can be found [here](http://zhanxw.github.io/rvtests/).
+
+
+### 2. Add ID, MAF and standard error to Rvtests results and convert to standard format for GWAS results (see appendix).
+
+Need to write a script for this step.
+
+Sample command:
+``` shell
+```
+
+
+### 3. (Optional) Convert variant IDs to a different format.
+
+Sample command for converting IDs to IMPUTE2 format:
+``` shell
+convert_to_1000g_p3_ids.pl \
+    --file_in [INPUT_FILE] \
+    --legend [LEGEND_FILE] \
+    --file_out [OUTPUT_FILE] \
+    --file_in_header 1 \
+    --file_in_id_col 0 \
+    --file_in_chr_col 1 \
+    --file_in_pos_col 2 \
+    --file_in_a1_col 3 \
+    --file_in_a2_col 4 \
+    --chr 22
+```
+
+Input Files:
+FILE | DESCRIPTION
+--- | ---
+INPUT_FILE | File in which to convert IDs; Can be any file that has columns for ID, chr, position, allele 1 and allele 2
+LEGEND_FILE | Reference panel legend file with desired IDs
+
+
+Output Files:
+FILE | DESCRIPTION
+--- | ---
+OUTPUT_FILE | File identical to the INPUT_FILE, except that the contents of the ID column have been updated
+
+
+Parameters:
+PARAMETER | DESCRIPTION
+--- | ---
+`--file_in_header [N]` | Number of header rows in INPUT_FILE
+`--file_in_id_col [N]` | ID column in INPUT_FILE (numbering starts with 0)
+`--file_in_chr_col [N]` | Chromosome column in INPUT_FILE (numbering starts with 0)
+`--file_in_pos_col [N]` | Position column in INPUT_FILE (numbering starts with 0)
+`--file_in_a1_col [N]` | Allele 1 column in INPUT_FILE (numbering starts with 0)
+`--file_in_a2_col [N]` | Allele 2 column in INPUT_FILE (numbering starts with 0)
+`--chr [N]` | Chromosome represented in INPUT_FILE
+
+
+### 4. (Optional) Filter by MAF in reference population.
+
+Sample command:
+``` shell
+```
+
+### 5. (Optional) Filter by MAF in study population.
+
+Sample command:
+``` shell
+```
+### 6. (Optional) Filter by imputation RSQ.
+
+Sample command:
+``` shell
+```
+### 7. Filter summary statistics by p-value.
+
+Sample command:
+``` shell
+```
+### 8. Generate Q-Q and Manhattan plots.
+
+Sample command:
+``` shell
+```
