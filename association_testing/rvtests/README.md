@@ -62,36 +62,38 @@ rvtest \
 ```
 
 Input Files:
-FILE | DESCRIPTION
---- | ---
-INPUT_VCF_FILE | Genotype file in standard VCF format (see appendix)
-INPUT_PHENO_FILE | Phenotype file in standard Rvtest format (see appendix)
-INPUT_COVAR_FILE | Covariate file in standard Rvtest format (see appendix); may be the same as PHENO file
+| FILE | DESCRIPTION
+| --- | ---
+| INPUT_VCF_FILE | Genotype file in standard VCF format (see appendix)
+| INPUT_PHENO_FILE | Phenotype file in standard Rvtest format (see appendix)
+| INPUT_COVAR_FILE | Covariate file in standard Rvtest format (see appendix); may be the same as PHENO file
 
 
 Output Files:
-FILE | DESCRIPTION
---- | ---
-[OUTPUT_PREFIX].MetaScore.assoc.gz | Association testing results
-[OUTPUT_PREFIX].MetaScore.assoc.gz.tbi | tabix index file for association test results
-[OUTPUT_PREFIX].log | Log file for rvtest run
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| [OUTPUT_PREFIX].MetaScore.assoc.gz | Association testing results |
+| [OUTPUT_PREFIX].MetaScore.assoc.gz.tbi | tabix index file for association test results |
+| [OUTPUT_PREFIX].log | Log file for rvtest run |
 
 
 Parameters:
-PARAMETER | DESCRIPTION
---- | ---
-`--inVcf [INPUT_VCF_FILE]` | Genotypes in VCF format (see appendix)
-`--pheno [INPUT_PHENO_FILE]` | Phenotypes in rvtest format (see appendix)
-`--covar [INPUT_COVAR_FILE]` | Covariates in rvtest format (see appendix)
-`--out [OUTPUT_PREFIX]` | Prefix for output files
-`--pheno-name [PHENO_COL]` | Name of the column in INPUT_PHENO_FILE to use as outcome for association testing
-`--covar-name [COVAR_COL_1],...,[COVAR_COL_X]` | Name of the column(s) in INPUT_COVAR_FILE to use as covariates for association testing
-`--meta [MODEL]` | Model for association testing (score, dominant, or recessive)
-`--dosage [DOSAGE_TAG]` | Tag for dosage in VCF file
-`--useResidualAsPhenotype` | Fit regression model of phenotype on covariates and use residuals for association testing; typically used for continuous traits; usually used with `--inverseNormal` parameter
-`--inverseNormal` | Inverse normalize residuals generated with `--useResidualAsPhenotype`; typically used for continuous traits
-`--qtl` | Parameter indicating that the phenotype is a continuous trait
-`--noweb` | Skip check for remote version
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--inVcf [INPUT_VCF_FILE]` | Genotypes in VCF format (see appendix) |
+| `--pheno [INPUT_PHENO_FILE]` | Phenotypes in rvtest format (see appendix) |
+| `--covar [INPUT_COVAR_FILE]` | Covariates in rvtest format (see appendix) |
+| `--out [OUTPUT_PREFIX]` | Prefix for output files |
+| `--pheno-name [PHENO_COL]` | Name of the column in INPUT_PHENO_FILE to use as outcome for association testing |
+| `--covar-name [COVAR_COL_1],...,[COVAR_COL_X]` | Name of the column(s) in INPUT_COVAR_FILE to use as covariates for association testing |
+| `--meta [MODEL]` | Model for association testing (score, dominant, or recessive) |
+| `--dosage [DOSAGE_TAG]` | Tag for dosage in VCF file |
+| `--useResidualAsPhenotype` | Fit regression model of phenotype on covariates and use residuals for association testing; typically used for continuous traits; usually used with `--inverseNormal` parameter |
+| `--inverseNormal` | Inverse normalize residuals generated with `--useResidualAsPhenotype`; typically used for continuous traits |
+| `--qtl` | Parameter indicating that the phenotype is a continuous trait |s
+| `--noweb` | Skip check for remote version |
 
 
 Full documentation for Rvtests can be found [here](http://zhanxw.github.io/rvtests/).
@@ -124,28 +126,31 @@ convert_to_1000g_p3_ids.pl \
 ```
 
 Input Files:
-FILE | DESCRIPTION
---- | ---
-INPUT_FILE | File in which to convert IDs; Can be any file that has columns for ID, chr, position, allele 1 and allele 2
-LEGEND_FILE | Reference panel legend file with desired IDs
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| INPUT_FILE | File in which to convert IDs; Can be any file that has columns for ID, chr, position, allele 1 and allele 2 |
+| LEGEND_FILE | Reference panel legend file with desired IDs |
 
 
 Output Files:
-FILE | DESCRIPTION
---- | ---
-OUTPUT_FILE | File identical to the INPUT_FILE, except that the contents of the ID column have been updated
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| OUTPUT_FILE | File identical to the INPUT_FILE, except that the contents of the ID column have been updated |
 
 
 Parameters:
-PARAMETER | DESCRIPTION
---- | ---
-`--file_in_header [N]` | Number of header rows in INPUT_FILE
-`--file_in_id_col [N]` | ID column in INPUT_FILE (numbering starts with 0)
-`--file_in_chr_col [N]` | Chromosome column in INPUT_FILE (numbering starts with 0)
-`--file_in_pos_col [N]` | Position column in INPUT_FILE (numbering starts with 0)
-`--file_in_a1_col [N]` | Allele 1 column in INPUT_FILE (numbering starts with 0)
-`--file_in_a2_col [N]` | Allele 2 column in INPUT_FILE (numbering starts with 0)
-`--chr [N]` | Chromosome represented in INPUT_FILE
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--file_in_header [N]` | Number of header rows in INPUT_FILE |
+| `--file_in_id_col [N]` | ID column in INPUT_FILE (numbering starts with 0) |
+| `--file_in_chr_col [N]` | Chromosome column in INPUT_FILE (numbering starts with 0) |
+| `--file_in_pos_col [N]` | Position column in INPUT_FILE (numbering starts with 0) |
+| `--file_in_a1_col [N]` | Allele 1 column in INPUT_FILE (numbering starts with 0) |
+| `--file_in_a2_col [N]` | Allele 2 column in INPUT_FILE (numbering starts with 0) |
+| `--chr [N]` | Chromosome represented in INPUT_FILE |
 
 
 ### 4. (Optional) Filter by MAF in reference population.
