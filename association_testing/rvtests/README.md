@@ -62,20 +62,21 @@ rvtest \
 ```
 
 Input Files:
-| FILE | DESCRIPTION
-| --- | ---
-| INPUT_VCF_FILE | Genotype file in standard VCF format (see appendix)
-| INPUT_PHENO_FILE | Phenotype file in standard Rvtest format (see appendix)
-| INPUT_COVAR_FILE | Covariate file in standard Rvtest format (see appendix); may be the same as PHENO file
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `INPUT_VCF_FILE` | Genotype file in standard VCF format (see appendix) |
+| `INPUT_PHENO_FILE` | Phenotype file in standard Rvtest format (see appendix) |
+| `INPUT_COVAR_FILE` | Covariate file in standard Rvtest format (see appendix); may be the same as PHENO file |
 
 
 Output Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
-| [OUTPUT_PREFIX].MetaScore.assoc.gz | Association testing results |
-| [OUTPUT_PREFIX].MetaScore.assoc.gz.tbi | tabix index file for association test results |
-| [OUTPUT_PREFIX].log | Log file for rvtest run |
+| `[OUTPUT_PREFIX].MetaScore.assoc.gz` | Association testing results |
+| `[OUTPUT_PREFIX].MetaScore.assoc.gz.tbi` | tabix index file for association test results |
+| `[OUTPUT_PREFIX].log` | Log file for rvtest run |
 
 
 Parameters:
@@ -101,7 +102,7 @@ Full documentation for Rvtests can be found [here](http://zhanxw.github.io/rvtes
 
 ### 2. Add ID, MAF and standard error to Rvtests results and convert to standard format for GWAS results (see appendix).
 
-Need to write a script for this step.
+Need to make formal script for this step.
 
 Sample command:
 ``` shell
@@ -157,25 +158,61 @@ Parameters:
 
 Sample command:
 ``` shell
+/shared/bioinformatics/software/perl/utilities/extract_rows.pl \
+    --source [INPUT_FILE] \
+    --id_list [REMOVE_LIST] \
+    --out [OUTPUT_FILE] \
+    --header 1 \
+    --id_column 0 \
+    --remove
 ```
+
 
 ### 5. (Optional) Filter by MAF in study population.
 
-Sample command:
-``` shell
-```
-### 6. (Optional) Filter by imputation RSQ.
+Need to make formal script for this step.
 
 Sample command:
 ``` shell
 ```
+
+
+### 6. (Optional) Filter by imputation RSQ.
+
+Need to make formal script for this step.
+
+Sample command:
+``` shell
+```
+
+
 ### 7. Filter summary statistics by p-value.
 
 Sample command:
 ``` shell
 ```
+
+
 ### 8. Generate Q-Q and Manhattan plots.
 
 Sample command:
 ``` shell
+/shared/bioinformatics/software/R/generate_gwas_plots.R \
+    --in [INPUT_FILE] \
+    --out [OUTPUT_FILE] \
+    --in_chromosomes autosomal \
+    --in_header \
+    --col_id VARIANT_ID \
+    --col_chromosome CHR \
+    --col_position POSITION \
+    --col_p P \
+    --col_variant_type TYPE \
+    --generate_snp_indel_manhattan_plot \
+    --manhattan_odd_chr_color red \
+    --manhattan_even_chr_color blue \
+    --manhattan_points_cex 1.5 \
+    --generate_snp_indel_qq_plot \
+    --qq_lines \
+    --qq_points_bg black \
+    --qq_lambda
 ```
