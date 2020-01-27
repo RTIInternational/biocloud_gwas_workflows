@@ -1,6 +1,6 @@
 # GWAS Summary Stats File Format Definition
 
-COLUMN # | COLUMN NAME | TYPE | DESCRIPTION | GENESIS | RVTESTS |
+| COL # | COL NAME | TYPE | DESCRIPTION | GENESIS | RVTESTS |
 | :---: | --- | --- | --- | --- | --- |
 | 0 | `ID` | STR | Variant ID | `variant.id`<sup>1</sup> |  |
 | 1 | `CHR` | INT | Chromosome of variant | `chr` | `CHROM` |
@@ -9,12 +9,13 @@ COLUMN # | COLUMN NAME | TYPE | DESCRIPTION | GENESIS | RVTESTS |
 | 4 | `ALT` | STR | Alternate allele | `ALT(1)` from info | `ALT` |
 | 5 | `ALT_AF` | FLOAT | Frequency of the alternate allele | `freq`<sup>1</sup> | `ALT_Frq` |
 | 6 | `MAF` | FLOAT | Frequency of the minor allele | `MAF` from info | `MAF` from info |
-| 7 | `SOURCE` | STR | Source of variant genotypes (`obs` or `imp`) | `Genotyped` from info | `Genotyped` from info |
-| 8 | `IMP_QUAL` | FLOAT | Imputation R<sup>2</sup> | `Rsq` from info | `Rsq` from info |
-| 9 | `N` | INT | Number of individuals contributing to analysis | `n.obs` | `N_INFORMATIVE` |
-| 10 | `ALT_EFFECT` | FLOAT | Effect size of alternate allele | `Est`<sup>1</sup> | `ALT_EFFSIZE` |
-| 11 | `SE` | FLOAT | Standard error | `Est.SE` | `SQRT_V_STAT`<sup>1</sup> |
-| 12 | `P-VALUE` | FLOAT | P-value of association | `Score.pval` | `PVALUE` |
+| 7 | `POP_MAF` | FLOAT | Population frequency of the minor allele | `AFR`, `AMR`, `EAS`, `EUR` or `SAS` from 1000G legend | `AFR`, `AMR`, `EAS`, `EUR` or `SAS` from 1000G legend |
+| 8 | `SOURCE` | STR | Source of variant genotypes (`obs` or `imp`) | `Genotyped` from info | `Genotyped` from info |
+| 9 | `IMP_QUAL` | FLOAT | Imputation R<sup>2</sup> | `Rsq` from info | `Rsq` from info |
+| 10 | `N` | INT | Number of individuals contributing to analysis | `n.obs` | `N_INFORMATIVE` |
+| 11 | `ALT_EFFECT` | FLOAT | Effect size of alternate allele | `Est`<sup>1</sup> | `ALT_EFFSIZE` |
+| 12 | `SE` | FLOAT | Standard error | `Est.SE` | `SQRT_V_STAT`<sup>1</sup> |
+| 13 | `P-VALUE` | FLOAT | P-value of association | `Score.pval` | `PVALUE` |
 
 <sup>1</sup> Some modification necessary
 
