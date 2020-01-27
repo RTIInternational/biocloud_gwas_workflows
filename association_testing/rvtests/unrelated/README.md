@@ -199,7 +199,7 @@ Sample command:
 ``` shell
 /shared/bioinformatics/software/R/generate_gwas_plots.R \
     --in [INPUT_FILE] \
-    --out [OUTPUT_FILE] \
+    --out [OUTPUT_PREFIX] \
     --in_chromosomes autosomal \
     --in_header \
     --col_id VARIANT_ID \
@@ -216,3 +216,29 @@ Sample command:
     --qq_points_bg black \
     --qq_lambda
 ```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| INPUT_FILE | File in which to convert IDs; Can be any file that has columns for ID, chr, position, allele 1 and allele 2 |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| OUTPUT_FILE | File identical to the INPUT_FILE, except that the contents of the ID column have been updated |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--file_in_header [N]` | Number of header rows in INPUT_FILE |
+| `--file_in_id_col [N]` | ID column in INPUT_FILE (numbering starts with 0) |
+| `--file_in_chr_col [N]` | Chromosome column in INPUT_FILE (numbering starts with 0) |
+| `--file_in_pos_col [N]` | Position column in INPUT_FILE (numbering starts with 0) |
+| `--file_in_a1_col [N]` | Allele 1 column in INPUT_FILE (numbering starts with 0) |
+| `--file_in_a2_col [N]` | Allele 2 column in INPUT_FILE (numbering starts with 0) |
+| `--chr [N]` | Chromosome represented in INPUT_FILE |
