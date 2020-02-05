@@ -2,7 +2,7 @@
 
 | COL # | COL NAME | TYPE | DESCRIPTION | GENESIS | RVTESTS |
 | :---: | --- | --- | --- | --- | --- |
-| 0 | `ID` | STR | Variant ID | `variant.id`<sup>1</sup> |  |
+| 0 | `VARIANT_ID` | STR | Variant ID | `variant.id`<sup>1</sup> |  |
 | 1 | `CHR` | INT | Chromosome of variant | `chr` | `CHROM` |
 | 2 | `POS` | INT | Position of variant | `pos` | `POS` |
 | 3 | `REF` | STR | Reference allele | `REF(0)` from info | `REF` |
