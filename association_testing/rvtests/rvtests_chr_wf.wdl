@@ -40,12 +40,11 @@ workflow rvtests_chr_wf{
 
     # Loop through splits and do association testing on each
     scatter(split_index in range(length(split_vcf))){
-        File vcf = split_vcf[split_index]
 
         # Run rvtests for association
         call RV.rvtests{
             input:
-                inVCF = vcf,
+                inVCF = split_vcf[split_index],
                 phenoFile = pheno_file,
                 out = output_basename,
                 covarFile = covar_file,
