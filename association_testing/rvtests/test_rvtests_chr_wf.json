@@ -1,0 +1,13 @@
+{
+    "rvtests_chr_wf.vcf_in": "s3://rti-biocloud-test-data/vcfs/chr22.dose.vcf.gz",
+    "rvtests_chr_wf.info_in": "s3://rti-biocloud-test-data/vcfs/chr22.info.gz",
+    "rvtests_chr_wf.pheno_file": "s3://rti-biocloud-test-data/vcfs/gabc_ea.var.ped",
+    "rvtests_chr_wf.pheno_name": "handedness",
+    "rvtests_chr_wf.covar_file": "s3://rti-biocloud-test-data/vcfs/gabc_ea.covar.ped",
+    "rvtests_chr_wf.covars": ["sex", "age", "EV7", "EV3", "EV5"],
+    "rvtests_chr_wf.pop_maf_file": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/pop_mafs/eur/chr22.tsv.gz",
+    "rvtests_chr_wf.maf_population" : "EUR",
+    "rvtests_chr_wf.dosage": "DS",
+    "rvtests_chr_wf.rvtests.metaTestsMaybe": ["Score"],
+    "rvtests_chr_wf.rvtests.mem_gb": 1
+}
