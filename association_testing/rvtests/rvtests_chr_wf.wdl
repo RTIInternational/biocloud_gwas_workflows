@@ -59,6 +59,20 @@ workflow rvtests_chr_wf{
     File? xHemiKinship_matrix
     Boolean? xHemi
 
+    Array[String]? covarsMaybe
+    Array[String]? singleTestsMaybe
+    Array[String]? burdenTestsMaybe
+    Array[String]? vtTestsMaybe
+    Array[String]? kernelTestsMaybe
+    Array[String]? metaTestsMaybe
+
+    Boolean? inverseNormal
+    Boolean? useResidualAsPhenotype
+    Boolean? sex
+    Boolean? qtl
+    Boolean? multipleAllele
+    String? xLabel
+
     # Number of records per VCF split
     Int records_per_split = 50000
 
@@ -80,6 +94,7 @@ workflow rvtests_chr_wf{
 
         String split_output_basename = basename(sub(split_vcf.split_vcfs[split_index], "\\.gz$",""), ".vcf")
 
+
         # Run rvtests for association
         call RV.rvtests{
             input:
@@ -91,7 +106,19 @@ workflow rvtests_chr_wf{
                 covarsMaybe = covars,
                 kinship = kinship_matrix,
                 xHemiKinship = xHemiKinship_matrix,
-                xHemi = xHemi
+                xHemi = xHemi,
+                covarsMaybe = covarsMaybe,
+                singleTestsMaybe = singleTestsMaybe,
+                burdenTestsMaybe = burdenTestsMaybe,
+                vtTestsMaybe = vtTestsMaybe,
+                kernelTestsMaybe = kernelTestsMaybe,
+                metaTestsMaybe = metaTestsMaybe,
+                inverseNormal = inverseNormal,
+                useResidualAsPhenotype = useResidualAsPhenotype,
+                sex = sex,
+                qtl = qtl,
+                multipleAllele = multipleAllele,
+                xLabel = xLabel
         }
 
         # Remove header from association output file

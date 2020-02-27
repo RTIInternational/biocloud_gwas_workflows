@@ -1,0 +1,24 @@
+{
+    "assoc_test_rvtests_wf.vcfs_in": [
+        "s3://rti-biocloud-test-data/vcfs/chr20.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/chr21.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/chr22.dose.vcf.gz"],
+    "assoc_test_rvtests_wf.infos_in": [
+        "s3://rti-biocloud-test-data/vcfs/chr20.info.gz",
+        "s3://rti-biocloud-test-data/vcfs/chr21.info.gz",
+        "s3://rti-biocloud-test-data/vcfs/chr22.info.gz"],
+    "assoc_test_rvtests_wf.pheno_file": "s3://rti-biocloud-test-data/vcfs/gabc_ea.var.ped",
+    "assoc_test_rvtests_wf.pheno_name": "handedness",
+    "assoc_test_rvtests_wf.covar_file": "s3://rti-biocloud-test-data/vcfs/gabc_ea.covar.ped",
+    "assoc_test_rvtests_wf.covars": ["sex", "age", "EV7", "EV3", "EV5"],
+    "assoc_test_rvtests_wf.pop_maf_files": [
+        "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/pop_mafs/eur/chr20.tsv.gz",
+        "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/pop_mafs/eur/chr21.tsv.gz",
+        "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/pop_mafs/eur/chr22.tsv.gz"],
+    "assoc_test_rvtests_wf.maf_population" : "EUR",
+    "assoc_test_rvtests_wf.dosage": "DS",
+    "assoc_test_rvtests_wf.study_output_basename": "test_combined_rvtests",
+    "assoc_test_rvtests_wf.is_continuous": false,
+    "assoc_test_rvtests_wf.sig_alpha": 0.005,
+    "assoc_test_rvtests_wf.user_maf_cutoffs": [0.0, 0.005, 0.01, 0.05, 1.0]
+}
