@@ -1,0 +1,7 @@
+{
+  "summarize_gwas_wf.summary_stats_input": "s3://gwas-cromwell/cromwell-execution/rvtests_chr_wf/0b25df5f-ff71-47d8-8e3b-efa3377311d3/call-annotate_sumstats/chr22.dose.formatted.tsv.gz",
+  "summarize_gwas_wf.output_basename": "test_chr22",
+  "summarize_gwas_wf.sample_maf_cutoff": 0.05,
+  "summarize_gwas_wf.pop_maf_cutoff": 0.05,
+  "summarize_gwas_wf.sig_alpha": 0.05
+}
