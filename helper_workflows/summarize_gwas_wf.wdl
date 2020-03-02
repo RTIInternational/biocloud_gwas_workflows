@@ -10,9 +10,18 @@ workflow summarize_gwas_wf{
     Float pop_maf_cutoff = 0.0
     Float sig_alpha
 
+    Int sample_maf_col = 7
+    Int pop_maf_col = 8
+    Int pvalue_col = 14
+
+    String id_colname = "VARIANT_ID"
+    String chr_colname = "CHR"
+    String pos_colname = "POS"
+    String p_colname = "P"
+
     # Optionally filter by sample MAF
     if(sample_maf_cutoff > 0.0){
-        String sample_filter_string = "--is-numeric '6' --ge '6:${sample_maf_cutoff}'"
+        String sample_filter_string = "--is-numeric '${sample_maf_col}' --ge '${sample_maf_col}:${sample_maf_cutoff}'"
         call TSV.tsv_filter as filter_sample_maf{
             input:
                 tsv_input = summary_stats_input,
@@ -24,7 +33,7 @@ workflow summarize_gwas_wf{
     # Optionally filter by population MAF
     File sample_maf_summary_stats = select_first([filter_sample_maf.tsv_output, summary_stats_input])
     if(pop_maf_cutoff > 0.0){
-        String pop_filter_string = "--is-numeric '8' --ge '8:${pop_maf_cutoff}'"
+        String pop_filter_string = "--is-numeric '${pop_maf_col}' --ge '${pop_maf_col}:${pop_maf_cutoff}'"
         call TSV.tsv_filter as filter_pop_maf{
             input:
                 tsv_input = sample_maf_summary_stats,
@@ -38,10 +47,10 @@ workflow summarize_gwas_wf{
     call PLOT.generate_gwas_plots as make_plots{
         input:
             summary_stats = summary_stats,
-            col_id = "VARIANT_ID",
-            col_chromosome = "CHR",
-            col_position = "POS",
-            col_p = "P",
+            col_id = id_colname,
+            col_chromosome = chr_colname,
+            col_position = pos_colname,
+            col_p = p_colname,
             output_basename = basename(summary_stats, ".tsv")
         }
 
@@ -50,7 +59,7 @@ workflow summarize_gwas_wf{
         input:
             tsv_input = summary_stats,
             output_filename = basename(summary_stats, ".tsv") + ".sighits.tsv",
-            filter_string = "--is-numeric '14' --le '14:${sig_alpha}'"
+            filter_string = "--is-numeric '${pvalue_col}' --le '${pvalue_col}:${sig_alpha}'"
     }
 
     output{
