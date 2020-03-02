@@ -50,7 +50,7 @@ workflow summarize_gwas_wf{
         input:
             tsv_input = summary_stats,
             output_filename = basename(summary_stats, ".tsv") + ".sighits.tsv",
-            filter_string = "--is-numeric '13' --le '13:${sig_alpha}'"
+            filter_string = "--is-numeric '14' --le '14:${sig_alpha}'"
     }
 
     output{
