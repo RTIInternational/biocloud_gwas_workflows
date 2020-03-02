@@ -91,7 +91,7 @@ workflow assoc_test_rvtests_wf{
         input:
             tsv_input = cat_sumstats.tsv_output,
             output_filename = basename(cat_sumstats.tsv_output, ".tsv") + ".rsq_filter.tsv",
-            filter_string = "--gt '10:${min_rsq}'"
+            filter_string = "--ge '10:${min_rsq}'"
     }
 
 
