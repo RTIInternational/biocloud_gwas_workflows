@@ -58,7 +58,7 @@ workflow summarize_gwas_wf{
     call TSV.tsv_filter as filter_pvalue{
         input:
             tsv_input = summary_stats,
-            output_filename = basename(summary_stats, ".tsv") + ".sighits.tsv",
+            output_filename = basename(summary_stats, ".tsv") + ".p.${sig_alpha}.tsv",
             filter_string = "--is-numeric '${pvalue_col}' --le '${pvalue_col}:${sig_alpha}'"
     }
 
