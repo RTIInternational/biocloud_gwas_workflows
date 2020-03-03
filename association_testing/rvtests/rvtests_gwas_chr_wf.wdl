@@ -41,13 +41,13 @@ task strip_rvtests_headers{
     }
 }
 
-workflow rvtests_chr_wf{
+workflow rvtests_gwas_chr_wf{
     File vcf_in
     File info_in
     File pheno_file
     String pheno_name
-    File covar_file
-    Array[String] covars
+    File? covar_file
+    Array[String]? covars
     File? kinship_matrix
     String dosage
 
@@ -59,7 +59,6 @@ workflow rvtests_chr_wf{
     File? xHemiKinship_matrix
     Boolean? xHemi
 
-    Array[String]? covarsMaybe
     Array[String]? singleTestsMaybe
     Array[String]? burdenTestsMaybe
     Array[String]? vtTestsMaybe
@@ -107,7 +106,6 @@ workflow rvtests_chr_wf{
                 kinship = kinship_matrix,
                 xHemiKinship = xHemiKinship_matrix,
                 xHemi = xHemi,
-                covarsMaybe = covarsMaybe,
                 singleTestsMaybe = singleTestsMaybe,
                 burdenTestsMaybe = burdenTestsMaybe,
                 vtTestsMaybe = vtTestsMaybe,
@@ -142,7 +140,7 @@ workflow rvtests_chr_wf{
     call TSV.tsv_append as cat_sumstats{
         input:
             tsv_inputs_tarball = collect_sumstats.output_dir,
-            output_filename = output_basename + ".rvtests.merged_assoc.tsv"
+            output_filename = output_basename + ".rvtests.MetaAssoc.tsv"
     }
 
     call STAT.make_gwas_summary_stats as annotate_sumstats{
