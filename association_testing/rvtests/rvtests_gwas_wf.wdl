@@ -91,7 +91,7 @@ workflow rvtests_gwas_wf{
             input:
                 tsv_input = cat_sumstats.tsv_output,
                 output_filename = basename(cat_sumstats.tsv_output, ".tsv") + ".rsq.tsv",
-                filter_string = "--ge '10:${min_rsq}'"
+                filter_string = "--is-numeric '10' --ge '10:${min_rsq}'"
         }
     }
 

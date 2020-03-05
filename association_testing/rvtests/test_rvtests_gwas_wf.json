@@ -86,5 +86,7 @@
     "rvtests_gwas_wf.sig_alpha": 0.0005,
     "rvtests_gwas_wf.filter_by_pop_maf": false,
     "rvtests_gwas_wf.filter_by_sample_maf": true,
-    "rvtests_gwas_wf.maf_cutoffs": [0.005, 0.01, 0.05]
+    "rvtests_gwas_wf.maf_cutoffs": [0.005, 0.01, 0.05],
+    "rvtests_gwas_wf.rvtests.rvtests.mem_gb": 2,
+    "rvtests_gwas_wf.rvtests.split_vcf.cpu": 8
 }
