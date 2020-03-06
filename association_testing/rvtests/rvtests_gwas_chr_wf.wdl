@@ -116,7 +116,8 @@ workflow rvtests_gwas_chr_wf{
                 sex = sex,
                 qtl = qtl,
                 multipleAllele = multipleAllele,
-                xLabel = xLabel
+                xLabel = xLabel,
+                dosage = dosage
         }
 
         # Remove header from association output file
