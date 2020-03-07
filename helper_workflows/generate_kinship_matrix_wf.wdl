@@ -1,15 +1,12 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/merge_utils/merge_utils.wdl" as MERGE
 import "biocloud_gwas_workflows/biocloud_wdl_tools/rvtests/rvtests.wdl" as RV
+import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
 
 workflow generate_kinship_matrix_wf{
     Array[File] input_vcfs
     Array[String] chrs
     File ped_file
     String output_basename
-
-    # Merge VCF options
-    Int merge_vcf_cpus = 8
-    Int merge_vcf_mem_gb = 16
 
     # RVTests options
     Boolean xHemi
@@ -21,38 +18,11 @@ workflow generate_kinship_matrix_wf{
     Float? minMAF
     Float? minSiteQual
 
-    Int giant_kinship_cpu = 32
-    Int giant_kinship_mem_gb = 32
-
     Int split_kinship_cpu = 6
-    Int split_kinship_mem_gb = 12
+    Int split_kinship_mem_gb = 6
 
     Int combine_kinship_cpu = 16
     Int combine_kinship_mem_gb = 16
-
-    # Merge VCFs into single large VCF
-    call MERGE.merge_vcfs{
-        input:
-            input_vcfs = input_vcfs,
-            output_filename = "${output_basename}.merged.vcf.gz"
-    }
-
-    # Generate kinship matrix from merged VCF
-    call RV.vcf2kinship as make_giant_kinship{
-        input:
-            inputVcf = merge_vcfs.merged_vcf,
-            dosage = dosage,
-            xHemi = xHemi,
-            xLabel = xLabel,
-            maxMiss = maxMiss,
-            minMAF = minMAF,
-            minSiteQual = minSiteQual,
-            useBaldingNicols = useBaldingNicols,
-            useIBS = useIBS,
-            output_basename = "${output_basename}.giant",
-            cpu = giant_kinship_cpu,
-            mem_gb = giant_kinship_mem_gb
-    }
 
     # Do scattered workflow
     scatter(chr_index in range(length(input_vcfs))){
@@ -81,19 +51,38 @@ workflow generate_kinship_matrix_wf{
         }
     }
 
+    # Remove empty kinship files
+    # WDL hack because WDL doesn't support optional output and both vcf2kinship output files are technically optional
+    # e.g. Kinship files won't be produced for X chr; xHemiKinship files won't exist for autosomes
+    # To get around this, vcf2kinship 'touches' both output files so they technically exist but in some cases are just empty placeholders
+    # These files need to be removed
+    call UTILS.remove_empty_files as remove_empty_auto{
+        input:
+            input_files = make_split_kinship.kinship_matrix
+    }
+
+    call UTILS.remove_empty_files as remove_empty_x{
+        input:
+            input_files = make_split_kinship.xHemi_kinship_matrix
+    }
+
     # Merge scattered kinship autosomal matrices
     call RV.combineKinship as combine_kin{
         input:
-            kinship_matrices = make_split_kinship.kinship_matrix,
+            kinship_matrices = remove_empty_auto.non_empty_files,
             output_basename = "${output_basename}.merged.split.auto",
             cpu = combine_kinship_cpu,
             mem_gb = combine_kinship_mem_gb
     }
 
+    # This is kind of a stupid trick to try and get
+    File? null_xKin
+    File? xHemiKinMat = if(length(remove_empty_x.non_empty_files) > 0) then remove_empty_x.non_empty_files[0] else null_xKin
+
     output{
-        File giant_kinship_matrix = make_giant_kinship.kinship_matrix
-        File? giant_xHemi_kinship_matrix = make_giant_kinship.xHemi_kinship_matrix
-        File split_kinship_matrix = combine_kin.kinship_matrix
-        File? split_xHemi_kinship_matrix = select_first(make_split_kinship.xHemi_kinship_matrix)
+        #File kinship_matrix = combine_kin.kinship_matrix
+        #File? xHemi_kinship_matrix = select_first(make_split_kinship.xHemi_kinship_matrix)
+        File kinship_matrix = combine_kin.kinship_matrix
+        File? xHemi_kinship_matrix = xHemiKinMat
     }
 }
