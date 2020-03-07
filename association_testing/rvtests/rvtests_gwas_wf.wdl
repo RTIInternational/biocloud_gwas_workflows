@@ -19,6 +19,10 @@ workflow rvtests_gwas_wf{
 
     # Number of records per VCF split
     Int records_per_split = 100000
+    Int split_vcf_cpu = 8
+    Boolean split_vcfs = true
+    Int rvtests_cpu_per_split = 1
+    Int rvtests_mem_gb_per_split = 2
 
     # Set output basename
     String study_output_basename
@@ -60,14 +64,18 @@ workflow rvtests_gwas_wf{
                 dosage = dosage,
                 pop_maf_file = pop_maf_files[chr_index],
                 maf_population = maf_population,
-                records_per_split = records_per_split,
                 metaTestsMaybe = metaTestsMaybe,
                 sex = sex,
                 multipleAllele = multipleAllele,
                 xLabel = xLabel,
                 inverseNormal = inverseNormal,
                 useResidualAsPhenotype = useResidualAsPhenotype,
-                qtl = qtl
+                qtl = qtl,
+                split_vcf_records = split_vcfs,
+                records_per_split = records_per_split,
+                split_vcf_cpu = split_vcf_cpu,
+                rvtests_cpu = rvtests_cpu_per_split,
+                rvtests_mem_gb = rvtests_mem_gb_per_split
         }
     }
 
