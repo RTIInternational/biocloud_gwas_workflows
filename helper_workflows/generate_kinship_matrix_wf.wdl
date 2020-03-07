@@ -18,8 +18,8 @@ workflow generate_kinship_matrix_wf{
     Float? minMAF
     Float? minSiteQual
 
-    Int split_kinship_cpu = 6
-    Int split_kinship_mem_gb = 6
+    Int split_kinship_cpu = 1
+    Int split_kinship_mem_gb = 2
 
     Int combine_kinship_cpu = 16
     Int combine_kinship_mem_gb = 16
@@ -75,13 +75,16 @@ workflow generate_kinship_matrix_wf{
             mem_gb = combine_kinship_mem_gb
     }
 
-    # This is kind of a stupid trick to try and get
+    # Stupid trick to make sure xHemiKinship matrix is actually an optional output
+    # Case 1: xHemi was specified for inputs and X chr exists among input_vcfs.
+    #       Just select the first xHemi kinship file because all the autosome files would have been empty and removed in previous step
+    # Case 2: xHemi wasn't specified for inputs or X chr didn't appear among input_vcfs
+    #       Set return file to be an empty optional file (null_xKin) so downstream workflows can proceed as if xHemi doesn't exist
     File? null_xKin
     File? xHemiKinMat = if(length(remove_empty_x.non_empty_files) > 0) then remove_empty_x.non_empty_files[0] else null_xKin
 
     output{
-        #File kinship_matrix = combine_kin.kinship_matrix
-        #File? xHemi_kinship_matrix = select_first(make_split_kinship.xHemi_kinship_matrix)
+
         File kinship_matrix = combine_kin.kinship_matrix
         File? xHemi_kinship_matrix = xHemiKinMat
     }
