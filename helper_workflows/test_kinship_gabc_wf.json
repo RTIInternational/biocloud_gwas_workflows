@@ -1,0 +1,37 @@
+{
+  "generate_kinship_matrix_wf.input_vcfs": [
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr1.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr2.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr3.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr4.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr5.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr6.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr7.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr8.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr9.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr10.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr11.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr12.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr13.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr14.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr15.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr16.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr17.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr18.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr19.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr20.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr21.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chr22.dose.vcf.gz",
+        "s3://rti-biocloud-test-data/vcfs/GABC/chrX.dose.vcf.gz"],
+  "generate_kinship_matrix_wf.chrs": [
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+    "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X"],
+  "generate_kinship_matrix_wf.output_basename": "gabc",
+  "generate_kinship_matrix_wf.ped_file": "s3://rti-biocloud-test-data/vcfs/GABC/gabc_ea.var.ped",
+  "generate_kinship_matrix_wf.xHemi": true,
+  "generate_kinship_matrix_wf.dosage": "DS",
+  "generate_kinship_matrix_wf.minMAF": 0.05,
+  "generate_kinship_matrix_wf.useBaldingNicols": true,
+  "generate_kinship_matrix_wf.useIBS": false
+}
+
