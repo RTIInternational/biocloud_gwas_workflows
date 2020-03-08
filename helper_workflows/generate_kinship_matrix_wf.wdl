@@ -9,29 +9,34 @@ workflow generate_kinship_matrix_wf{
     String output_basename
 
     # RVTests options
-    Boolean xHemi
     Boolean useBaldingNicols
     Boolean useIBS
     String? dosage
-    String? xLabel
     Float? maxMiss
     Float? minMAF
     Float? minSiteQual
 
+    # Sex chromosome options
+    Boolean xHemi
+    String xLabel = "X"
+
+    # Runtime/Resource options
     Int split_kinship_cpu = 1
     Int split_kinship_mem_gb = 2
+    Int combine_kinship_cpu = 2
+    Int combine_kinship_mem_gb = 4
 
-    Int combine_kinship_cpu = 16
-    Int combine_kinship_mem_gb = 16
+    # Placeholder null pedfile because we only want to pass the pedfile when we're doing xHemi
+    # Really this is a result of a poorly designed WDL module
+    File? null_pedfile
 
-    # Do scattered workflow
+    # Generate kinship matrix for each chromosome in parallel
     scatter(chr_index in range(length(input_vcfs))){
 
         # Only set xHemi and pass pedfile for X chromosome
         String chr = chrs[chr_index]
-        Boolean xHemi_chr = if((chr == "X") && (xHemi)) then true else false
-        File? null_pedfile
-        File? pedfile_chr = if((chr == "X") && (xHemi)) then ped_file else null_pedfile
+        Boolean xHemi_chr = if((chr == xLabel) && (xHemi)) then true else false
+        File? pedfile_chr = if((chr == xLabel) && (xHemi)) then ped_file else null_pedfile
 
         call RV.vcf2kinship as make_split_kinship{
             input:
@@ -61,31 +66,28 @@ workflow generate_kinship_matrix_wf{
             input_files = make_split_kinship.kinship_matrix
     }
 
-    call UTILS.remove_empty_files as remove_empty_x{
-        input:
-            input_files = make_split_kinship.xHemi_kinship_matrix
+    # Only try to get the xHemi kinship matrix if xHemi workflow input is true
+    if(xHemi){
+        call UTILS.remove_empty_files as remove_empty_x{
+            input:
+                input_files = make_split_kinship.xHemi_kinship_matrix
+        }
+        File xHemiKinshipMat = remove_empty_x.non_empty_files[0]
     }
 
     # Merge scattered kinship autosomal matrices
     call RV.combineKinship as combine_kin{
         input:
             kinship_matrices = remove_empty_auto.non_empty_files,
+            vcf2kinship_logs = make_split_kinship.kinship_log,
             output_basename = "${output_basename}.merged.split.auto",
             cpu = combine_kinship_cpu,
             mem_gb = combine_kinship_mem_gb
     }
 
-    # Stupid trick to make sure xHemiKinship matrix is actually an optional output
-    # Case 1: xHemi was specified for inputs and X chr exists among input_vcfs.
-    #       Just select the first xHemi kinship file because all the autosome files would have been empty and removed in previous step
-    # Case 2: xHemi wasn't specified for inputs or X chr didn't appear among input_vcfs
-    #       Set return file to be an empty optional file (null_xKin) so downstream workflows can proceed as if xHemi doesn't exist
-    File? null_xKin
-    File? xHemiKinMat = if(length(remove_empty_x.non_empty_files) > 0) then remove_empty_x.non_empty_files[0] else null_xKin
 
     output{
-
-        File kinship_matrix = combine_kin.kinship_matrix
-        File? xHemi_kinship_matrix = xHemiKinMat
+        File kinship = combine_kin.kinship_matrix
+        File? xHemiKinship = xHemiKinshipMat
     }
 }
