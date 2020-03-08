@@ -50,7 +50,7 @@ workflow generate_kinship_matrix_wf{
                 minSiteQual = minSiteQual,
                 useBaldingNicols = useBaldingNicols,
                 useIBS = useIBS,
-                output_basename = "${output_basename}.split.${chr}",
+                output_basename = "${output_basename}.split.chr.${chr}",
                 cpu = split_kinship_cpu,
                 mem_gb = split_kinship_mem_gb
         }

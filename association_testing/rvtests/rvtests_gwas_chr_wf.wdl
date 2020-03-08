@@ -48,7 +48,7 @@ workflow rvtests_gwas_chr_wf{
     String pheno_name
     File? covar_file
     Array[String]? covars
-    File? kinship_matrix
+
     String dosage
 
     # For annotating with population MAF info
@@ -56,7 +56,8 @@ workflow rvtests_gwas_chr_wf{
     String maf_population
 
     # Optional for X chr
-    File? xHemiKinship_matrix
+    File? kinship
+    File? xHemiKinship
     Boolean? xHemi
 
     Array[String]? singleTestsMaybe
@@ -112,8 +113,8 @@ workflow rvtests_gwas_chr_wf{
                 covarFile = covar_file,
                 phenoName = pheno_name,
                 covarsMaybe = covars,
-                kinship = kinship_matrix,
-                xHemiKinship = xHemiKinship_matrix,
+                kinship = kinship,
+                xHemiKinship = xHemiKinship,
                 xHemi = xHemi,
                 singleTestsMaybe = singleTestsMaybe,
                 burdenTestsMaybe = burdenTestsMaybe,
