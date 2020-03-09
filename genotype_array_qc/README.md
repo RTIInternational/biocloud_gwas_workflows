@@ -11,29 +11,11 @@ This workflow takes plus-strand GRCh37 genotypes in PLINK bed/bim/fam format and
 
 The input and output formats are fully described in the appendix of this document.
 
+## Workflow
+
 The steps in this workflow are as follows:
-
-1. Split by chromosome
-2. Convert variants to IMPUTE2 ID format
-3. Remove duplicate IDs (based on call rate)
-4. Merge chromosomes
-5. Flag individuals missing chrX or other chromosome
-6. Remove phenotype info in FAM file
-7. Format phenotype data to standard format
-8. Structure workflow (separate supporting workflow)
-9. Partition data by ancestry
-10. Call rate filter
-11. HWE filter
-12. Subject call rate filter (based on autosomes)
-13. Relatedness workflow (separate supporting workflow)
-14. Remove samples based on relatedness
-15. Sex check and sample removal
-16. Excessive homozygosity filtering
-17. Set het haploids to missing
-
-Each of these steps in described in detail below.
-
-### 1. Split by chromosome
+<details>
+<summary>1. Split by chromosome</summary>
 
 Sample command:
 ``` shell
@@ -72,8 +54,10 @@ Parameters:
 | `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
 | `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
 
+</details>
 
-### 2. Convert variants to IMPUTE2 ID format
+<details>
+<summary>2. Convert variants to IMPUTE2 ID format</summary>
 
 Sample command:
 ``` shell
@@ -117,3 +101,162 @@ Parameters:
 | `--file_in_a1_col [A1_COL_NUM]` | Allele 1 column number (zero-based) |
 | `--file_in_a2_col [A2_COL_NUM]` | Allele 2 column number (zero-based) |
 | `--chr [CHR]` | Chromosome (1-22, X_NONPAR, PAR1, PAR2) |
+</details>
+
+
+<details>
+<summary>3. Remove duplicate IDs (based on call rate)</summary>
+
+</details>
+
+
+<details>
+<summary>4. Merge chromosomes</summary>
+
+Sample command:
+``` shell
+for prefix in $([PREFIX_LIST]); do
+    if [ [FORMAT] == "bed_bim_fam" ]; then
+        echo $prefix.bed $prefix.bim $prefix.fam
+    elif [ [FORMAT] == "ped_map" ]; then
+        echo $prefix.ped $prefix.map
+    fi
+done > $fileMergeList
+
+plink \
+    --merge-list $fileMergeList \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX]
+
+rm $fileMergeList
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[PREFIX_LIST]` | List of prefixes of files to be merged |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].log` | PLINK log file |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--prefix_list [PREFIX_LIST]` | List of prefixes of files to be merged |
+| `--format [FORMAT]` | Format of files to be merged (bed_bim_fam, ped_map) |
+</details>
+
+
+<details>
+<summary>5. Flag individuals missing chrX or other chromosome</summary>
+
+</details>
+
+
+<details>
+<summary>6. Remove phenotype info in FAM file</summary>
+
+Sample command:
+```
+perl -pe 's/\S+$/0/;' [INPUT_FAM_FILE]
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[INPUT_FAM_FILE]` | Input FAM file to remove phenotype info from |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[OUTPUT_FAM_FILE]` | Output FAM file phenotype info removed |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--in_fam [INPUT_FAM_FILE]` | Input FAM file to remove phenotype info from |
+| `--out_fam [OUTPUT_FAM_FILE]` | Output FAM file phenotype info removed |
+</details>
+
+
+<details>
+<summary>7. Format phenotype data to standard format</summary>
+
+</details>
+
+
+<details>
+<summary>8. Structure workflow (separate supporting workflow)</summary>
+
+</details>
+
+
+<details>
+<summary>9. Partition data by ancestry</summary>
+
+</details>
+
+
+<details>
+<summary>10. Call rate filter</summary>
+
+</details>
+
+
+<details>
+<summary>11. HWE filter</summary>
+
+</details>
+
+
+<details>
+<summary>12. Subject call rate filter (based on autosomes)</summary>
+
+</details>
+
+
+<details>
+<summary>13. Relatedness workflow (separate supporting workflow)</summary>
+
+</details>
+
+
+<details>
+<summary>14. Remove samples based on relatedness</summary>
+
+</details>
+
+
+<details>
+<summary>15. Sex check and sample removal</summary>
+
+</details>
+
+
+<details>
+<summary>16. Excessive homozygosity filtering</summary>
+
+</details>
+
+
+<details>
+<summary>17. Set het haploids to missing</summary>
+
+</details>
+
+
