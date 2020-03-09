@@ -48,7 +48,7 @@ workflow rvtests_gwas_chr_wf{
     String pheno_name
     File? covar_file
     Array[String]? covars
-    File? kinship_matrix
+
     String dosage
 
     # For annotating with population MAF info
@@ -56,7 +56,8 @@ workflow rvtests_gwas_chr_wf{
     String maf_population
 
     # Optional for X chr
-    File? xHemiKinship_matrix
+    File? kinship
+    File? xHemiKinship
     Boolean? xHemi
 
     Array[String]? singleTestsMaybe
@@ -71,40 +72,49 @@ workflow rvtests_gwas_chr_wf{
     Boolean? qtl
     Boolean? multipleAllele
     String? xLabel
+    Int rvtests_cpu = 1
+    Int rvtests_mem_gb = 2
 
     # Number of records per VCF split
     Int records_per_split = 50000
+    Int split_vcf_cpu = 8
+    Boolean split_vcf_records = true
 
     # Set output basename
     String? user_output_basename
     String default_output_basename = basename(sub(vcf_in, "\\.gz$",""), ".vcf")
     String output_basename = select_first([user_output_basename, default_output_basename])
 
-    # Chunk VCF and INFO files for parallel processing
-    call SPLIT.split_vcf as split_vcf{
-        input:
-            input_vcf = vcf_in,
-            records_per_split = records_per_split,
-            output_basename = output_basename
+    # Optionally chunk VCF and INFO files for parallel processing
+    if(split_vcf_records){
+        call SPLIT.split_vcf as split_vcf{
+            input:
+                input_vcf = vcf_in,
+                records_per_split = records_per_split,
+                output_basename = output_basename,
+                cpu = split_vcf_cpu
+        }
     }
 
     # Loop through splits and do association testing on each
-    scatter(split_index in range(length(split_vcf.split_vcfs))){
+    Array[File] split_vcfs = select_first([split_vcf.split_vcfs, [vcf_in]])
 
-        String split_output_basename = basename(sub(split_vcf.split_vcfs[split_index], "\\.gz$",""), ".vcf")
+    scatter(split_index in range(length(split_vcfs))){
+
+        String split_output_basename = basename(sub(split_vcfs[split_index], "\\.gz$",""), ".vcf")
 
 
         # Run rvtests for association
         call RV.rvtests{
             input:
-                inVCF = split_vcf.split_vcfs[split_index],
+                inVCF = split_vcfs[split_index],
                 phenoFile = pheno_file,
                 output_basename = split_output_basename,
                 covarFile = covar_file,
                 phenoName = pheno_name,
                 covarsMaybe = covars,
-                kinship = kinship_matrix,
-                xHemiKinship = xHemiKinship_matrix,
+                kinship = kinship,
+                xHemiKinship = xHemiKinship,
                 xHemi = xHemi,
                 singleTestsMaybe = singleTestsMaybe,
                 burdenTestsMaybe = burdenTestsMaybe,
@@ -116,7 +126,10 @@ workflow rvtests_gwas_chr_wf{
                 sex = sex,
                 qtl = qtl,
                 multipleAllele = multipleAllele,
-                xLabel = xLabel
+                xLabel = xLabel,
+                dosage = dosage,
+                cpu = rvtests_cpu,
+                mem_gb = rvtests_mem_gb
         }
 
         # Remove header from association output file
@@ -128,24 +141,30 @@ workflow rvtests_gwas_chr_wf{
         }
     }
 
-    # Collect chunked sumstats files into single zip folder
-    call COLLECT.collect_large_file_list_wf as collect_sumstats{
-        input:
-      #      input_files = flatten_sumstats.flat_array,
-            input_files = strip_rvtests_headers.sumstats_out,
-            output_dir_name = output_basename + ".rvtests_output"
+    # Gather chunked RVTests output if > 1 split
+    if(length(split_vcfs) > 1){
+        # Collect chunked sumstats files into single zip folder
+        call COLLECT.collect_large_file_list_wf as collect_rvtests_sumstats{
+            input:
+                input_files = strip_rvtests_headers.sumstats_out,
+                output_dir_name = output_basename + ".rvtests_output"
+        }
+
+        # Concat all sumstats files into single sumstat file
+        call TSV.tsv_append as cat_rvtests_sumstats{
+            input:
+                tsv_inputs_tarball = collect_rvtests_sumstats.output_dir,
+                output_filename = output_basename + ".rvtests.MetaAssoc.tsv"
+        }
     }
 
-    # Concat all sumstats files into single sumstat file
-    call TSV.tsv_append as cat_sumstats{
-        input:
-            tsv_inputs_tarball = collect_sumstats.output_dir,
-            output_filename = output_basename + ".rvtests.MetaAssoc.tsv"
-    }
+    # Use the combined sumstats file if >1 splits was merged, otherwise just use output from strip_headers call
+    File full_sumstats = select_first([cat_rvtests_sumstats.tsv_output, strip_rvtests_headers.sumstats_out[0]])
 
+    # Annotate sumstats with features from info file (R2, MAF) and pop MAF file (MAF from pop of interest)
     call STAT.make_gwas_summary_stats as annotate_sumstats{
         input:
-            file_in_summary_stats = cat_sumstats.tsv_output,
+            file_in_summary_stats = full_sumstats,
             file_in_info = info_in,
             file_in_pop_mafs = pop_maf_file,
             file_in_summary_stats_format = "rvtests",
