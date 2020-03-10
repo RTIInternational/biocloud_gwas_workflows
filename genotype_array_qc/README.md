@@ -427,7 +427,49 @@ Parameters:
 
 
 <details>
-<summary>12. Subject call rate filter (based on autosomes)</summary>
+<summary>12. Set het haploids to missing</summary>
+
+Sample command:
+``` shell
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --set-hh-missing \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX]
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].log` | PLINK log file |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
+| `--set-hh-missing` | Flag indicating that PLINK should set heterozygous haploids to missing |
+| `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
+| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
+</details>
+
+
+<details>
+<summary>13. Subject call rate filter (based on autosomes)</summary>
 
 Sample command:
 ``` shell
@@ -453,7 +495,7 @@ Parameters:
 
 
 <details>
-<summary>13. Relatedness workflow (separate supporting workflow)</summary>
+<summary>14. Relatedness workflow (separate supporting workflow)</summary>
 
 Sample command:
 ``` shell
@@ -479,7 +521,7 @@ Parameters:
 
 
 <details>
-<summary>14. Remove samples based on relatedness</summary>
+<summary>15. Remove samples based on relatedness</summary>
 
 Sample command:
 ``` shell
@@ -505,7 +547,7 @@ Parameters:
 
 
 <details>
-<summary>15. Sex check and sample removal</summary>
+<summary>16. Sex check and sample removal</summary>
 
 Sample command:
 ``` shell
@@ -531,7 +573,7 @@ Parameters:
 
 
 <details>
-<summary>16. Excessive homozygosity filtering</summary>
+<summary>17. Excessive homozygosity filtering</summary>
 
 Sample command:
 ``` shell
@@ -555,30 +597,5 @@ Parameters:
 | --- | --- |
 </details>
 
-
-<details>
-<summary>17. Set het haploids to missing</summary>
-
-Sample command:
-``` shell
-```
-
-Input Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Output Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Parameters:
-
-| PARAMETER | DESCRIPTION |
-| --- | --- |
-</details>
 
 
