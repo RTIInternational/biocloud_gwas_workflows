@@ -355,24 +355,74 @@ Parameters:
 
 Sample command:
 ``` shell
+# Autosomes
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --hwe [HW_PVALUE_THRESHOLD] \
+    --autosome \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX].autosome_hwe
+
+# Chr X for females
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --hwe [HW_PVALUE_THRESHOLD] \
+    --filter-females \
+    --chr 23 \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe_females
+
+# Extract chr X SNPs from full dataset
+perl -lane 'print $F[1];' [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe_females.bim > \
+    [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe_females.extract
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --extract [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe_females.extract \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe
+
+# Merge autosomes and chr X
+plink \
+  --bfile [OUTPUT_BED_BIM_FAM_PREFIX].autosome_hwe \
+  --bmerge [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe.bed \
+          [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe.bim \
+          [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe.fam \
+  --make-bed \
+  --out [OUTPUT_BED_BIM_FAM_PREFIX]
+
+# Remove intermediates
+rm [OUTPUT_BED_BIM_FAM_PREFIX].autosome_hwe*
+rm [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe_females*
+rm [OUTPUT_BED_BIM_FAM_PREFIX].x_hwe*
 ```
 
 Input Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
+| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
 
 
 Output Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].log` | PLINK log file |
 
 
 Parameters:
 
 | PARAMETER | DESCRIPTION |
 | --- | --- |
+| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
+| `--hwe [HW_PVALUE_THRESHOLD]` | HW p-value threshold for excluding SNPs (e.g., 0.0001) |
+| `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
+| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
 </details>
 
 
