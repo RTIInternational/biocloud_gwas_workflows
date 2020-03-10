@@ -473,24 +473,52 @@ Parameters:
 
 Sample command:
 ``` shell
+# Autosomes
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --mind [CALL_RATE_THRESHOLD] \
+    --autosome \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX].autosomes
+
+# Extract subjects from full dataset
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --keep [OUTPUT_BED_BIM_FAM_PREFIX].autosomes.fam \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX]
+
+# Remove intermediates
+rm [OUTPUT_BED_BIM_FAM_PREFIX].autosomes*
 ```
 
 Input Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
+| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
 
 
 Output Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].log` | PLINK log file |
 
 
 Parameters:
 
 | PARAMETER | DESCRIPTION |
 | --- | --- |
+| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
+| `--mind [CALL_RATE_THRESHOLD]` | Call rate threshold for excluding subjects (e.g., 0.01) |
+| `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
+| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
 </details>
 
 
