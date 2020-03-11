@@ -222,8 +222,6 @@ Parameters:
 
 Sample command:
 ``` shell
-# Create merge list based on [BED_FILES], [BIM_FILES], and [FAM_FILES]
-
 # Get sorted list of all variants
 for bim in $(perl -lane 'print $F[1];' [MERGE_LIST]); do
     perl -lane 'print $F[1];' $bim
