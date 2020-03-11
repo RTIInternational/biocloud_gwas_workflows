@@ -4,7 +4,7 @@
 
 This document details the standard analysis workflow for performing QC data from genotyping arrays. An automated pipeline, developed using WDL, Cromwell, and Docker, is available for this workflow.
 
-This workflow takes plus-strand GRCh37 genotypes in PLINK bed/bim/fam format and produces the following outputs:
+This workflow takes plus-strand GRCh37 genotypes in PLINK bed/bim/fam format. The fam file should include the sex for each individual. The workflow produces the following outputs:
 
 1. QCed genotypes in PLINK bed/bim/fam format.
 2. Summary of variants and subjects removed/flagged during each step of the QC pipeline.
@@ -15,7 +15,119 @@ The input and output formats are fully described in the appendix of this documen
 
 The steps in this workflow are as follows:
 <details>
-<summary>1. Split by chromosome</summary>
+<summary>1. Add sex to fam file</summary>
+
+Sample command:
+``` shell
+# Create sex mapping file from phenotype file
+perl -lne '
+    BEGIN {
+        $header = 1;
+        $fidCol = -1;
+        $iidCol = -1;
+        $sexCol = -1;
+    }
+    $delimiter = lc("'[PHENO_DELIMITER]'");
+    $delimiter = ($delimiter eq "comma") ? "," : (($delimiter eq "tab") ? "\t" : (($delimiter eq "space") ? " " : ""));
+    @F = split($delimiter);
+    if ($header) {
+        foreach $col (@F) {
+
+        }
+    }
+'
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --update-sex [SEX_FILE] \
+    --make-bed \
+    --out /shared/data/studies/vidus/observed/processing/ea/vidus.ea.chr23.snp_miss.with_cidr_sexes
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].log` | PLINK log file |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
+| `--chr [CHR]` | Chromosome to extract (1-26, X, Y, XY, MT) |
+| `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
+| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
+
+</details>
+
+
+<details>
+<summary>2. Sex check</summary>
+
+Sample command:
+``` shell
+# Run sex check
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --check-sex \
+    --out [OUTPUT_PREFIX]
+
+# Rename output file
+perl -lane 'print join("\t",@F);' [OUTPUT_PREFIX].sexcheck > [OUTPUT_PREFIX].sexcheck.all.tsv
+
+# Extract subjects not passing sex check
+head -n 1 [OUTPUT_PREFIX].sexcheck.all.tsv > [OUTPUT_PREFIX].sexcheck.problems.tsv
+grep PROBLEM [OUTPUT_PREFIX].sexcheck.all.tsv >> [OUTPUT_PREFIX].sexcheck.problems.tsv
+
+# Create remove list
+tail -n +2 [OUTPUT_PREFIX].sexcheck.problems.tsv |
+    perl -lane 'print join("\t", $F[0], $F[1]);' > [OUTPUT_PREFIX].sexcheck.remove.tsv
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[OUTPUT_PREFIX].sexcheck.all.tsv` | PLINK sex check output for all subjects |
+| `[OUTPUT_PREFIX].sexcheck.problems.tsv` | PLINK sex check output for subjects not passing sex check |
+| `[OUTPUT_PREFIX].sexcheck.remove.tsv` | List of subjects not passing sex check that can be fed into PLINK to remove the subjects |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
+| `--sex-check` | Flag indicating that PLINK shoud perform a sex check |
+| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
+
+</details>
+
+
+<details>
+<summary>3. Split by chromosome</summary>
 
 Sample command:
 ``` shell
@@ -56,8 +168,9 @@ Parameters:
 
 </details>
 
+
 <details>
-<summary>2. Convert variants to IMPUTE2 ID format</summary>
+<summary>4. Convert variants to IMPUTE2 ID format</summary>
 
 Sample command:
 ``` shell
@@ -105,57 +218,113 @@ Parameters:
 
 
 <details>
-<summary>3. Remove duplicate IDs (based on call rate)</summary>
+<summary>5. Remove duplicate variant IDs (based on call rate) and merge chromosomes</summary>
 
 Sample command:
 ``` shell
-```
+# Create merge list based on [BED_FILES], [BIM_FILES], and [FAM_FILES]
 
-Input Files:
+# Get sorted list of all variants
+for bim in $(perl -lane 'print $F[1];' [MERGE_LIST]); do
+    perl -lane 'print $F[1];' $bim
+done | sort > tmp.variants.sorted
 
-| FILE | DESCRIPTION |
-| --- | --- |
+# Get sorted list of unique variants
+sort -u tmp.variants.sorted > tmp.variants.sorted.unique
 
+# Get list of duplicate variants
+comm -23 tmp.variants.sorted \
+    tmp.variants.sorted.unique |
+    sort -u > \
+    tmp.variants.duplicates
+    
+# Append ___X (where X is a unique number for the variant) to the end of the variant IDs for duplicates
+for bim in $(perl -lane 'print $F[1];' [MERGE_LIST]); do
+    perl -i.bak -lane '
+        BEGIN {
+            %duplicates = ();
+            open(DUPLICATES, "'tmp'.variants.duplicates");
+            while (<DUPLICATES>) {
+                chomp;
+                $duplicates{$_} = 1;
+            }
+            close DUPLICATES;
+        }
+        if (exists($duplicates{$F[1]})) {
+            $F[1] = $F[1]."___".($duplicates{$F[1]}++);
+        }
+        print join("\t", @F);' $bim
+done
 
-Output Files:
+# Merge chromosomes
+/shared/bioinformatics/software/third_party/plink-1.90-beta-4.10-x86_64/plink \
+    --merge-list [MERGE_LIST] \
+    --make-bed \
+    --out tmp.with_duplicates
 
-| FILE | DESCRIPTION |
-| --- | --- |
+# Get list of duplicate SNPs
+grep ___ tmp.with_duplicates.bim |
+    perl -lane 'print $F[1];' > tmp.with_duplicates.duplicates
 
+# Get call rates for duplicate SNPs
+/shared/bioinformatics/software/third_party/plink-1.90-beta-4.10-x86_64/plink \
+    --bfile tmp.with_duplicates \
+    --extract tmp.with_duplicates.duplicates \
+    --missing \
+    --out tmp.with_duplicates.missing
 
-Parameters:
+# Create remove list containing duplicate with higher missing rate
+tail -n +2 tmp.with_duplicates.missing.lmiss |
+    perl -lane '
+      BEGIN {
+          %missingness = ();
+          %extract = ();
+          @variants = ();
+      }
+      push(@variants, $F[1]);
+      $F[1] =~ /^(\S+)___\d+/;
+      $baseName = $1;
+      if (exists($missingness{$baseName})) {
+          if ($F[4] < $missingness{$baseName}) {
+              $missingness{$baseName} = $F[4];
+              $extract{$baseName} = $F[1];
+          }
+      } else {
+          $missingness{$baseName} = $F[4];
+          $extract{$baseName} = $F[1];
+      }
+      END {
+          foreach $variant (@variants) {
+              $variant =~ /^(\S+)___\d+/;
+              $baseName = $1;
+              if ($extract{$baseName} ne $variant) {
+                  print $variant;
+              }
+          }
+      }' > tmp.with_duplicates.remove
 
-| PARAMETER | DESCRIPTION |
-| --- | --- |
-</details>
-
-
-<details>
-<summary>4. Merge chromosomes</summary>
-
-Sample command:
-``` shell
-for prefix in $([PREFIX_LIST]); do
-    if [ [FORMAT] == "bed_bim_fam" ]; then
-        echo $prefix.bed $prefix.bim $prefix.fam
-    elif [ [FORMAT] == "ped_map" ]; then
-        echo $prefix.ped $prefix.map
-    fi
-done > $fileMergeList
-
-plink \
-    --merge-list $fileMergeList \
+# Remove duplicates with higher missing rate
+/shared/bioinformatics/software/third_party/plink-1.90-beta-4.10-x86_64/plink \
+    --bfile tmp.with_duplicates \
+    --exclude tmp.with_duplicates.remove \
     --make-bed \
     --out [OUTPUT_BED_BIM_FAM_PREFIX]
 
-rm $fileMergeList
+# Remove numbers from duplicate variant IDs
+perl -i.bak -lne 's/___\d+//; print;' [OUTPUT_BED_BIM_FAM_PREFIX].bim
+
+# Clean up files
+rm tmp*
 ```
 
 Input Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
-
+| `[MERGE_LIST]` | PLINK format merge-list (see https://www.cog-genomics.org/plink/1.9/data#merge_list) |
+| `[BED_FILES]` | Array of bed files to merge in same order as `[BIM_FILES]` and `[FAM_FILES]` |
+| `[BIM_FILES]` | Array of bim files to merge in same order as `[BED_FILES]` and `[FAM_FILES]` |
+| `[FAM_FILES]` | Array of fam files to merge in same order as `[BED_FILES]` and `[BIM_FILES]` |
 
 Output Files:
 
@@ -171,19 +340,21 @@ Parameters:
 
 | PARAMETER | DESCRIPTION |
 | --- | --- |
-| `--prefix_list [PREFIX_LIST]` | List of prefixes of files to be merged |
-| `--format [FORMAT]` | Format of files to be merged (bed_bim_fam, ped_map) |
+| `--bed_files [BED_FILES]` | Delimited list of bed files to merge in same order as bim and fam files |
+| `--bim_files [BIM_FILES]` | Delimited list of bim files to merge in same order as bed and fam files |
+| `--fam_files [FAM_FILES]` | Delimited list of fam files to merge in same order as bed and bim files |
+| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
 </details>
 
 
 <details>
-<summary>5. Flag individuals missing chrX or other chromosome</summary>
+<summary>6. Flag individuals missing chrX or other chromosome</summary>
 
 </details>
 
 
 <details>
-<summary>6. Remove phenotype info in FAM file</summary>
+<summary>7. Remove phenotype info in FAM file</summary>
 
 Sample command:
 ```
@@ -214,7 +385,7 @@ Parameters:
 
 
 <details>
-<summary>7. Format phenotype data to standard format</summary>
+<summary>8. Format phenotype data to standard format</summary>
 
 Sample command:
 ``` shell
@@ -240,7 +411,7 @@ Parameters:
 
 
 <details>
-<summary>8. Structure workflow (separate supporting workflow)</summary>
+<summary>9. Structure workflow (separate supporting workflow)</summary>
 
 Sample command:
 ``` shell
@@ -266,7 +437,7 @@ Parameters:
 
 
 <details>
-<summary>9. Partition data by ancestry</summary>
+<summary>10. Partition data by ancestry</summary>
 
 Sample command:
 ``` shell
@@ -309,7 +480,7 @@ Parameters:
 
 
 <details>
-<summary>10. Call rate filter</summary>
+<summary>11. Call rate filter</summary>
 
 Sample command:
 ``` shell
@@ -351,7 +522,7 @@ Parameters:
 
 
 <details>
-<summary>11. HWE filter</summary>
+<summary>12. HWE filter</summary>
 
 Sample command:
 ``` shell
@@ -427,7 +598,7 @@ Parameters:
 
 
 <details>
-<summary>12. Set het haploids to missing</summary>
+<summary>13. Set het haploids to missing</summary>
 
 Sample command:
 ``` shell
@@ -469,7 +640,7 @@ Parameters:
 
 
 <details>
-<summary>13. Subject call rate filter (based on autosomes)</summary>
+<summary>14. Subject call rate filter (based on autosomes)</summary>
 
 Sample command:
 ``` shell
@@ -523,7 +694,7 @@ Parameters:
 
 
 <details>
-<summary>14. Relatedness workflow (separate supporting workflow)</summary>
+<summary>15. Relatedness workflow (separate supporting workflow)</summary>
 
 Sample command:
 ``` shell
@@ -549,7 +720,33 @@ Parameters:
 
 
 <details>
-<summary>15. Remove samples based on relatedness (optional)</summary>
+<summary>16. Excessive homozygosity filtering</summary>
+
+Sample command:
+``` shell
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+</details>
+
+
+<details>
+<summary>17. Remove samples based on relatedness (optional)</summary>
 
 Sample command:
 ``` shell
@@ -592,54 +789,45 @@ Parameters:
 
 
 <details>
-<summary>16. Sex check and sample removal</summary>
+<summary>18. Remove samples based on discrepant sex (optional)</summary>
 
 Sample command:
 ``` shell
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --remove [REMOVE_LIST] \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX]
 ```
 
 Input Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
+| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
+| `[REMOVE_LIST]` | List of subjects to remove |
 
 
 Output Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].log` | PLINK log file |
 
 
 Parameters:
 
 | PARAMETER | DESCRIPTION |
 | --- | --- |
-</details>
-
-
-<details>
-<summary>17. Excessive homozygosity filtering</summary>
-
-Sample command:
-``` shell
-```
-
-Input Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Output Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Parameters:
-
-| PARAMETER | DESCRIPTION |
-| --- | --- |
+| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
+| `--remove [REMOVE_LIST]` | List of subjects to remove |
+| `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
+| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
 </details>
 
 
