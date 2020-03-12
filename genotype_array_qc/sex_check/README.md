@@ -112,7 +112,7 @@ Parameters:
 
 
 <details>
-<summary>4. Generate supplementary freq file from different dataset for sex check for small datasets</summary>
+<summary>(Optional) 4. Generate supplementary freq file from different dataset for sex check for small datasets</summary>
 
 Sample command:
 ``` shell
