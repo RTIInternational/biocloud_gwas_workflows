@@ -104,11 +104,56 @@ Parameters:
 
 
 <details>
-<summary>4. Perform sex check</summary>
+<summary>4. Generate supplementary freq file from different dataset for sex check for small datasets</summary>
 
 Sample command:
 ``` shell
-# Run sex check
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --freqx \
+    --out [OUTPUT_PREFIX]
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[OUTPUT_PREFIX].frqx` | Allele frequencies for input genotypes |
+| `[OUTPUT_PREFIX].log` | PLINK log file |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format (not the main dataset being QCed) |
+| `--out [OUTPUT_PREFIX]` | Prefix for output |
+</details>
+
+
+<details>
+<summary>5. Perform sex check</summary>
+
+Sample command:
+``` shell
+# Small datasets
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --check-sex [FEMALE_MAX_F] [MALE_MIN_F] \
+    --update-sex [SEX_FILE] \
+    --read-freq [FREQ_FILE] \
+    --out [OUTPUT_PREFIX]
+
+# Other datasets
 plink \
     --bfile [INPUT_BED_BIM_FAM_PREFIX] \
     --check-sex [FEMALE_MAX_F] [MALE_MIN_F] \
@@ -124,6 +169,7 @@ Input Files:
 | `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
 | `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
 | `[SEX_FILE]` | File generated in step 3 |
+| `[FREQ_FILE]` | (Optional) Frequency file for different dataset generated using PLINK `--freq` or `--freqx` command |
 
 
 Output Files:
@@ -145,7 +191,7 @@ Parameters:
 
 
 <details>
-<summary>5. Generate final files</summary>
+<summary>6. Generate final files</summary>
 
 Sample command:
 ``` shell
