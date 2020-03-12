@@ -15,32 +15,15 @@ The input and output formats are fully described in the appendix of this documen
 
 The steps in this workflow are as follows:
 <details>
-<summary>1. Add sex to fam file</summary>
+<summary>1. Split the X chromosome into PAR and non-PAR</summary>
 
 Sample command:
-``` shell
-# Create sex mapping file from phenotype file
-perl -lne '
-    BEGIN {
-        $header = 1;
-        $fidCol = -1;
-        $iidCol = -1;
-        $sexCol = -1;
-    }
-    $delimiter = lc("'[PHENO_DELIMITER]'");
-    $delimiter = ($delimiter eq "comma") ? "," : (($delimiter eq "tab") ? "\t" : (($delimiter eq "space") ? " " : ""));
-    @F = split($delimiter);
-    if ($header) {
-        foreach $col (@F) {
-
-        }
-    }
-'
+```
 plink \
     --bfile [INPUT_BED_BIM_FAM_PREFIX] \
-    --update-sex [SEX_FILE] \
+    --split-x b37 no-fail \
     --make-bed \
-    --out /shared/data/studies/vidus/observed/processing/ea/vidus.ea.chr23.snp_miss.with_cidr_sexes
+    --out [OUTPUT_BED_BIM_FAM_PREFIX]
 ```
 
 Input Files:
@@ -67,62 +50,40 @@ Parameters:
 | PARAMETER | DESCRIPTION |
 | --- | --- |
 | `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
-| `--chr [CHR]` | Chromosome to extract (1-26, X, Y, XY, MT) |
+| `--split-x b37 no-fail` | Option telling PLINK to split X based on b37 coordinates and not fail if already split |
 | `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
 | `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
-
 </details>
 
 
 <details>
-<summary>2. Sex check</summary>
+<summary>2. Remove phenotype info in FAM file</summary>
 
 Sample command:
-``` shell
-# Run sex check
-plink \
-    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
-    --check-sex \
-    --out [OUTPUT_PREFIX]
-
-# Rename output file
-perl -lane 'print join("\t",@F);' [OUTPUT_PREFIX].sexcheck > [OUTPUT_PREFIX].sexcheck.all.tsv
-
-# Extract subjects not passing sex check
-head -n 1 [OUTPUT_PREFIX].sexcheck.all.tsv > [OUTPUT_PREFIX].sexcheck.problems.tsv
-grep PROBLEM [OUTPUT_PREFIX].sexcheck.all.tsv >> [OUTPUT_PREFIX].sexcheck.problems.tsv
-
-# Create remove list
-tail -n +2 [OUTPUT_PREFIX].sexcheck.problems.tsv |
-    perl -lane 'print join("\t", $F[0], $F[1]);' > [OUTPUT_PREFIX].sexcheck.remove.tsv
+```
+perl -lane 'print join("\t", @F[0 .. 3], "0\t0");' [INPUT_FAM_FILE]
 ```
 
 Input Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
-| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
-| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
-| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
+| `[INPUT_FAM_FILE]` | Input FAM file to remove phenotype info from |
 
 
 Output Files:
 
 | FILE | DESCRIPTION |
 | --- | --- |
-| `[OUTPUT_PREFIX].sexcheck.all.tsv` | PLINK sex check output for all subjects |
-| `[OUTPUT_PREFIX].sexcheck.problems.tsv` | PLINK sex check output for subjects not passing sex check |
-| `[OUTPUT_PREFIX].sexcheck.remove.tsv` | List of subjects not passing sex check that can be fed into PLINK to remove the subjects |
+| `[OUTPUT_FAM_FILE]` | Output FAM file phenotype info removed |
 
 
 Parameters:
 
 | PARAMETER | DESCRIPTION |
 | --- | --- |
-| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
-| `--sex-check` | Flag indicating that PLINK shoud perform a sex check |
-| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
-
+| `--in_fam [INPUT_FAM_FILE]` | Input FAM file to remove phenotype info from |
+| `--out_fam [OUTPUT_FAM_FILE]` | Output FAM file phenotype info removed |
 </details>
 
 
@@ -165,7 +126,6 @@ Parameters:
 | `--chr [CHR]` | Chromosome to extract (1-26, X, Y, XY, MT) |
 | `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
 | `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
-
 </details>
 
 
@@ -346,101 +306,60 @@ Parameters:
 
 
 <details>
-<summary>6. Flag individuals missing chrX or other chromosome</summary>
-
-</details>
-
-
-<details>
-<summary>7. Remove phenotype info in FAM file</summary>
-
-Sample command:
-```
-perl -pe 's/\S+$/0/;' [INPUT_FAM_FILE]
-```
-
-Input Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-| `[INPUT_FAM_FILE]` | Input FAM file to remove phenotype info from |
-
-
-Output Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-| `[OUTPUT_FAM_FILE]` | Output FAM file phenotype info removed |
-
-
-Parameters:
-
-| PARAMETER | DESCRIPTION |
-| --- | --- |
-| `--in_fam [INPUT_FAM_FILE]` | Input FAM file to remove phenotype info from |
-| `--out_fam [OUTPUT_FAM_FILE]` | Output FAM file phenotype info removed |
-</details>
-
-
-<details>
-<summary>8. Format phenotype data to standard format</summary>
-
-Sample command:
-``` shell
-```
-
-Input Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Output Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Parameters:
-
-| PARAMETER | DESCRIPTION |
-| --- | --- |
-</details>
-
-
-<details>
-<summary>9. Structure workflow (separate supporting workflow)</summary>
-
-Sample command:
-``` shell
-```
-
-Input Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Output Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Parameters:
-
-| PARAMETER | DESCRIPTION |
-| --- | --- |
-</details>
-
-
-<details>
-<summary>10. Partition data by ancestry</summary>
+<summary>6. Remove subjects with >99% missingness</summary>
 
 Sample command:
 ``` shell
 plink \
-    --bfile [INPUT_BED_BIM_FAM_PREFIX] \ \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --mind 0.99 \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX]
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].log` | PLINK log file |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
+| `--mind 0.99` | Option indicating that individuals with >99% missingness should be excluded |
+| `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
+| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
+</details>
+
+
+<details>
+<summary>7. Structure workflow (separate supporting workflow)</summary>
+
+</details>
+
+
+<details>
+<summary>8. Partition data by ancestry</summary>
+
+Sample command:
+``` shell
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
     --keep [KEEP_LIST] \
     --make-bed \
     --out [OUTPUT_BED_BIM_FAM_PREFIX]
@@ -478,12 +397,12 @@ Parameters:
 
 
 <details>
-<summary>11. Call rate filter</summary>
+<summary>9. Call rate filter</summary>
 
 Sample command:
 ``` shell
 plink \
-    --bfile [INPUT_BED_BIM_FAM_PREFIX] \ \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
     --geno [CALL_RATE_THRESHOLD] \
     --make-bed \
     --out [OUTPUT_BED_BIM_FAM_PREFIX]
@@ -520,7 +439,7 @@ Parameters:
 
 
 <details>
-<summary>12. HWE filter</summary>
+<summary>10. HWE filter</summary>
 
 Sample command:
 ``` shell
@@ -596,7 +515,7 @@ Parameters:
 
 
 <details>
-<summary>13. Set het haploids to missing</summary>
+<summary>11. Set het haploids to missing</summary>
 
 Sample command:
 ``` shell
@@ -638,7 +557,7 @@ Parameters:
 
 
 <details>
-<summary>14. Subject call rate filter (based on autosomes)</summary>
+<summary>12. Subject call rate filter (based on autosomes)</summary>
 
 Sample command:
 ``` shell
@@ -692,7 +611,7 @@ Parameters:
 
 
 <details>
-<summary>15. Relatedness workflow (separate supporting workflow)</summary>
+<summary>13. Excessive homozygosity filtering</summary>
 
 Sample command:
 ``` shell
@@ -718,33 +637,19 @@ Parameters:
 
 
 <details>
-<summary>16. Excessive homozygosity filtering</summary>
+<summary>14. Relatedness workflow (separate supporting workflow)</summary>
 
-Sample command:
-``` shell
-```
-
-Input Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Output Files:
-
-| FILE | DESCRIPTION |
-| --- | --- |
-
-
-Parameters:
-
-| PARAMETER | DESCRIPTION |
-| --- | --- |
 </details>
 
 
 <details>
-<summary>17. Remove samples based on relatedness (optional)</summary>
+<summary>15. Sex check workflow (separate supporting workflow)</summary>
+
+</details>
+
+
+<details>
+<summary>16. Remove samples based on relatedness (optional)</summary>
 
 Sample command:
 ``` shell
@@ -787,7 +692,7 @@ Parameters:
 
 
 <details>
-<summary>18. Remove samples based on discrepant sex (optional)</summary>
+<summary>17. Remove samples based on discrepant sex (optional)</summary>
 
 Sample command:
 ``` shell
@@ -828,5 +733,53 @@ Parameters:
 | `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
 </details>
 
+
+<details>
+<summary>18. Merge the PAR and non-PAR regions of the X chromosome</summary>
+
+Sample command:
+```
+plink \
+    --bfile [INPUT_BED_BIM_FAM_PREFIX] \
+    --merge-x no-fail \
+    --make-bed \
+    --out [OUTPUT_BED_BIM_FAM_PREFIX]
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
+| `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for output genotypes |
+| `[OUTPUT_BED_BIM_FAM_PREFIX].log` | PLINK log file |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--bfile [INPUT_BED_BIM_FAM_PREFIX]` | Prefix for input genotypes in PLINK bed/bim/fam format |
+| `--merge-x no-fail` | Option telling PLINK to merge the PAR and non-PAR regions and not fail if already split |
+| `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
+| `--out [OUTPUT_BED_BIM_FAM_PREFIX]` | Prefix for output genotypes in PLINK bed/bim/fam format |
+</details>
+
+
+
+<details>
+<summary>19. Flag individuals missing chrX or other chromosome</summary>
+
+</details>
 
 
