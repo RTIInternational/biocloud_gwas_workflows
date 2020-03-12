@@ -62,7 +62,49 @@ Parameters:
 
 
 <details>
-<summary>3. Perform sex check</summary>
+<summary>3. Generate file for providing self-reported sex for sex check</summary>
+
+Sample command:
+``` shell
+tail -n +[HEADER_ROWS] [PHENO_FILE] |
+    perl -lne '
+        $delimiter = lc("'[PHENO_DELIMITER]'");	
+        $delimiter = ($delimiter eq "comma") ? "," : (($delimiter eq "tab") ? "\t" : (($delimiter eq "space") ? " " : ""));
+        chomp;
+        @F = split($delimiter)
+        print join("\t", $F['[FID_COL]'], $F['[IID_COL]'], $F['[SEX_COL]'])' > [SEX_FILE]
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[PHENO_FILE]` | PLINK format bed file for input genotypes |
+
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `[SEX_FILE]` | PLINK sex check output for all subjects |
+
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--pheno [PHENO_FILE]` | Phenotype file containing at minimum FID, IID, and sex |
+| `--fid_col [FID_COL]` | Column # in phenotype file containing the FID (0-based) |
+| `--iid_col [IID_COL]` | Column # in phenotype file containing the IID (0-based) |
+| `--sex_col [SEX_COL]` | Column # in phenotype file containing the FID (0-based) |
+| `--header_rows [HEADER_ROWS]` | # of header rows in phenotype file |
+| `--delimiter [DELIMITER]` | Delimiter used in phenotype file (accepted values comma, tab, space) |
+| `--out [SEX_FILE]` | Prefix for output |
+</details>
+
+
+<details>
+<summary>4. Perform sex check</summary>
 
 Sample command:
 ``` shell
@@ -70,6 +112,7 @@ Sample command:
 plink \
     --bfile [INPUT_BED_BIM_FAM_PREFIX] \
     --check-sex [FEMALE_MAX_F] [MALE_MIN_F] \
+    --update-sex [SEX_FILE] \
     --out [OUTPUT_PREFIX]
 ```
 
@@ -80,6 +123,7 @@ Input Files:
 | `[INPUT_BED_BIM_FAM_PREFIX].bed` | PLINK format bed file for input genotypes |
 | `[INPUT_BED_BIM_FAM_PREFIX].bim` | PLINK format bim file for input genotypes |
 | `[INPUT_BED_BIM_FAM_PREFIX].fam` | PLINK format fam file for input genotypes |
+| `[SEX_FILE]` | File generated in step 3 |
 
 
 Output Files:
@@ -101,7 +145,7 @@ Parameters:
 
 
 <details>
-<summary>4. Generate final files</summary>
+<summary>5. Generate final files</summary>
 
 Sample command:
 ``` shell
