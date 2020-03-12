@@ -1,0 +1,22 @@
+{
+  "sex_check_wf.bed_in": "s3://rti-biocloud-test-data/plink/kreek/ea_chr_all.bed.gz",
+  "sex_check_wf.bim_in": "s3://rti-biocloud-test-data/plink/kreek/ea_chr_all.bim.gz",
+  "sex_check_wf.fam_in": "s3://rti-biocloud-test-data/plink/kreek/ea_chr_all.fam.gz",
+  "sex_check_wf.phenotype_file": "s3://rti-biocloud-test-data/plink/kreek/phs001109.v1.pht005447.v1.p1.c1.Addictive_Diseases_Subject_Phenotypes.DS-ADX-IRB-NPU.txt",
+  "sex_check_wf.output_basename": "test_sex_check",
+  "sex_check_wf.header_rows": 12,
+  "sex_check_wf.fid_col": 0,
+  "sex_check_wf.iid_col": 1,
+  "sex_check_wf.sex_col": 3,
+  "sex_check_wf.delimiter": "tab",
+  "sex_check_wf.build_code": "b37",
+  "sex_check_wf.no_fail": true,
+  "sex_check_wf.ld_type": "indep-pairphase",
+  "sex_check_wf.window_size": 20000,
+  "sex_check_wf.step_size": 2000,
+  "sex_check_wf.r2_threshold": 0.5,
+  "sex_check_wf.min_ld_maf": 0.1,
+  "sex_check_wf.female_max_f": 0.2,
+  "sex_check_wf.male_min_f": 0.8
+}
+

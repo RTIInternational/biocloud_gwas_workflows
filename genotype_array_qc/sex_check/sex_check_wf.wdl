@@ -22,7 +22,7 @@ task format_phenotype_file{
             $delimiter = lc("${delimiter}");
             $delimiter = ($delimiter eq "comma") ? "," : (($delimiter eq "tab") ? "\t" : (($delimiter eq "space") ? " " : ""));
             chomp;
-            @F = split($delimiter)
+            @F = split($delimiter);
             print join("\t", $F[${fid_col}], $F[${iid_col}], $F[${sex_col}])' > ${output_filename}
     }
 
@@ -38,7 +38,7 @@ task format_phenotype_file{
 
 }
 
-workflow check_sex_wf{
+workflow sex_check_wf{
     File bed_in
     File bim_in
     File fam_in
@@ -66,8 +66,8 @@ workflow check_sex_wf{
     Int? x_chr_mode
 
     # Args for sex check
-    Float female_max_f = 0.8
-    Float male_max_f = 0.2
+    Float female_max_f = 0.2
+    Float male_min_f = 0.8
 
     # Runtime options
     Int ld_cpu = 8
@@ -89,35 +89,35 @@ workflow check_sex_wf{
 
 
     # Merge X chr to ensure PAR/NONPAR are not split (split-x will fail for pre-split files)
-    call PLINK.make_bed as merge_x{
+    call PLINK.make_bed as merge_x_chr{
         input:
             bed_in = bed_in,
             bim_in = bim_in,
             fam_in = fam_in,
             output_basename = "${output_basename}.mergex",
             merge_x = true,
-            no_fail = no_fail
+            merge_no_fail = no_fail
     }
 
 
     # Split X chr by PAR/NONPAR
-    call PLINK.make_bed as split_x{
+    call PLINK.make_bed as split_x_chr{
         input:
-            bed_in = merge_x.bed_out,
-            bim_in = merge_x.bim_out,
-            fam_in = merge_x.fam_out,
+            bed_in = merge_x_chr.bed_out,
+            bim_in = merge_x_chr.bim_out,
+            fam_in = merge_x_chr.fam_out,
             output_basename = "${output_basename}.splitx",
             split_x = true,
-            bulid_code = build_code,
-            no_fail = no_fail
+            build_code = build_code,
+            split_no_fail = no_fail
     }
 
     # Get LD pruning set
     call LD.ld_prune_wf as ld_prune{
         input:
-            bed_in = split_x.bed_out,
-            bim_in = split_x.bim_out,
-            fam_in = split_x.fam_out,
+            bed_in = split_x_chr.bed_out,
+            bim_in = split_x_chr.bim_out,
+            fam_in = split_x_chr.fam_out,
             output_basename = "${output_basename}.ldprune",
             ld_type = ld_type,
             window_size = window_size,
@@ -137,7 +137,7 @@ workflow check_sex_wf{
             bim_in = ld_prune.bim_out,
             fam_in = ld_prune.fam_out,
             female_max_f = female_max_f,
-            male_max_f = male_max_f,
+            male_min_f = male_min_f,
             output_basename = "${output_basename}.sexcheck",
             update_sex = format_phenotype_file.phenotype_out,
             cpu = sex_check_cpu,

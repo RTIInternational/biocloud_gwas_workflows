@@ -30,7 +30,10 @@
     "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr19.legend.gz",
     "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr20.legend.gz",
     "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr21.legend.gz",
-    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr22.legend.gz"
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr22.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chrX_PAR1.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chrX_PAR2.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chrX_NONPAR.legend.gz"
   ]
 
 }
