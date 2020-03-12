@@ -9,11 +9,48 @@ workflow genotype_array_qc_wf{
     Array[File] id_legend_files
     String output_basename
 
+    # PAR/NONPAR Split/Merge parameters
+    String build_code
+    Boolean no_fail = true
+
+    # Individual filtering options
+    Float min_sample_call_rate
+
     # Resources for bed splitting/merging
     Int split_bed_cpu = 4
     Int split_bed_mem_gb = 8
     Int merge_bed_cpu = 2
     Int merge_bed_mem_gb = 12
+
+    # Merge X chr to ensure PAR/NONPAR are not split (split-x will fail for pre-split files)
+    call PLINK.make_bed as merge_x_chr{
+        input:
+            bed_in = bed,
+            bim_in = bim,
+            fam_in = fam,
+            output_basename = "${output_basename}.mergex",
+            merge_x = true,
+            merge_no_fail = no_fail
+    }
+
+    # Split X chr by PAR/NONPAR
+    call PLINK.make_bed as split_x_chr{
+        input:
+            bed_in = merge_x_chr.bed_out,
+            bim_in = merge_x_chr.bim_out,
+            fam_in = merge_x_chr.fam_out,
+            output_basename = "${output_basename}.splitx",
+            split_x = true,
+            build_code = build_code,
+            split_no_fail = no_fail
+    }
+
+    # Remove phenotype from fam file
+    call PLINK.remove_fam_phenotype{
+        input:
+            fam_in = split_x_chr.fam_out,
+            output_basename = "${output_basename}.splitx"
+    }
 
     # Parallelize impute2 id conversion by chr
     scatter(chr_index in range(length(chrs))){
@@ -22,9 +59,9 @@ workflow genotype_array_qc_wf{
         # Split by chr
         call PLINK.make_bed as split_bed{
             input:
-                bed_in = bed,
-                bim_in = bim,
-                fam_in = fam,
+                bed_in = split_x_chr.bed_out,
+                bim_in = split_x_chr.bim_out,
+                fam_in = remove_fam_phenotype.fam_out,
                 output_basename = "${output_basename}.chr.${chr}",
                 chr = chr,
                 cpu = split_bed_cpu,
@@ -60,30 +97,34 @@ workflow genotype_array_qc_wf{
             mem_gb = merge_bed_mem_gb
     }
 
-    # Remove duplicate IDS based on call rate
-    # Flag individuals missing chrX or other chr
+    # TODO: Remove duplicate IDS based on call rate
 
-    # Remove phenotype from fam file
-    call PLINK.remove_fam_phenotype{
+    # Remove failed subjects with >99% missing data
+    call PLINK.make_bed as split_bed{
         input:
+            bed_in = merge_beds.bed_out,
+            bim_in = merge_beds.bim_out,
             fam_in = merge_beds.fam_out,
-            output_basename = "${output_basename}.impute2_id.no_phenotype"
+            output_basename = "${output_basename}.filter_failed_samples",
+            mind = 0.99
     }
 
-    # Format phenotype file to standard format
+    # TODO: STRUCTURE WF to determine ancestry
+    # TODO: Partition data by ancestry
 
-    # Run STRUCTURE wf to determine ancestry
+    # For each ancestry group, do the following filtering steps
+    # TODO: SNP Call rate filter
+    # TODO: HWE filter
+    # TODO: Set het haploids to missing
+    # TODO: Subject call rate filter (autosomes)
+    # TODO: Excess homozygosity filtering
+    # TODO: Relatedness workflow
+    # TODO: Sex check WF
+    # TODO: Optionally Remove samples based on relatedness
+    # TODO: Optionally Remove samples based on discrepant sex
 
-    # Partition data by ancestry
-
-    # Call rate filter
-    # HWE filter
-    # Subject call rate filter (autosomes)
-    # Relatedness workflow
-    # Remove samples based on relatedness
-    # Sex check and sample removal
-    # Excess homozygosity filtering
-    # Set het haploids to missing
+    # TODO: Merge PAR/NONPAR regoins of chrX
+    # TODO: Flag individuals missing chrX or other chr
 
     output{
         File bed_out = merge_beds.bed_out
