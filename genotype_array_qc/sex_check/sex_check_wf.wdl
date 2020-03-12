@@ -1,4 +1,5 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
+import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
 
 task format_phenotype_file{
     File phenotype_in
@@ -59,9 +60,9 @@ workflow check_sex_wf{
     String ld_type = "indep-pairphase"
     Int window_size
     Int step_size
+    Float r2_threshold
+    Float? min_ld_maf
     String? window_size_unit
-    Float? r2_threshold
-    Float? vif_threshold
     Int? x_chr_mode
 
     # Args for sex check
@@ -86,12 +87,25 @@ workflow check_sex_wf{
             delimiter = delimiter
     }
 
-    # Split X chr by PAR/NONPAR
-    call PLINK.make_bed as split_x{
+
+    # Merge X chr to ensure PAR/NONPAR are not split (split-x will fail for pre-split files)
+    call PLINK.make_bed as merge_x{
         input:
             bed_in = bed_in,
             bim_in = bim_in,
             fam_in = fam_in,
+            output_basename = "${output_basename}.mergex",
+            merge_x = true,
+            no_fail = no_fail
+    }
+
+
+    # Split X chr by PAR/NONPAR
+    call PLINK.make_bed as split_x{
+        input:
+            bed_in = merge_x.bed_out,
+            bim_in = merge_x.bim_out,
+            fam_in = merge_x.fam_out,
             output_basename = "${output_basename}.splitx",
             split_x = true,
             bulid_code = build_code,
@@ -99,7 +113,7 @@ workflow check_sex_wf{
     }
 
     # Get LD pruning set
-    call PLINK.prune_ld_markers{
+    call LD.ld_prune_wf as ld_prune{
         input:
             bed_in = split_x.bed_out,
             bim_in = split_x.bim_out,
@@ -110,18 +124,18 @@ workflow check_sex_wf{
             step_size = step_size,
             window_size_unit = window_size_unit,
             r2_threshold = r2_threshold,
-            vif_threshold = vif_threshold,
             x_chr_mode = x_chr_mode,
             cpu = ld_cpu,
-            mem_gb = ld_mem_gb
+            mem_gb = ld_mem_gb,
+            maf = min_ld_maf
     }
 
     # Do Sex Check
     call PLINK.sex_check{
         input:
-            bed_in = prune_ld_markers.bed_out,
-            bim_in = prune_ld_markers.bim_out,
-            fam_in = prune_ld_markers.fam_out,
+            bed_in = ld_prune.bed_out,
+            bim_in = ld_prune.bim_out,
+            fam_in = ld_prune.fam_out,
             female_max_f = female_max_f,
             male_max_f = male_max_f,
             output_basename = "${output_basename}.sexcheck",
