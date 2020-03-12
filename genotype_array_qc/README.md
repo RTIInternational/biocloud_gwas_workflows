@@ -19,9 +19,17 @@ The steps in this workflow are as follows:
 
 Sample command:
 ```
+# First merge to account for datasets that have already been split
 plink \
     --bfile [INPUT_BED_BIM_FAM_PREFIX] \
-    --split-x b37 no-fail \
+    --merge-x no-fail \
+    --make-bed \
+    --out tmp.merge_x
+
+# Now split
+plink \
+    --bfile tmp.merge_x \
+    --split-x b37 \
     --make-bed \
     --out [OUTPUT_BED_BIM_FAM_PREFIX]
 ```
