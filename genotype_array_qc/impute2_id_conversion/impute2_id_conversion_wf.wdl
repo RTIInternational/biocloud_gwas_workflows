@@ -241,12 +241,7 @@ workflow impute2_id_conversion_wf{
             split_no_fail = no_fail
     }
 
-    # Remove phenotype from fam file
-    call PLINK.remove_fam_phenotype{
-        input:
-            fam_in = split_x_chr.fam_out,
-            output_basename = "${output_basename}.splitx"
-    }
+
 
     # Parallelize impute2 id conversion by chr
     scatter(chr_index in range(length(chrs))){
@@ -257,7 +252,7 @@ workflow impute2_id_conversion_wf{
             input:
                 bed_in = split_x_chr.bed_out,
                 bim_in = split_x_chr.bim_out,
-                fam_in = remove_fam_phenotype.fam_out,
+                fam_in = split_x_chr.fam_out,
                 output_basename = "${output_basename}.chr.${chr}",
                 chr = chr,
                 cpu = split_bed_cpu,

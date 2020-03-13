@@ -1,5 +1,5 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
-import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_to_impute2_ids/convert_to_impute2_ids.wdl" as IDCONVERT
+import "biocloud_gwas_workflows/genotype_array_qc/impute2_id_conversion/impute2_id_conversion_wf.wdl" as IDCONVERT
 
 workflow genotype_array_qc_wf{
     File bed
@@ -14,7 +14,8 @@ workflow genotype_array_qc_wf{
     Boolean no_fail = true
 
     # Individual filtering options
-    Float min_sample_call_rate
+    Float failed_sample_call_rate_threshold = 0.99
+    Float overall_sample_call_rate_threshold
 
     # Resources for bed splitting/merging
     Int split_bed_cpu = 4
@@ -22,91 +23,41 @@ workflow genotype_array_qc_wf{
     Int merge_bed_cpu = 2
     Int merge_bed_mem_gb = 12
 
-    # Merge X chr to ensure PAR/NONPAR are not split (split-x will fail for pre-split files)
-    call PLINK.make_bed as merge_x_chr{
-        input:
-            bed_in = bed,
-            bim_in = bim,
-            fam_in = fam,
-            output_basename = "${output_basename}.mergex",
-            merge_x = true,
-            merge_no_fail = no_fail
-    }
-
-    # Split X chr by PAR/NONPAR
-    call PLINK.make_bed as split_x_chr{
-        input:
-            bed_in = merge_x_chr.bed_out,
-            bim_in = merge_x_chr.bim_out,
-            fam_in = merge_x_chr.fam_out,
-            output_basename = "${output_basename}.splitx",
-            split_x = true,
-            build_code = build_code,
-            split_no_fail = no_fail
-    }
-
     # Remove phenotype from fam file
     call PLINK.remove_fam_phenotype{
         input:
-            fam_in = split_x_chr.fam_out,
-            output_basename = "${output_basename}.splitx"
+            fam_in = fam,
+            output_basename = "${output_basename}.no_pheno"
     }
 
-    # Parallelize impute2 id conversion by chr
-    scatter(chr_index in range(length(chrs))){
-        String chr = chrs[chr_index]
-
-        # Split by chr
-        call PLINK.make_bed as split_bed{
-            input:
-                bed_in = split_x_chr.bed_out,
-                bim_in = split_x_chr.bim_out,
-                fam_in = remove_fam_phenotype.fam_out,
-                output_basename = "${output_basename}.chr.${chr}",
-                chr = chr,
-                cpu = split_bed_cpu,
-                mem_gb = split_bed_mem_gb
-        }
-
-        # Convert IDs to Impute2 format
-        call IDCONVERT.convert_to_impute2_ids as impute2_id_bim{
-            input:
-                in_file = split_bed.bim_out,
-                legend_file = id_legend_files[chr_index],
-                contains_header = 0,
-                id_col = 1,
-                chr_col = 0,
-                pos_col = 3,
-                a1_col = 4,
-                a2_col = 5,
-                chr = chr,
-                output_filename = basename(split_bed.bim_out),
-                cpu = 2,
-                mem_gb = 6
-        }
-    }
-
-    # Merge into single file
-    call PLINK.merge_beds{
+    # Convert variant IDs to impute2 format and remove duplicate variants
+    call IDCONVERT.impute2_id_conversion_wf as convert_impute2_ids{
         input:
-            bed_in = split_bed.bed_out,
-            bim_in = impute2_id_bim.output_file,
-            fam_in = split_bed.fam_out,
-            output_basename = "${output_basename}.impute2_id",
-            cpu = merge_bed_cpu,
-            mem_gb = merge_bed_mem_gb
+            bed_in = bed,
+            bim_in = bim,
+            fam_in = remove_fam_phenotype.fam_out,
+            output_basename = output_basename,
+            chrs = chrs,
+            id_legend_files = id_legend_files,
+            remove_duplicates = true,
+            build_code = build_code,
+            no_fail = true,
+            split_bed_cpu = split_bed_cpu,
+            split_bed_mem_gb = split_bed_mem_gb,
+            merge_bed_cpu = merge_bed_cpu,
+            merge_bed_mem_gb = merge_bed_mem_gb,
+            duplicate_id_cpu = split_bed_cpu,
+            duplicate_id_mem_gb = split_bed_mem_gb
     }
-
-    # TODO: Remove duplicate IDS based on call rate
 
     # Remove failed subjects with >99% missing data
-    call PLINK.make_bed as split_bed{
+    call PLINK.make_bed as filter_failed_samples{
         input:
-            bed_in = merge_beds.bed_out,
-            bim_in = merge_beds.bim_out,
-            fam_in = merge_beds.fam_out,
+            bed_in = convert_impute2_ids.bed_out,
+            bim_in = convert_impute2_ids.bim_out,
+            fam_in = convert_impute2_ids.fam_out,
             output_basename = "${output_basename}.filter_failed_samples",
-            mind = 0.99
+            mind = failed_sample_call_rate_threshold
     }
 
     # TODO: STRUCTURE WF to determine ancestry
