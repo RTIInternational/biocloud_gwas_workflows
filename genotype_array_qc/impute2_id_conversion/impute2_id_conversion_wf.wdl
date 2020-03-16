@@ -218,6 +218,9 @@ workflow impute2_id_conversion_wf{
     Int duplicate_id_cpu = 2
     Int duplicate_id_mem_gb = 6
 
+    Int x_merge_cpu = 1
+    Int x_merge_mem_gb = 2
+
     # Merge X chr to ensure PAR/NONPAR are not split (split-x will fail for pre-split files)
     call PLINK.make_bed as merge_x_chr{
         input:
@@ -226,7 +229,9 @@ workflow impute2_id_conversion_wf{
             fam_in = fam_in,
             output_basename = "${output_basename}.mergex",
             merge_x = true,
-            merge_no_fail = no_fail
+            merge_no_fail = no_fail,
+            cpu = x_merge_cpu,
+            mem_gb = x_merge_mem_gb
     }
 
     # Split X chr by PAR/NONPAR
@@ -238,10 +243,10 @@ workflow impute2_id_conversion_wf{
             output_basename = "${output_basename}.splitx",
             split_x = true,
             build_code = build_code,
-            split_no_fail = no_fail
+            split_no_fail = no_fail,
+            cpu = x_merge_cpu,
+            mem_gb = x_merge_mem_gb
     }
-
-
 
     # Parallelize impute2 id conversion by chr
     scatter(chr_index in range(length(chrs))){
