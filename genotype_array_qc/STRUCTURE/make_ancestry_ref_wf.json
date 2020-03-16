@@ -1,0 +1,36 @@
+{
+  "make_ancestry_ref_wf.pgen_zst": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.pgen.zst",
+  "make_ancestry_ref_wf.pvar_zst": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.pvar.zst",
+  "make_ancestry_ref_wf.psam_zst": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/phase3_orig.psam",
+  "make_ancestry_ref_wf.build_code": "b37",
+  "make_ancestry_ref_wf.output_basename": "all_phase3",
+  "make_ancestry_ref_wf.chrs": [
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+    "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"],
+  "make_ancestry_ref_wf.id_legend_files": [
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr1.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr2.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr3.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr4.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr5.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr6.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr7.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr8.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr9.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr10.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr11.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr12.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr13.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr14.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr15.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr16.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr17.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr18.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr19.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr20.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr21.legend.gz",
+    "s3://rti-biocloud-ref/1000G_phase3_panel/1000GP_Phase3_chr22.legend.gz"
+  ],
+  "make_ancestry_ref_wf.maf": 0.01
+}
+
