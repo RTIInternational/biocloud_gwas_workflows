@@ -13,11 +13,29 @@ workflow genotype_array_qc_wf{
     String build_code
     Boolean no_fail = true
 
-    # Individual filtering options
-    Float failed_sample_call_rate_threshold = 0.99
-    Float overall_sample_call_rate_threshold
+    # Sample call-rate filter cutoffs
+    Float failed_sample_missed_call_rate = 0.99
+    Float min_sample_call_rate
 
-    # Resources for bed splitting/merging
+    # Sex-check filter parameters
+    Boolean filter_discrepant_sex
+    Float max_female_f = 0.2
+    Float min_male_f = 0.8
+
+    # Kinship filter parameters
+    Boolean filter_related_samples
+    Float max_relatedness_coefficient
+
+    # Admixed ancestry filtering parameters
+    Boolean filter_admixed_samples
+    Float max_pop_admixture_threshold
+
+    # Variant filtering cutoffs
+    Float min_site_call_rate
+    Float hwe_filter_pvalue
+    Float max_homozygosity
+
+    # Resources for various modules
     Int split_bed_cpu = 4
     Int split_bed_mem_gb = 8
     Int merge_bed_cpu = 2
@@ -57,7 +75,7 @@ workflow genotype_array_qc_wf{
             bim_in = convert_impute2_ids.bim_out,
             fam_in = convert_impute2_ids.fam_out,
             output_basename = "${output_basename}.filter_failed_samples",
-            mind = failed_sample_call_rate_threshold
+            mind = failed_sample_missed_call_rate
     }
 
     # TODO: STRUCTURE WF to determine ancestry
