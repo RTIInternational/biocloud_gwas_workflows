@@ -38,7 +38,7 @@ workflow ld_prune_wf{
             mem_gb = mem_gb,
             maf = maf,
             chr = chr,
-            exclude_regions = exclude_regions,
+            exclude_regions = exclude_regions
     }
 
     # Filter to include only the LD-pruned markers returned from previous step
