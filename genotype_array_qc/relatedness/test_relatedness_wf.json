@@ -1,0 +1,13 @@
+{
+  "relatedness_wf.bed_in": "s3://gwas-cromwell/cromwell-execution/impute2_id_conversion_wf/cbea66f3-dd06-487d-8338-9ad6c7037dbd/call-remove_dups/test_id_wf.impute2_id.unique.bed",
+  "relatedness_wf.bim_in": "s3://gwas-cromwell/cromwell-execution/impute2_id_conversion_wf/cbea66f3-dd06-487d-8338-9ad6c7037dbd/call-fix_ids/test_id_wf.impute2_id.unique.bim",
+  "relatedness_wf.fam_in": "s3://gwas-cromwell/cromwell-execution/impute2_id_conversion_wf/cbea66f3-dd06-487d-8338-9ad6c7037dbd/call-remove_dups/test_id_wf.impute2_id.unique.fam",
+  "relatedness_wf.output_basename": "test_relatedness",
+  "relatedness_wf.ld_type": "indep-pairphase",
+  "relatedness_wf.window_size": 20000,
+  "relatedness_wf.step_size": 2000,
+  "relatedness_wf.r2_threshold": 0.5,
+  "relatedness_wf.min_ld_maf": 0.1,
+  "relatedness_wf.hwe_pvalue": 0.0001,
+  "relatedness_wf.max_missing_site_rate": 0.03,
+}

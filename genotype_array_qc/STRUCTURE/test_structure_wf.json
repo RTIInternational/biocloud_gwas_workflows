@@ -3,7 +3,7 @@
   "structure_wf.bim_in": "s3://gwas-cromwell/cromwell-execution/impute2_id_conversion_wf/cbea66f3-dd06-487d-8338-9ad6c7037dbd/call-fix_ids/test_id_wf.impute2_id.unique.bim",
   "structure_wf.fam_in": "s3://gwas-cromwell/cromwell-execution/impute2_id_conversion_wf/cbea66f3-dd06-487d-8338-9ad6c7037dbd/call-remove_dups/test_id_wf.impute2_id.unique.fam",
   "structure_wf.output_basename": "test_structure",
-  "structure_wf.max_snps_to_analyze": 10000,
+  "structure_wf.max_snps_to_analyze": 5000000,
   "structure_wf.ref_bed": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.bed",
   "structure_wf.ref_bim": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.bim",
   "structure_wf.ref_fam": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.fam",
