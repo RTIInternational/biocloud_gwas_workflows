@@ -6,6 +6,8 @@ workflow ld_prune_wf{
     File fam_in
     File output_basename
 
+    File? exclude_regions
+    String? chr
     Float? maf
     String ld_type = "indep-pairphase"
     Int window_size
@@ -34,7 +36,9 @@ workflow ld_prune_wf{
             x_chr_mode = x_chr_mode,
             cpu = cpu,
             mem_gb = mem_gb,
-            maf = maf
+            maf = maf,
+            chr = chr,
+            exclude_regions = exclude_regions,
     }
 
     # Filter to include only the LD-pruned markers returned from previous step
@@ -44,6 +48,7 @@ workflow ld_prune_wf{
             bim_in = bim_in,
             fam_in = fam_in,
             output_basename = output_basename,
+            chr = chr,
             extract = prune_ld_markers.include_markers
     }
 

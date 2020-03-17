@@ -57,6 +57,7 @@ workflow sex_check_wf{
     Boolean no_fail
 
     # Args for LD pruning
+    File? ld_exclude_regions
     String ld_type = "indep-pairphase"
     Int window_size
     Int step_size
@@ -127,7 +128,8 @@ workflow sex_check_wf{
             x_chr_mode = x_chr_mode,
             cpu = ld_cpu,
             mem_gb = ld_mem_gb,
-            maf = min_ld_maf
+            maf = min_ld_maf,
+            exclude_regions = ld_exclude_regions
     }
 
     # Do Sex Check
