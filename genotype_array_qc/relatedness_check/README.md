@@ -19,6 +19,32 @@ The steps in this workflow are as follows:
 <summary>1. Remove pedigree info from FAM file </summary>
 </details>
 
+In this step, the input PLINK [fam file](https://www.cog-genomics.org/plink/1.9/formats#fam) is modified so that the family ID is unique and parent relationships are removed. An ID map is also created so that PLINK `--update-ids` can be used at a later point to revert the IDs.
+
+Sample command:
+```shell
+# Create new fam file with pedigree information removed
+awk '{$1=NR; $3=0; $4=0; print}' <fam_file> \
+    > <updated_fam_file_prefix>.fam 
+
+# Create ID mapping between new IDs and original IDs
+awk '{print NR,$2,$1,$2}' <fam_file> \
+    > <id_mapping_file_prefix>.txt 
+```
+
+Input Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `<fam_file>` | PLINK format fam file for input genotypes |
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `<updated_fam_file_prefix>.fam` | PLINK format fam file for output genotypes. Pedigree information removed. |
+| `<id_mapping_file_prefix>.txt` | PLINK ID mapping file to go from new IDs to original IDs. Compatible with PLINK `--update-ids` |
+
 <details>
 <summary>1. Retain only autosomes</summary>
 
