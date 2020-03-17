@@ -1,6 +1,7 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
 import "biocloud_gwas_workflows/biocloud_wdl_tools/king/king.wdl" as KING
+import "biocloud_gwas_workflows/biocloud_wdl_tools/flashpca/flashpca.wdl" as PCA
 
 workflow relatedness_wf{
     File bed_in
@@ -31,6 +32,18 @@ workflow relatedness_wf{
     Int king_cpu = 16
     Int king_mem_gb = 32
     Int degree = 3
+
+    # PCA parameters
+    Int pca_cpu = 16
+    Int pca_mem_gb = 16
+    Int num_pcs_to_analyze = 3
+    String? pca_standx
+    Int? pca_div
+    Int? pca_tol
+    Boolean? pca_batch
+    Int? pca_blocksize
+    Int? pca_seed
+    Int? pca_precision
 
     # Remove pedigree info from fam file
     call PLINK.remove_fam_pedigree{
@@ -133,7 +146,7 @@ workflow relatedness_wf{
                     bed_in = remove_round1_relateds.bed_out,
                     bim_in = remove_round1_relateds.bim_out,
                     fam_in = remove_round1_relateds.fam_out,
-                    output_basename = "${output_basename}.chr${chr}.unrelated.ldprune",
+                    output_basename = "${output_basename}.chr${chr_unrelated}.unrelated.ldprune",
                     ld_type = ld_type,
                     window_size = window_size,
                     step_size = step_size,
@@ -158,12 +171,29 @@ workflow relatedness_wf{
         }
     }
 
+    # PCA of remaining samples to identify any ancestral-level outliers
+    call PCA.flashpca as flashpca{
+        input:
+            bed_in = select_first([merge_ld_prune_unrelated.bed_out, merge_beds.bed_out]),
+            bim_in = select_first([merge_ld_prune_unrelated.bim_out, merge_beds.bim_out]),
+            fam_in = select_first([merge_ld_prune_unrelated.fam_out, merge_beds.fam_out]),
+            ndim = num_pcs_to_analyze,
+            standx = pca_standx,
+            div = pca_div,
+            tol = pca_tol,
+            seed = pca_seed,
+            precision = pca_precision,
+            cpu = pca_cpu,
+            mem_gb = pca_mem_gb
+    }
 
     output{
-        File related_samples = king_unrelated.related_samples
-        File bed = select_first([merge_ld_prune_unrelated.bed_out, merge_beds.bed_out])
-        File bim = select_first([merge_ld_prune_unrelated.bim_out, merge_beds.bim_out])
-        File fam = select_first([merge_ld_prune_unrelated.fam_out, merge_beds.fam_out])
+        File eigenvectors = flashpca.eigenvectors
+        File pcs = flashpca.pcs
+        File eigenvalues = flashpca.eigenvalues
+        File pve = flashpca.pve
+        File loadings = flashpca.loadings
+        File meansd = flashpca.meansd
     }
 
 }
