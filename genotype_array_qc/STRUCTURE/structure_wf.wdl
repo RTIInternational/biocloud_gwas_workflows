@@ -1,11 +1,12 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
+import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
+import "biocloud_gwas_workflows/biocloud_wdl_tools/terastructure/terastructure.wdl" as TSTRUCT
 
 task get_structure_variants{
     File ref_bim
     File data_bim
     String output_filename
     Int num_snps = 10000
-    Int max_samples_per_structure_run = 10000
 
     # Runtime environment
     String docker = "ubuntu:18.04"
@@ -27,7 +28,7 @@ task get_structure_variants{
             sort -u > ref.variants
 
         # Get intersection
-        comm -12 ${data_bim} ${ref_bim} > intersect.variants
+        comm -12 data.variants ref.variants > intersect.variants
 
         # Get random subset
         perl -ne 'print rand()."\t".$_' intersect.variants | \
@@ -50,7 +51,7 @@ task get_structure_variants{
 
 task get_ancestry_sample_ids{
     File ancestry_psam
-    String ancestry
+    Array[String] ancestries_to_include
     Int sample_id_col
     String output_filename
 
@@ -60,7 +61,9 @@ task get_ancestry_sample_ids{
     Int mem_gb = 2
 
     command <<<
-        grep "${ancestry}" ${ancestry_psam} | cut -f ${sample_id_col} > ${output_filename}
+        # Grep anything that matches any of the ancestries
+        # And then select the sample IDs (adding 0 as the first column as a family id for plink1.9)
+        grep "${sep="\\|" ancestries_to_include}" ${ancestry_psam} | awk '{print "0",$${sample_id_col}}' > ${output_filename}
     >>>
 
     runtime {
@@ -79,7 +82,7 @@ workflow structure_wf{
     File bim_in
     File fam_in
     String output_basename
-    Int num_snps_to_analyze = 10000
+    Int max_snps_to_analyze = 10000
 
     # 1000G ref files
     File ref_bed
@@ -92,125 +95,162 @@ workflow structure_wf{
     Int ancestry_sample_id_col = 1
 
     # LD params
+    File? ld_exclude_regions
     String ld_type
     Int window_size
     Int step_size
     Float r2_threshold
-    Int ld_cpu
-    Int ld_mem_gb
-    Int min_ld_maf
+    Int ld_cpu = 1
+    Int ld_mem_gb = 2
+    Float min_ld_maf
+    Int merge_bed_cpu = 4
+    Int merge_bed_mem_gb = 8
 
-    # Get Autosomes
-    call PLINK.make_bed as get_autosome{
-        input:
-            bed_in = bed_in,
-            bim_in = bim_in,
-            fam_in = fam_in,
-            autosome = true,
-            output_basename = "${output_basename}.autosomes"
+    # TeraStructur parameters
+    Float terastructure_rfreq_perc = 0.2
+    Int terastructure_cpu = 32
+    Int terastructure_mem_gb = 32
+    Boolean? force
+    Int? seed
+    Boolean? compute_beta
+    File? id_map
+
+    # Do LD-prune of autosomes
+    scatter(chr_index in range(22)){
+        Int chr = chr_index + 1
+        # Get subset of markers in LD
+        call LD.ld_prune_wf as ld_prune{
+            input:
+                bed_in = bed_in,
+                bim_in = bim_in,
+                fam_in = fam_in,
+                output_basename = "${output_basename}.chr${chr}.ldprune",
+                ld_type = ld_type,
+                window_size = window_size,
+                step_size = step_size,
+                r2_threshold = r2_threshold,
+                cpu = ld_cpu,
+                mem_gb = ld_mem_gb,
+                maf = min_ld_maf,
+                chr = chr,
+                exclude_regions = ld_exclude_regions
+        }
     }
 
-    # Get subset of markers in LD
-    call LD.ld_prune_wf as ld_prune{
+    # Merge chromosomes
+    call PLINK.merge_beds{
         input:
-            bed_in = get_autosome.bed_out,
-            bim_in = get_autosome.bim_out,
-            fam_in = get_autosome.fam_out,
+            bed_in = ld_prune.bed_out,
+            bim_in = ld_prune.bim_out,
+            fam_in = ld_prune.fam_out,
             output_basename = "${output_basename}.ldprune",
-            ld_type = ld_type,
-            window_size = window_size,
-            step_size = step_size,
-            r2_threshold = r2_threshold,
-            cpu = ld_cpu,
-            mem_gb = ld_mem_gb,
-            maf = min_ld_maf
+            cpu = merge_bed_cpu,
+            mem_gb = merge_bed_mem_gb
     }
 
     # Get list of SNPs to include
     call get_structure_variants{
         input:
             ref_bim = ref_bim,
-            data_bim = ld_prune.bim_out,
+            data_bim = merge_beds.bim_out,
             output_filename = "structure.variants",
-            num_snps = num_snps_to_analyze
+            num_snps = max_snps_to_analyze
     }
 
     # Subset the selected overlapping SNPs from each dataset
     call PLINK.make_bed as subset_data{
         input:
-            bed_in = ld_prune.bed_out,
-            bim_in = ld_prune.bim_out,
-            fam_in = ld_prune.fam_out,
+            bed_in = merge_beds.bed_out,
+            bim_in = merge_beds.bim_out,
+            fam_in = merge_beds.fam_out,
             extract = get_structure_variants.variant_ids,
             snps_only = true,
             snps_only_type = "just-acgt",
             output_basename = "${output_basename}.structure_snps"
     }
 
-    # Creat STRUCTURE input file for each REF ancestry
-    scatter(ancestry_index in range(length(ancestries_to_include))){
-        String ancestry = ancestries_to_include[ancestry_index]
-        # Get list of sample IDs for ancestry
-        call get_ancestry_sample_ids{
-            input:
-                ancestry_psam = ancestry_psam,
-                ancestry = ancestry,
-                sample_id_col = ancestry_sample_id_col,
-                output_filename = "{output_basename}.${ancestry}.samples"
-        }
-
-        # Get IDs of individuals of that ancestry
-        call PLINK.make_bed as subset_ancestry{
-            input:
-                bed_in = ref_bed,
-                bim_in = ref_bim,
-                fam_in = ref_fam,
-                keep = get_ancestry_sample_ids.sample_ids,
-                extract = get_structure_variants.variant_ids,
-                snps_only = true,
-                snps_only_type = 'just-acgt',
-                output_basename = "${output_basename}.1000g.${ancestry}.structure_snps",
-        }
-
-        # Convert to PED file
-        call PLINK.bed_to_ped as ref_to_ped{
-            input:
-                bed_in = subset_ancestry.bed_out,
-                bim_in = subset_ancestry.bim_out,
-                fam_in = subset_ancestry.fam_out,
-                output_basename = "${output_basename}.1000g.${ancestry}.structure_snps"
-        }
-
-        # Convert to STRUCTURE input format
-        call PLINK.ped2structure as ref_to_structure{
-            input:
-                ped_in = ref_to_ped.ped_out,
-                map_in = ref_to_ped.map_out,
-                output_filename = "${output_basename}.1000g.${ancestry}.structure.input",
-                pop_flag = 1,
-                pop_to_use = ancestry_index
-        }
-    }
-
-    # Cat Ref Structure files into single input file
-    call UTILS.cat_files as cat_ref_structure{
+    # Subset SNPs from ref dataset
+    call get_ancestry_sample_ids{
         input:
-            input_files = ref_to_structure.structure_input,
-            output_filename = "${output_basename}.ref.structure.input"
+            ancestry_psam = ancestry_psam,
+            ancestries_to_include = ancestries_to_include,
+            sample_id_col = ancestry_sample_id_col,
+            output_filename = "${output_basename}.ancestry.samples"
     }
 
-    # Split input into batches if large number of samples
-
-
-    # Convert to PED format
-    call PLINK.bed_to_ped as data_to_ped{
+    # Get IDs of individuals of that ancestry
+    call PLINK.make_bed as subset_ref{
         input:
-            bed_in = subset_data.bed_out,
-            bim_in = subset_data.bim_out,
-            fam_out = subset_data.fam_out,
-            output_basename = "${output_basename}.structure_snsp"
+            bed_in = ref_bed,
+            bim_in = ref_bim,
+            fam_in = ref_fam,
+            keep_samples = get_ancestry_sample_ids.sample_ids,
+            extract = get_structure_variants.variant_ids,
+            snps_only = true,
+            snps_only_type = 'just-acgt',
+            output_basename = "${output_basename}.1000g.ref.structure_snps",
     }
 
+    # Check to see if there are any merge conflicts that require strand-flipping
+    call PLINK.merge_two_beds as get_merge_conflicts{
+        input:
+            bed_in_a = subset_data.bed_out,
+            bim_in_a = subset_data.bim_out,
+            fam_in_a = subset_data.fam_out,
+            bed_in_b = subset_ref.bed_out,
+            bim_in_b = subset_ref.bim_out,
+            fam_in_b = subset_ref.fam_out,
+            merge_mode = 7,
+            ignore_errors = true,
+            output_basename = "${output_basename}.combined.merge_conflicts"
+    }
 
+    # Flip ref SNPs if there are merge conflicts
+    if(size(get_merge_conflicts.missnp_out) > 0){
+
+        # Try flipping alleles for erroroneous SNPs
+        call PLINK.make_bed as flip_ref{
+            input:
+                bed_in = subset_ref.bed_out,
+                bim_in = subset_ref.bim_out,
+                fam_in = subset_ref.fam_out,
+                output_basename = "${output_basename}.1000g.ref.structure_snps.flipped",
+                flip = get_merge_conflicts.missnp_out
+        }
+    }
+
+    # Now actually try to do the merge
+    call PLINK.merge_two_beds as combine_ref_and_data{
+        input:
+            bed_in_a = subset_data.bed_out,
+            bim_in_a = subset_data.bim_out,
+            fam_in_a = subset_data.fam_out,
+            bed_in_b = select_first([flip_ref.bed_out, subset_ref.bed_out]),
+            bim_in_b = select_first([flip_ref.bim_out, subset_ref.bim_out]),
+            fam_in_b = select_first([flip_ref.fam_out, subset_ref.fam_out]),
+            ignore_errors = false,
+            output_basename = "${output_basename}.combined.structure_snps"
+    }
+
+    call TSTRUCT.terastructure{
+        input:
+            bed_in = combine_ref_and_data.bed_out,
+            bim_in = combine_ref_and_data.bim_out,
+            fam_in = combine_ref_and_data.fam_out,
+            k = length(ancestries_to_include),
+            rfreq_perc = terastructure_rfreq_perc,
+            force = force,
+            seed = seed,
+            compute_beta = compute_beta,
+            id_map = id_map,
+            cpu = terastructure_cpu,
+            mem_gb = terastructure_mem_gb
+    }
+
+    output{
+        File admixture_proportions = terastructure.admixture_proportions
+        File validation = terastructure.validation
+        File terastructure_logs = terastructure.log_dir
+    }
 
 }
