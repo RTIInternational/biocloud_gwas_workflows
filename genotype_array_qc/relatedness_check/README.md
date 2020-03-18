@@ -429,6 +429,17 @@ For the purpose of identifying ancestry-informative SNPs, the PCA will only requ
 <summary>12. Report duplicates/monozygotic twins and lower-level relatedness</summary>
 </br>
 
+The [KING robust kinship coefficients](https://doi.org/10.1093/bioinformatics/btq559) can be interpreted as follows (Based on Table 1 from [Manichaikul et al.](https://doi.org/10.1093/bioinformatics/btq559)):
+
+| Kinship coefficient | Interpretation |
+| :----: | :----: |
+| >0.354 | Duplicates or monozygotic twins |
+| (0.177, 0.354] | 1st degree relatives |
+| (0.0884, 0.177] | 2nd degree relatives |
+| (0.0442, 0.0884] | 3rd degree relatives |
+
+For the relatedness check, all pairs of samples with relatedness smaller than a user-specified degree (up to degree 3) will be reported, along with their kinship coefficient, in a log file. Based on the kinship coefficient ranges specified in the table above, each sample pair will be annotated as duplicates/monozygotic twins or 1st, 2nd, or 3rd degree relatives.
+
 </details>
 
 ----
