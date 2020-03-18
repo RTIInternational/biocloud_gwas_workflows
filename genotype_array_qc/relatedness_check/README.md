@@ -119,7 +119,7 @@ Parameters:
 ----
 
 <details>
-<summary>4. Exclude related individuals for PCA</summary>
+<summary>4. Identify related individuals to remove before PCA</summary>
 </br>
 
 Prior to running PCA, the sample set will be reduced to only unrelated (relatedness degree >3) individuals. This helps mitigate [PC estimation biases caused by high genotypic correlation between samples](https://stats.stackexchange.com/questions/50537/should-one-remove-highly-correlated-variables-before-doing-pca), to produce top PCs that are maximally informative for ancestral diversity. To obtain a subset of unrelated samples, [KING](https://doi.org/10.1093/bioinformatics/btq559) will be used.
@@ -173,7 +173,7 @@ Parameters:
 | `--degree <degree>` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
 | `--prefix <output_prefix>` | Prefix for output genotypes in PLINK bed/bim/fam format |
 
-## Extracting unrelated subset
+## Identify unrelated subset of samples
 
 To obtain a list of unrelated individuals, a greedy graph pruning approach is taken.
 
@@ -236,7 +236,6 @@ final.remove.list <- do.call(rbind, strsplit(remove.list, split = ":::"))
 write.table(final.remove.list, file = output.file, 
     sep = " ", row.names = F, col.names = F, quote = F)
 ```
-
 </details>
 
 <details>
@@ -316,3 +315,80 @@ king \
 </details>
 
 </details>
+
+----
+
+<details>
+<summary>5. Construct unrelated sample set</summary>
+</br>
+
+Using the autosome only PLINK file set (prior to LD-pruning), related individuals (degree 3 or less) are removed and variant QC is re-applied.
+
+Sample code:
+```shell
+
+# Remove related samples and re-apply variant QC
+plink \
+    --bfile <bed_bim_fam_prefix> \
+    --remove <remove_list_prefix>.txt
+    --geno <rate> \
+    --hwe <pvalue> \
+    --maf <freq> \
+    --make-bed \
+    --out <output_prefix>
+```
+
+Input files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `<bed_bim_fam_prefix>.bed` | PLINK format bed file for input genotypes |
+| `<bed_bim_fam_prefix>.bim` | PLINK format bim file for input genotypes |
+| `<bed_bim_fam_prefix>.fam` | PLINK format fam file for input genotypes |
+| `<remove_list_prefix>.txt` | Two-column (FID and IID) space-delimited ID file containing samples to remove |
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `<output_prefix>.bed` | PLINK format bed file for output genotypes |
+| `<output_prefix>.bim` | PLINK format bim file for output genotypes |
+| `<output_prefix>.fam` | PLINK format fam file for output genotypes |
+| `<output_prefix>.log` | PLINK log file |
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--bfile <bed_bim_fam_prefix>` | PLINK file set for input genotypes |
+| `--remove` | Remove samples based on a list of IDs (FID and IID pairs) |
+| `--autosome` | Flag indicating to retain only chromosomes 1-22 |
+| `--geno <rate>` | Filters out all variants with missing call rates exceeding `<rate>` (decimal value) |
+| `--hwe <pvalue>` | Filters out all variants which have Hardy-Weinberg equilibrium exact test p-value below `<pvalue>` |
+| `--maf <freq>` | Filters out all variants with minor allele frequency below `<freq>` (decimal value) |
+| `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
+| `--out <output_prefix>` | Prefix for output genotypes in PLINK bed/bim/fam format |
+</details>
+
+
+----
+
+<details>
+<summary>6. Run LD pruning workflow</summary>
+</br>
+
+</details>
+
+----
+
+<details>
+<summary>7. Run PCA</summary>
+</br>
+
+To ensure that calculation of principal components (PCs) will scale reasonably (in terms of both memory and CPU demands) to biobank size data (100k+ samples), [FlashPCA2](https://github.com/gabraham/flashpca) will be used. This PCA algorithm gets its memory and computational efficency from doing block-wise calculations on the data and using the implicitly restarted Arnoldi method in calculating a pre-specificed number of PC approximations. The [manuscript](https://doi.org/10.1093/bioinformatics/btx299) describing FlashPCA2 mechanics highlights that PCA takes under 6 hours using 2GB of RAM for 20 PCs on 500k samples and 100k SNPs.
+
+For the purpose of identifying ancestry-informative SNPs, the PCA will only require calculating the loadings for the top 3 PCs.
+
+</details>
+
+----
