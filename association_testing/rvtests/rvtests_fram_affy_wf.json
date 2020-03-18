@@ -47,7 +47,7 @@
         "s3://rti-biocloud-test-data/vcfs/FramAffy/AFFY_500_Full_hrcR1_1_2016_chr14.info.gz",
         "s3://rti-biocloud-test-data/vcfs/FramAffy/AFFY_500_Full_hrcR1_1_2016_chr15.info.gz",
         "s3://rti-biocloud-test-data/vcfs/FramAffy/AFFY_500_Full_hrcR1_1_2016_chr16.info.gz",
-        "s3://rti-biocloud-test-data/vcfs/FramAffy/AFFY_500_Full_hrcR1_1_2016_chr17.no48820110.info.gz",
+        "s3://rti-biocloud-test-data/vcfs/FramAffy/AFFY_500_Full_hrcR1_1_2016_chr17.dose.no48820110.info.gz",
         "s3://rti-biocloud-test-data/vcfs/FramAffy/AFFY_500_Full_hrcR1_1_2016_chr18.info.gz",
         "s3://rti-biocloud-test-data/vcfs/FramAffy/AFFY_500_Full_hrcR1_1_2016_chr19.info.gz",
         "s3://rti-biocloud-test-data/vcfs/FramAffy/AFFY_500_Full_hrcR1_1_2016_chr20.info.gz",
@@ -101,6 +101,7 @@
     "rvtests_gwas_wf.split_vcf_mem_gb": 16,
     "rvtests_gwas_wf.records_per_split": 100000,
     "rvtests_gwas_wf.rvtests_cpu_per_split": 2,
-    "rvtests_gwas_wf.rvtests_mem_gb_per_split": 2
-
+    "rvtests_gwas_wf.rvtests_mem_gb_per_split": 2,
+    "rvtests_gwas_wf.kinship": "s3://gwas-cromwell/cromwell-execution/rvtests_gwas_wf/b698ae4c-31f3-40dd-bcad-1cce8952e556/call-get_kinship_mat/KIN.generate_kinship_matrix_wf/93496cb0-be3a-41a7-be8f-35a5df512139/call-combine_kin/fram_affy_rvtests_gwas.merged.split.auto.kinship",
+    "rvtests_gwas_wf.xHemiKinship": "s3://gwas-cromwell/cromwell-execution/rvtests_gwas_wf/b698ae4c-31f3-40dd-bcad-1cce8952e556/call-get_kinship_mat/KIN.generate_kinship_matrix_wf/93496cb0-be3a-41a7-be8f-35a5df512139/call-remove_empty_x/glob-0393a33a800ab1400584474cb185360a/fram_affy_rvtests_gwas.split.chr.X.xHemi.kinship"
 }

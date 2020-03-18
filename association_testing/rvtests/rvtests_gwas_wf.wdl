@@ -77,9 +77,12 @@ workflow rvtests_gwas_wf{
     # CPU/Mem to use for the combineKinship task when generating a kinship matrix
     Int? combine_kinship_cpu = 2
     Int? combine_kinship_mem_gb = 4
+    File? xHemiKinship
+    File? kinship
+    Boolean do_kinship_generate = (!defined(xHemiKinship)) || (!defined(kinship))
 
     # Generate kinship matrix if samples are related
-    if(is_related){
+    if(is_related && do_kinship_generate){
         call KIN.generate_kinship_matrix_wf as get_kinship_mat{
             input:
                 input_vcfs = vcfs_in,
@@ -126,8 +129,8 @@ workflow rvtests_gwas_wf{
                 split_vcf_cpu = split_vcf_cpu,
                 rvtests_cpu = rvtests_cpu_per_split,
                 rvtests_mem_gb = rvtests_mem_gb_per_split,
-                kinship = get_kinship_mat.kinship,
-                xHemiKinship = get_kinship_mat.xHemiKinship
+                kinship = select_first([kinship, get_kinship_mat.kinship]),
+                xHemiKinship = select_first([xHemiKinship, get_kinship_mat.xHemiKinship])
         }
     }
 
