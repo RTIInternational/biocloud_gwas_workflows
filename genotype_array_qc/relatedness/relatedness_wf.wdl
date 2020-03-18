@@ -3,6 +3,30 @@ import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as
 import "biocloud_gwas_workflows/biocloud_wdl_tools/king/king.wdl" as KING
 import "biocloud_gwas_workflows/biocloud_wdl_tools/flashpca/flashpca.wdl" as PCA
 
+task parse_king_duplicates{
+    File duplicate_samples_in
+    String output_filename
+
+    # Runtime environment
+    String docker = "ubuntu:18.04"
+    Int cpu = 1
+    Int mem_gb = 1
+
+    command {
+        tail -n +2 ${duplicate_samples_in} | cut -f 3,4 > ${output_filename}
+    }
+
+    runtime {
+        docker: docker
+        cpu: cpu
+        memory: "${mem_gb} GB"
+    }
+
+    output {
+        File duplicate_sample_out = "${output_filename}"
+    }
+}
+
 workflow relatedness_wf{
     File bed_in
     File bim_in
@@ -100,7 +124,7 @@ workflow relatedness_wf{
     }
 
     # Call king to get related individuals to remove
-    call KING.king as king_unrelated{
+    call KING.unrelated as king_unrelated{
         input:
             bed_in = merge_beds.bed_out,
             bim_in = merge_beds.bim_out,
@@ -108,8 +132,7 @@ workflow relatedness_wf{
             output_basename = "${output_basename}.king.",
             cpu = king_cpu,
             mem_gb = king_mem_gb,
-            degree = degree,
-            unrelated = true
+            degree = degree
     }
 
     if(size(king_unrelated.related_samples) > 0){
@@ -171,7 +194,7 @@ workflow relatedness_wf{
         }
     }
 
-    # PCA of remaining samples to identify any ancestral-level outliers
+    # PCA of remaining samples to identify ancestry-informative SNPs
     call PCA.flashpca as flashpca{
         input:
             bed_in = select_first([merge_ld_prune_unrelated.bed_out, merge_beds.bed_out]),
@@ -187,6 +210,37 @@ workflow relatedness_wf{
             mem_gb = pca_mem_gb
     }
 
+    # Plot PCA
+
+    # Get list of ancestry informative SNPs from PC loadings
+
+    # Remove ancestry informative SNPs
+
+    # Run KING duplicates to identify duplicates
+    call KING.duplicate as king_duplicates{
+        input:
+            bed_in = select_first([merge_ld_prune_unrelated.bed_out, merge_beds.bed_out]),
+            bim_in = select_first([merge_ld_prune_unrelated.bim_out, merge_beds.bim_out]),
+            fam_in = select_first([merge_ld_prune_unrelated.fam_out, merge_beds.fam_out]),
+            output_basename = "${output_basename}.king",
+            cpu = king_cpu,
+            mem_gb = king_mem_gb
+    }
+
+    # Parse list of duplicate samples to remove (if any)
+    if(size(king_duplicates.duplicate_samples) > 0){
+        call parse_king_duplicates{
+            input:
+                duplicate_samples_in = king_duplicates.duplicate_samples,
+                output_filename = "${output_basename}.duplicate_samples"
+        }
+    }
+
+
+    # Match related sample ids back up with original famids
+    # Match duplicate sample ids back up with original famids
+    # Match kinship sample ids back up with original famids
+
     output{
         File eigenvectors = flashpca.eigenvectors
         File pcs = flashpca.pcs
@@ -194,6 +248,7 @@ workflow relatedness_wf{
         File pve = flashpca.pve
         File loadings = flashpca.loadings
         File meansd = flashpca.meansd
+        File dups = king_duplicates.duplicate_samples
     }
 
 }
