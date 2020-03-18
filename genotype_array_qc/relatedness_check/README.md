@@ -103,5 +103,139 @@ Parameters:
 | `--maf <freq>` | Filters out all variants with minor allele frequency below `<freq>` (decimal value) |
 | `--make-bed` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
 | `--out <output_prefix>` | Prefix for output genotypes in PLINK bed/bim/fam format |
+
 </details>
 
+<details>
+<summary>3. Run LD pruning workflow</summary>
+</br>
+
+</details>
+
+<details>
+<summary>4. Exclude related individuals for PCA</summary>
+</br>
+
+Prior to running PCA, the sample set will be reduced to only unrelated (relatedness degree >3) individuals. This helps mitigate [PC estimation biases caused by high genotypic correlation between samples](https://stats.stackexchange.com/questions/50537/should-one-remove-highly-correlated-variables-before-doing-pca), to produce top PCs that are maximally informative for ancestral diversity. To obtain a subset of unrelated samples, [KING](https://doi.org/10.1093/bioinformatics/btq559) will be used.
+
+<details>
+<summary>Standard processing</summary>
+</br>
+
+Sample command:
+```shell
+# Calculate kinship coefficients and report only pairwise 
+#   relationships greater than or equal to the specified degree
+king \
+    --cpus <num_cpus> \
+    -b <bed_prefix>.bed \
+    --fam <fam_prefix>.fam \
+    --bim <bim_prefix>.bim \
+    --kinship \
+    --degree <degree> \
+    --prefix <output_prefix>
+```
+
+Input files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `<bed_prefix>.bed` | PLINK format bed file for input genotypes |
+| `<bim_prefix>.bim` | PLINK format bim file for input genotypes |
+| `<fam_prefix>.fam` | PLINK format fam file for input genotypes |
+
+Output Files:
+
+| FILE | DESCRIPTION |
+| --- | --- |
+| `<output_prefix>.kin` | Within-family kinship calculation results table. For PLINK fam files with no pedigree information, this file should only contain a header line with no table records. |
+| `<output_prefix>.kin0` | Across family kinship calculation results table. Column descriptions [here](http://people.virginia.edu/~wc9c/KING/manual.html#WITHIN) |
+
+Parameters:
+
+| PARAMETER | DESCRIPTION |
+| --- | --- |
+| `--b <bed_prefix>.bed` | PLINK bed file for input genotypes |
+| `--bim <bim_prefix>.bed` | PLINK bim file for input genotypes |
+| `--fam <fam_prefix>.bed` | PLINK fam file for input genotypes |
+| `--cpus <num_cpus>` | Flag indicating to retain only chromosomes 1-22 |
+| `--kinship` | Filters out all variants with minor allele frequency below `<freq>` (decimal value) |
+| `--degree <degree>` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
+| `--prefix <output_prefix>` | Prefix for output genotypes in PLINK bed/bim/fam format |
+</details>
+
+<details>
+<summary>Parallel processing</summary>
+</br>
+
+As descrbined in the KING [documentation](http://people.virginia.edu/~wc9c/KING/manual.html#WITHIN), the `--proj` option can be used to take advantage of batch sample processing which lends itself to easy parallelization. This approach offers both real time computational speedups and reduced memory requirements per run when compared to processing the whole data set at once. Batch sample processing becomes necessary when analyzing tens of thousands of samples or more. For illustrative purposes, assume that a data set is partitioned into 3 batches of samples. Six iterations of KING would need to be run to perform all pairwise comparisons between all samples across the batches.
+
+**Note:** If all the partitions have *exactly* the same sample size, then the value provided to the `--proj` option is simply the sample size of any partition. If the partitions differ in size, then the value provided to the `--proj` option should be the sample size of the *first* partition listed for the `-b`, `--fam`, and `--bim` options.
+
+Sample command:
+```shell
+# Calculate kinship coefficients between partitions 1 and 2
+king \
+    --cpus <num_cpus> \
+    -b <partition1>.bed,<partition2>.bed \
+    --fam <partition1>.fam,<partition2>.fam \
+    --bim <partition1>.bim,<partition2>.bim \
+    --kinship \
+    --degree <degree> \
+    --proj <partition1_size> \
+    --prefix <partition12_prefix>
+    
+# Calculate kinship coefficients between partitions 2 and 3
+king \
+    --cpus <num_cpus> \
+    -b <partition2>.bed,<partition3>.bed \
+    --fam <partition2>.fam,<partition3>.fam \
+    --bim <partition2>.bim,<partition3>.bim \
+    --kinship \
+    --degree <degree> \
+    --proj <partition2_size> \
+    --prefix <partition23_prefix>
+
+# Calculate kinship coefficients between partitions 1 and 3
+king \
+    --cpus <num_cpus> \
+    -b <partition1>.bed,<partition3>.bed \
+    --fam <partition1>.fam,<partition3>.fam \
+    --bim <partition1>.bim,<partition3>.bim \
+    --kinship \
+    --degree <degree> \
+    --proj <partition1_size> \
+    --prefix <partition13_prefix>
+
+# Calculate kinship coefficients within each partition
+king \
+    --cpus <num_cpus> \
+    -b <partition1>.bed \
+    --fam <partition1>.fam \
+    --bim <partition1>.bim \
+    --kinship \
+    --degree <degree> \
+    --prefix <partition1_prefix>
+
+king \
+    --cpus <num_cpus> \
+    -b <partition2>.bed \
+    --fam <partition2>.fam \
+    --bim <partition2>.bim \
+    --kinship \
+    --degree <degree> \
+    --prefix <partition2_prefix>
+
+king \
+    --cpus <num_cpus> \
+    -b <partition3>.bed \
+    --fam <partition3>.fam \
+    --bim <partition3>.bim \
+    --kinship \
+    --degree <degree> \
+    --prefix <partition3_prefix>
+
+```
+</details>
+
+</details>
