@@ -448,6 +448,8 @@ For the relatedness check, all pairs of samples with relatedness smaller than a 
 <summary>13. Apply graph pruning to identify samples for removal</summary>
 </br>
 
+The same graph pruning approach as used for identifying a set of unrelated individuals will be used here. The output will be a file with a PLINK compatible list of IDs (FID and IID) recommended for exclusion.
+
 </details>
 
 
