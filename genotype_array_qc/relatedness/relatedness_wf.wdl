@@ -27,6 +27,76 @@ task parse_king_duplicates{
     }
 }
 
+task get_non_ancestry_informative_snps{
+    File pca_loadings
+    String output_filename
+    Float loading_value_cutoff = 0.003
+    Float cutoff_step_size = 0.001
+    Float max_cutoff = 0.01
+    Int max_snps = 100000
+    Int min_snps = 10000
+
+    # Runtime environment
+    String docker = "rtibiocloud/tsv-utils:v1.4.4-8d966cb"
+    Int cpu = 1
+    Int mem_gb = 2
+
+    command<<<
+        set -e
+
+        # Initialize empty SNPs file
+        touch snps.txt
+
+        # Loading value cutoff for defining 'ancestral informative SNP'
+        max_load=${loading_value_cutoff}
+
+        # Incrementally loosen criteria until enough SNPs are found or you go above max_cutoff
+        # Awk command used to check max_cutoff is because bash doesn't natively do floating point arithmatic/comparisons
+        while [ $(wc -l snps.txt | cut -d" " -f1) -lt ${min_snps} ] && [ $(awk 'BEGIN {print ("'$max_load'" <= ${max_cutoff})}') -eq 1 ]
+        do
+
+            echo "Using loading value cutoff of $max_load until unless fewer than ${min_snps} SNPs found!"
+
+            # Filter out any snps with PC loading value > cutoff for any of first 3 PCs
+            tsv-filter \
+		        --header \
+		        --le "3:$max_load" \
+		        --le "4:$max_load" \
+		        --le "5:$max_load" \
+                ${pca_loadings} > snps.txt
+
+            echo "Found $(wc -l snps.txt | cut -d' ' -f1) SNPs with cutoff $max_load"
+
+            # Loosen threshold by step size (using awk bc we don't have 'bc' on this docker image; ugly but oh well)
+            max_load=$(awk -v var=$max_load 'BEGIN{print var + ${cutoff_step_size}}')
+        done
+
+        # Subset SNPs to least informative if greater than max
+        if [ $(wc -l snps.txt | cut -d" " -f1) -gt ${max_snps} ]
+        then
+            # Sort by averge loading and take top max_snps SNPs
+            awk '{if(NR > 1){sum = 0; for (i = 3; i <= NF; i++) sum += $i; sum /= (NF-2); print $1,sum}}' snps.txt | \
+            sort -k2 | \
+            head -${max_snps} > tmp.txt
+            mv tmp.txt snps.txt
+        fi
+
+        # Output only SNP ids of ancestrally uninformative SNPs
+        tail -n +2 snps.txt | cut -f1 > ${output_filename}
+    >>>
+
+    runtime {
+        docker: docker
+        cpu: cpu
+        memory: "${mem_gb} GB"
+    }
+
+    output {
+        File snps_to_keep = "${output_filename}"
+    }
+
+}
+
 workflow relatedness_wf{
     File bed_in
     File bim_in
@@ -68,6 +138,13 @@ workflow relatedness_wf{
     Int? pca_blocksize
     Int? pca_seed
     Int? pca_precision
+
+    # Ancestral SNP filtering parameters
+    Float ancestral_pca_loading_cutoff = 0.003
+    Int max_kinship_snps = 100000
+    Int min_kinship_snps = 10000
+    Float ancestral_pca_loading_step_size = 0.001
+    Float max_ancestral_pca_loading_cutoff = 0.01
 
     # Remove pedigree info from fam file
     call PLINK.remove_fam_pedigree{
@@ -210,18 +287,36 @@ workflow relatedness_wf{
             mem_gb = pca_mem_gb
     }
 
-    # Plot PCA
+    # Get list of non-ancestry informative SNPs from PC loadings
+    call get_non_ancestry_informative_snps{
+        input:
+            pca_loadings = flashpca.loadings,
+            output_filename = "${output_basename}.nonacestry.snps.txt",
+            loading_value_cutoff = ancestral_pca_loading_cutoff,
+            max_snps = max_kinship_snps,
+            min_snps = min_kinship_snps,
+            cutoff_step_size = ancestral_pca_loading_step_size,
+            max_cutoff = max_ancestral_pca_loading_cutoff
+    }
 
-    # Get list of ancestry informative SNPs from PC loadings
-
-    # Remove ancestry informative SNPs
-
-    # Run KING duplicates to identify duplicates
-    call KING.duplicate as king_duplicates{
+    # Remove ancestry-informative SNPs
+    call PLINK.make_bed as remove_ancestry_snps{
         input:
             bed_in = select_first([merge_ld_prune_unrelated.bed_out, merge_beds.bed_out]),
             bim_in = select_first([merge_ld_prune_unrelated.bim_out, merge_beds.bim_out]),
             fam_in = select_first([merge_ld_prune_unrelated.fam_out, merge_beds.fam_out]),
+            output_basename = "${output_basename}.unrelated.noancestry",
+            cpu = qc_cpu,
+            mem_gb = qc_mem_gb,
+            extract = get_non_ancestry_informative_snps.snps_to_keep
+        }
+
+    # Run KING duplicates to identify duplicates
+    call KING.duplicate as king_duplicates{
+        input:
+            bed_in = remove_ancestry_snps.bed_out,
+            bim_in = remove_ancestry_snps.bim_out,
+            fam_in = remove_ancestry_snps.fam_out,
             output_basename = "${output_basename}.king",
             cpu = king_cpu,
             mem_gb = king_mem_gb
@@ -234,7 +329,21 @@ workflow relatedness_wf{
                 duplicate_samples_in = king_duplicates.duplicate_samples,
                 output_filename = "${output_basename}.duplicate_samples"
         }
+        call PLINK.make_bed as remove_dups{
+            input:
+                bed_in = remove_ancestry_snps.bed_out,
+                bim_in = remove_ancestry_snps.bim_out,
+                fam_in = remove_ancestry_snps.fam_out,
+                output_basename = "${output_basename}.unrelated.noancestry.nodups",
+                cpu = qc_cpu,
+                mem_gb = qc_mem_gb,
+                remove_samples = parse_king_duplicates.duplicate_sample_out
+        }
     }
+
+    File kinship_bed = select_first([remove_dups.bed_out, remove_ancestry_snps.bed_out])
+    File kinship_bim = select_first([remove_dups.bim_out, remove_ancestry_snps.bim_out])
+    File kinship_fam = select_first([remove_dups.fam_out, remove_ancestry_snps.fam_out])
 
 
     # Match related sample ids back up with original famids
@@ -249,6 +358,10 @@ workflow relatedness_wf{
         File loadings = flashpca.loadings
         File meansd = flashpca.meansd
         File dups = king_duplicates.duplicate_samples
+        File bed = kinship_bed
+        File bim = kinship_bim
+        File fam = kinship_fam
+        File snps_to_keep = get_non_ancestry_informative_snps.snps_to_keep
     }
 
 }
