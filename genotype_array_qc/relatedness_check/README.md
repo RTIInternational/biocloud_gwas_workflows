@@ -392,3 +392,52 @@ For the purpose of identifying ancestry-informative SNPs, the PCA will only requ
 </details>
 
 ----
+
+<details>
+<summary>8. Remove ancestry-informative SNPs</summary>
+</br>
+
+</details>
+
+----
+
+<details>
+<summary>9. Chunk sample set into batches</summary>
+</br>
+
+</details>
+
+----
+
+<details>
+<summary>10. Calculate kinship coefficients within and across batches</summary>
+</br>
+
+</details>
+
+----
+
+<details>
+<summary>11. Merge relatedness calculation results across batches</summary>
+</br>
+
+</details>
+
+----
+
+<details>
+<summary>12. Report duplicates/monozygotic twins and lower-level relatedness</summary>
+</br>
+
+</details>
+
+----
+
+<details>
+<summary>13. Apply graph pruning to identify samples for removal</summary>
+</br>
+
+</details>
+
+
+
