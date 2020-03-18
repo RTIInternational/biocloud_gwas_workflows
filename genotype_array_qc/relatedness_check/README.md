@@ -175,7 +175,67 @@ Parameters:
 
 ## Extracting unrelated subset
 
+To obtain a list of unrelated individuals, a greedy graph pruning approach is taken.
 
+Sample code:
+```R
+# TODO: Convert this example code into an R script
+
+library(igraph)
+options(stringsAsFactors = F)
+
+# User-specified arguments
+input.file <- "king/king.kin0" # KING across-family results table from --kinship
+output.file <- "pca_sample_exclusions.txt" # Name for outputting PLINK compatible remove ID file
+
+# Read in KING --kinship output table
+king.stats <- read.table(input.file, header = T)
+
+# Combine FID and IIDs into single ID for first component of a pair
+edge.heads <- paste0(king.stats$FID1, ":::", king.stats$ID1)
+# Combine FID and IIDs into single ID for second component of a pair
+edge.tails <- paste0(king.stats$FID2, ":::", king.stats$ID2)
+sample.pairs = cbind(edge.heads, edge.tails)
+
+# Create undirected sample graph
+sample.graph <- graph.data.frame(sample.pairs, directed = F)
+
+# Data structure to track which samples to exclude
+remove.list <- c()
+
+# Get the number of relationships per sample
+sample.degrees <- sort(degree(sample.graph), decreasing = T)
+
+# Apply greedy graph pruning approach
+# Remove highest degree samples until none are left or
+#   the highest degree sample has degree 1
+current.graph <- sample.graph
+while(length(sample.degrees) > 0 & sample.degrees[1] > 1) {
+    remove.list <- c(remove.list, names(sample.degrees[1]))
+    current.graph <- current.graph - names(sample.degrees[1])
+    sample.degrees = sort(degree(current.graph), decreasing = T)
+}
+
+# Update sample pairs post-pruning
+unpruned.sample.pairs <- sample.pairs[!(sample.pairs[,1] %in% remove.list) & !(sample.pairs[,2] %in% remove.list),]
+
+# Randomly select one from each pair to remove
+random.exclusions <- sapply(1:nrow(unpruned.sample.pairs),
+    function(i){unpruned.sample.pairs[i, sample(x = 1:2, size = 1)]})
+
+# Update remove list
+remove.list <- c(remove.list, as.vector(random.exclusions))
+
+# Final check that no sample pairs remain
+if(sum(!(sample.pairs[,1] %in% remove.list) & !(sample.pairs[,2] %in% remove.list)) == 0){
+    stop("Error: Not all sample pairs filtered during graph pruning!")
+}
+
+# Export PLINK compatible remove list
+final.remove.list <- do.call(rbind, strsplit(remove.list, split = ":::"))
+write.table(final.remove.list, file = output.file, 
+    sep = " ", row.names = F, col.names = F, quote = F)
+```
 
 </details>
 
