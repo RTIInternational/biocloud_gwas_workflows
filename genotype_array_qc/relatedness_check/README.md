@@ -50,6 +50,8 @@ Output Files:
 
 </details>
 
+----
+
 <details>
 <summary>2. Filter to only autosomes and perform initial quality filtering</summary>
 </br>
@@ -106,11 +108,15 @@ Parameters:
 
 </details>
 
+----
+
 <details>
 <summary>3. Run LD pruning workflow</summary>
 </br>
 
 </details>
+
+----
 
 <details>
 <summary>4. Exclude related individuals for PCA</summary>
@@ -121,6 +127,10 @@ Prior to running PCA, the sample set will be reduced to only unrelated (relatedn
 <details>
 <summary>Standard processing</summary>
 </br>
+
+# Standard processing
+
+## Kinship coefficient calculations
 
 Sample command:
 ```shell
@@ -162,11 +172,18 @@ Parameters:
 | `--kinship` | Filters out all variants with minor allele frequency below `<freq>` (decimal value) |
 | `--degree <degree>` | Flag indicating to generate genotypes in PLINK bed/bim/fam format |
 | `--prefix <output_prefix>` | Prefix for output genotypes in PLINK bed/bim/fam format |
+
+## Extracting unrelated subset
+
+
+
 </details>
 
 <details>
 <summary>Parallel processing</summary>
 </br>
+
+# Parallel processing
 
 As descrbined in the KING [documentation](http://people.virginia.edu/~wc9c/KING/manual.html#WITHIN), the `--proj` option can be used to take advantage of batch sample processing which lends itself to easy parallelization. This approach offers both real time computational speedups and reduced memory requirements per run when compared to processing the whole data set at once. Batch sample processing becomes necessary when analyzing tens of thousands of samples or more. For illustrative purposes, assume that a data set is partitioned into 3 batches of samples. Six iterations of KING would need to be run to perform all pairwise comparisons between all samples across the batches.
 
