@@ -1,0 +1,7 @@
+{
+  "king_kinship_wf.bed_in": "s3://gwas-cromwell/cromwell-execution/relatedness_wf/d0ccb039-a904-43f6-a9b7-1e454051658a/call-merge_beds/test_relatedness.ldprune.bed",
+    "king_kinship_wf.bim_in": "s3://gwas-cromwell/cromwell-execution/relatedness_wf/d0ccb039-a904-43f6-a9b7-1e454051658a/call-merge_beds/test_relatedness.ldprune.bim",
+    "king_kinship_wf.fam_in": "s3://gwas-cromwell/cromwell-execution/relatedness_wf/d0ccb039-a904-43f6-a9b7-1e454051658a/call-merge_beds/test_relatedness.ldprune.fam",
+    "king_kinship_wf.output_basename": "test_king",
+    "king_kinship_wf.degree": 3
+}
