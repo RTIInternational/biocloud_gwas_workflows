@@ -70,10 +70,14 @@ workflow king_kinship_wf{
 
     # Do kinship across all combinations of subsets
     Array[Int] split_ids = range(length(split_plink.bed_out))
+    # Make cross product of all possible pairwise combinations
     Array[Pair[Int, Int]] split_combos = cross(split_ids, split_ids)
     scatter(split_combo in split_combos){
         Int split_1 = split_combo.left
         Int split_2 = split_combo.right
+        # Neat trick to only do unique combos
+        # E.g. if you cross [1,2] with [1,2] split_combos will contain (1,2) and (2,1)
+        # This automatically eliminates identity and duplicate pairwise runs
         if(split_1 < split_2){
             call KING.kinship as pairwise_kinships{
                 input:
