@@ -104,6 +104,12 @@ workflow rvtests_gwas_wf{
         }
     }
 
+    # Choose kinship matrix to use
+    # This is because you can either have no kinmatrix, have computed one in previous step, or passed one as input
+    # Need additional logic because a simple select_first won't handle all cases
+    File? kin_mat = if(defined(get_kinship_mat.kinship)) then get_kinship_mat.kinship else kinship
+    File? xHemi_kin_mat = if(defined(get_kinship_mat.xHemiKinship)) then get_kinship_mat.xHemiKinship else xHemiKinship
+
     # Do RVTests chr workflow on each chromosome in parallel
     scatter(chr_index in range(length(vcfs_in))){
         call RVCHR.rvtests_gwas_chr_wf as rvtests{
@@ -129,8 +135,8 @@ workflow rvtests_gwas_wf{
                 split_vcf_cpu = split_vcf_cpu,
                 rvtests_cpu = rvtests_cpu_per_split,
                 rvtests_mem_gb = rvtests_mem_gb_per_split,
-                kinship = select_first([kinship, get_kinship_mat.kinship]),
-                xHemiKinship = select_first([xHemiKinship, get_kinship_mat.xHemiKinship])
+                kinship = kin_mat,
+                xHemiKinship = xHemi_kin_mat
         }
     }
 
