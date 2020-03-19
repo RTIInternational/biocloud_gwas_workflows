@@ -1,6 +1,7 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
 import "biocloud_gwas_workflows/biocloud_wdl_tools/terastructure/terastructure.wdl" as TSTRUCT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/terastructure_postprocessing/terastructure_postprocessing.wdl" as TSP
 
 task get_structure_variants{
     File ref_bim
@@ -91,8 +92,13 @@ workflow structure_wf{
 
     # 1000G ancestry phenotype info
     String ancestry_psam
-    Array[String] ancestries_to_include = ["EUR", "AMR", "EAS", "SAS", "AFR"]
+    Array[String] ancestries_to_include = ["EUR", "EAS", "AFR"]
+    # Column where 1000G sample id is found in ancestry psam file
     Int ancestry_sample_id_col = 1
+    # What level of ancestry is being examined [SUPERPOP | POP]
+    String ancestry_pop_type = "SUPERPOP"
+    # Cutoffs defining how to call ancestry from admixture proportions
+    Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25"]
 
     # LD params
     File? ld_exclude_regions
@@ -232,6 +238,7 @@ workflow structure_wf{
             output_basename = "${output_basename}.combined.structure_snps"
     }
 
+    # Cluster dataset using terastructure
     call TSTRUCT.terastructure{
         input:
             bed_in = combine_ref_and_data.bed_out,
@@ -247,10 +254,29 @@ workflow structure_wf{
             mem_gb = terastructure_mem_gb
     }
 
+    # Analyze results and get ancestry groups from terastructure output
+    call TSP.terastructure_postprocess{
+        input:
+            theta = terastructure.admixture_proportions,
+            fam = combine_ref_and_data.fam_out,
+            psam = ancestry_psam,
+            ref_pop_type = ancestry_pop_type,
+            ancestry_definitions = ancestry_definitions,
+            output_basename = output_basename,
+            dataset_label = "terrastructure_ancestry"
+    }
+
+    # Order keep files to be same order as input ancestry groups
+    call TSP.order_by_ancestry{
+        input:
+            ancestry_files_in = terastructure_postprocess.ancestry_samples,
+            ancestries = ancestries_to_include
+    }
+
     output{
-        File admixture_proportions = terastructure.admixture_proportions
-        File validation = terastructure.validation
-        File terastructure_logs = terastructure.log_dir
+        Array[File] ancestry_thetas = terastructure_postprocess.ancestry_thetas
+        Array[File] triangle_plots = terastructure_postprocess.triangle_plots
+        Array[File] samples_by_ancestry = order_by_ancestry.ancestry_file_out
     }
 
 }
