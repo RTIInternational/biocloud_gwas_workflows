@@ -112,24 +112,24 @@ workflow relatedness_wf{
     Int ld_cpu = 1
     Int ld_mem_gb = 2
     Float min_ld_maf
-    Int merge_bed_cpu = 4
-    Int merge_bed_mem_gb = 8
+    Int merge_bed_cpu = 1
+    Int merge_bed_mem_gb = 4
 
     # Filtering cutoffs
     Float hwe_pvalue
     String? hwe_mode
     Float max_missing_site_rate
-    Int qc_cpu = 4
-    Int qc_mem_gb = 8
+    Int qc_cpu = 1
+    Int qc_mem_gb = 2
 
     # King parameters
-    Int king_cpu = 16
-    Int king_mem_gb = 32
+    Int king_cpu = 4
+    Int king_mem_gb = 8
     Int degree = 3
 
     # PCA parameters
-    Int pca_cpu = 16
-    Int pca_mem_gb = 16
+    Int pca_cpu = 4
+    Int pca_mem_gb = 8
     Int num_pcs_to_analyze = 3
     String? pca_standx
     Int? pca_div
