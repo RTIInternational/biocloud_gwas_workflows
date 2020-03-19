@@ -227,7 +227,7 @@ random.exclusions <- sapply(1:nrow(unpruned.sample.pairs),
 remove.list <- c(remove.list, as.vector(random.exclusions))
 
 # Final check that no sample pairs remain
-if(sum(!(sample.pairs[,1] %in% remove.list) & !(sample.pairs[,2] %in% remove.list)) == 0){
+if(sum(!(sample.pairs[,1] %in% remove.list) & !(sample.pairs[,2] %in% remove.list)) > 0){
     stop("Error: Not all sample pairs filtered during graph pruning!")
 }
 
