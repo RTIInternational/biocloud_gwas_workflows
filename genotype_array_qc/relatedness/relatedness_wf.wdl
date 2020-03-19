@@ -1,13 +1,65 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
-import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
-import "biocloud_gwas_workflows/biocloud_wdl_tools/king/king.wdl" as KING
 import "biocloud_gwas_workflows/biocloud_wdl_tools/flashpca/flashpca.wdl" as PCA
+import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
+import "biocloud_gwas_workflows/genotype_array_qc/relatedness/king_kinship_wf.wdl" as KING
+
+task restore_pedigree_ids{
+    File id_list_in
+    File id_map
+    String output_filename
+
+    # Runtime environment
+    String docker = "rtibiocloud/tsv-utils:v1.4.4-8d966cb"
+    Int cpu = 1
+    Int mem_gb = 1
+
+    command <<<
+        set -e
+
+        # Get number of records in file without pedigree
+        input_id_lines=$(wc -l ${id_list_in} | cut -d" " -f1)
+
+        # Subset original ids in id_map based on ids in no_ped_lines
+        tsv-join --filter-file ${id_list_in} \
+            --key-fields 1,2 \
+            --delimiter " " \
+            ${id_map} | \
+            cut -d" " -f3,4 > ${output_filename}
+
+        # Count number of records in mapped output file
+        mapped_lines=$(wc -l ${output_filename} | cut -d" " -f1)
+
+        # Throw error if any ids didn't map
+        if [ "$input_id_lines" -ne "$mapped_lines" ];
+        then
+            echo "Mapping error! Input id list contains $input_id_lines samples but mapped output contains $mapped_lines"
+            exit 1
+        fi
+    >>>
+
+    runtime {
+        docker: docker
+        cpu: cpu
+        memory: "${mem_gb} GB"
+    }
+
+    output {
+        File id_list_out = "${output_filename}"
+    }
+}
 
 workflow relatedness_wf{
     File bed_in
     File bim_in
     File fam_in
     String output_basename
+
+    # QC Filtering cutoffs
+    Float hwe_pvalue
+    String? hwe_mode
+    Float max_missing_site_rate
+    Int qc_cpu = 1
+    Int qc_mem_gb = 2
 
     # LD params
     File? ld_exclude_regions
@@ -21,29 +73,24 @@ workflow relatedness_wf{
     Int merge_bed_cpu = 1
     Int merge_bed_mem_gb = 4
 
-    # Filtering cutoffs
-    Float hwe_pvalue
-    String? hwe_mode
-    Float max_missing_site_rate
-    Int qc_cpu = 1
-    Int qc_mem_gb = 2
-
     # King parameters
-    Int king_cpu = 4
-    Int king_mem_gb = 8
     Int degree = 3
+    Int num_king_splits = 4
+    Int king_cpu_per_split = 4
+    Int king_mem_gb_per_split = 8
 
     # PCA parameters
     Int pca_cpu = 4
     Int pca_mem_gb = 8
     Int num_pcs_to_analyze = 3
+
+    # Optionally specify genotype standardization method [binom | binom2]
     String? pca_standx
-    Int? pca_div
-    Int? pca_tol
+    # PCA Random seed
+    Int? pca_seed
+    # FlashPCA memory options (usually don't need to do anything unless very, very large data)
     Boolean? pca_batch
     Int? pca_blocksize
-    Int? pca_seed
-    Int? pca_precision
 
     # Ancestral SNP filtering parameters
     Float ancestral_pca_loading_cutoff = 0.003
@@ -107,24 +154,22 @@ workflow relatedness_wf{
     }
 
     # Call king to get related individuals to remove
-    call KING.unrelated as king_unrelated{
+    call KING.king_kinship_wf as round1_get_relateds{
         input:
             bed_in = merge_beds.bed_out,
             bim_in = merge_beds.bim_out,
             fam_in = merge_beds.fam_out,
-            output_basename = "${output_basename}.king.",
-            cpu = king_cpu,
-            mem_gb = king_mem_gb,
-            degree = degree
+            degree = degree,
+            num_splits = num_king_splits,
+            output_basename = "${output_basename}.rd1.king",
+            king_split_cpu = king_cpu_per_split,
+            king_split_mem_gb = king_mem_gb_per_split,
+            plink_cpu = qc_cpu,
+            plink_mem_gb = qc_mem_gb
+
     }
 
-    if(size(king_unrelated.related_samples) > 0){
-        # Convert related sample output file to plink-compatible sample list
-        call KING.king_samples_to_ids as get_round1_relateds{
-            input:
-                king_samples_in = king_unrelated.related_samples,
-                output_filename = "${output_basename}.rd1.related_samples.txt"
-        }
+    if(size(round1_get_relateds.related_samples) > 0){
 
         # Remove related samples and redo QC
         call PLINK.make_bed as remove_round1_relateds{
@@ -132,10 +177,24 @@ workflow relatedness_wf{
                 bed_in = merge_beds.bed_out,
                 bim_in = merge_beds.bim_out,
                 fam_in = merge_beds.fam_out,
-                output_basename = "${output_basename}.unrelated",
+                output_basename = "${output_basename}.round1.unrelated",
                 cpu = qc_cpu,
                 mem_gb = qc_mem_gb,
-                remove_samples = get_round1_relateds.king_samples_out,
+                remove_samples = round1_get_relateds.related_samples,
+                geno = max_missing_site_rate,
+                hwe_pvalue = hwe_pvalue,
+                hwe_mode = hwe_mode,
+                cpu = qc_cpu,
+                cpu = qc_mem_gb
+        }
+
+        # Re-do quality filter on unrelated samples
+        call PLINK.make_bed as unrelated_qc_filter{
+            input:
+                bed_in = remove_round1_relateds.bed_out,
+                bim_in = remove_round1_relateds.bim_out,
+                fam_in = remove_round1_relateds.fam_out,
+                output_basename = "${output_basename}.round1.unrelated.qc",
                 geno = max_missing_site_rate,
                 hwe_pvalue = hwe_pvalue,
                 hwe_mode = hwe_mode,
@@ -149,10 +208,10 @@ workflow relatedness_wf{
             # Get subset of markers in LD
             call LD.ld_prune_wf as ld_prune_unrelated{
                 input:
-                    bed_in = remove_round1_relateds.bed_out,
-                    bim_in = remove_round1_relateds.bim_out,
-                    fam_in = remove_round1_relateds.fam_out,
-                    output_basename = "${output_basename}.chr${chr_unrelated}.unrelated.ldprune",
+                    bed_in = unrelated_qc_filter.bed_out,
+                    bim_in = unrelated_qc_filter.bim_out,
+                    fam_in = unrelated_qc_filter.fam_out,
+                    output_basename = "${output_basename}.chr${chr_unrelated}.round1.unrelated.qc.ldprune",
                     ld_type = ld_type,
                     window_size = window_size,
                     step_size = step_size,
@@ -171,24 +230,21 @@ workflow relatedness_wf{
                 bed_in = ld_prune_unrelated.bed_out,
                 bim_in = ld_prune_unrelated.bim_out,
                 fam_in = ld_prune_unrelated.fam_out,
-                output_basename = "${output_basename}.unrelated.ldprune",
+                output_basename = "${output_basename}.round1.unrelated.qc.ldprune",
                 cpu = merge_bed_cpu,
                 mem_gb = merge_bed_mem_gb
         }
     }
 
     # PCA of remaining samples to identify ancestry-informative SNPs
-    call PCA.flashpca as flashpca{
+    call PCA.flashpca as pca{
         input:
             bed_in = select_first([merge_ld_prune_unrelated.bed_out, merge_beds.bed_out]),
             bim_in = select_first([merge_ld_prune_unrelated.bim_out, merge_beds.bim_out]),
             fam_in = select_first([merge_ld_prune_unrelated.fam_out, merge_beds.fam_out]),
             ndim = num_pcs_to_analyze,
             standx = pca_standx,
-            div = pca_div,
-            tol = pca_tol,
             seed = pca_seed,
-            precision = pca_precision,
             cpu = pca_cpu,
             mem_gb = pca_mem_gb
     }
@@ -196,7 +252,7 @@ workflow relatedness_wf{
     # Get list of non-ancestry informative SNPs from PC loadings
     call PCA.get_non_ancestry_informative_snps{
         input:
-            pca_loadings = flashpca.loadings,
+            pca_loadings = pca.loadings,
             output_filename = "${output_basename}.nonacestry.snps.txt",
             loading_value_cutoff = ancestral_pca_loading_cutoff,
             max_snps = max_kinship_snps,
@@ -205,69 +261,48 @@ workflow relatedness_wf{
             max_cutoff = max_ancestral_pca_loading_cutoff
     }
 
-    # Remove ancestry-informative SNPs
+    # Remove ancestry-informative SNPs from original QC dataset
     call PLINK.make_bed as remove_ancestry_snps{
         input:
-            bed_in = select_first([merge_ld_prune_unrelated.bed_out, merge_beds.bed_out]),
-            bim_in = select_first([merge_ld_prune_unrelated.bim_out, merge_beds.bim_out]),
-            fam_in = select_first([merge_ld_prune_unrelated.fam_out, merge_beds.fam_out]),
-            output_basename = "${output_basename}.unrelated.noancestry",
+            bed_in = merge_beds.bed_out,
+            bim_in = merge_beds.bim_out,
+            fam_in = merge_beds.fam_out,
+            output_basename = "${output_basename}.qc.nonancestral_snps",
             cpu = qc_cpu,
             mem_gb = qc_mem_gb,
             extract = get_non_ancestry_informative_snps.snps_to_keep
         }
 
-    # Run KING duplicates to identify duplicates
-    call KING.duplicate as king_duplicates{
+    # Call king to get related individuals to remove
+    call KING.king_kinship_wf as final_get_relateds{
         input:
             bed_in = remove_ancestry_snps.bed_out,
             bim_in = remove_ancestry_snps.bim_out,
             fam_in = remove_ancestry_snps.fam_out,
-            output_basename = "${output_basename}.king",
-            cpu = king_cpu,
-            mem_gb = king_mem_gb
+            degree = degree,
+            num_splits = num_king_splits,
+            output_basename = "${output_basename}.final.king",
+            king_split_cpu = king_cpu_per_split,
+            king_split_mem_gb = king_mem_gb_per_split,
+            plink_cpu = qc_cpu,
+            plink_mem_gb = qc_mem_gb
+
     }
 
-    # Parse list of duplicate samples to remove (if any)
-    if(size(king_duplicates.duplicate_samples) > 0){
-        call KING.kinship_to_plink_sample_list{
-            input:
-                duplicate_samples_in = king_duplicates.duplicate_samples,
-                output_filename = "${output_basename}.duplicate_samples"
-        }
-        call PLINK.make_bed as remove_dups{
-            input:
-                bed_in = remove_ancestry_snps.bed_out,
-                bim_in = remove_ancestry_snps.bim_out,
-                fam_in = remove_ancestry_snps.fam_out,
-                output_basename = "${output_basename}.unrelated.noancestry.nodups",
-                cpu = qc_cpu,
-                mem_gb = qc_mem_gb,
-                remove_samples = kinship_to_plink_sample_list.sample_list
-        }
+    # Map related sample ids back to their original pedigree ids
+    call restore_pedigree_ids{
+        input:
+            id_list_in = final_get_relateds.related_samples,
+            id_map = remove_fam_pedigree.id_map_out,
+            output_filename = "${output_basename}.final.related_samples.remove"
     }
-
-    File kinship_bed = select_first([remove_dups.bed_out, remove_ancestry_snps.bed_out])
-    File kinship_bim = select_first([remove_dups.bim_out, remove_ancestry_snps.bim_out])
-    File kinship_fam = select_first([remove_dups.fam_out, remove_ancestry_snps.fam_out])
-
-
-    # Match related sample ids back up with original famids
-    # Match duplicate sample ids back up with original famids
-    # Match kinship sample ids back up with original famids
 
     output{
-        File eigenvectors = flashpca.eigenvectors
-        File pcs = flashpca.pcs
-        File eigenvalues = flashpca.eigenvalues
-        File pve = flashpca.pve
-        File loadings = flashpca.loadings
-        File meansd = flashpca.meansd
-        File dups = king_duplicates.duplicate_samples
-        File bed = kinship_bed
-        File bim = kinship_bim
-        File fam = kinship_fam
-        File snps_to_keep = get_non_ancestry_informative_snps.snps_to_keep
+        # Select either the merged kinship file (num_splits > 1) or the first shard (num_splits == 1)
+        File related_samples = restore_pedigree_ids.id_list_out
+        File annotated_kinship_output = final_get_relateds.annotated_kinship_output
+        File nonancestral_snps = get_non_ancestry_informative_snps.snps_to_keep
+        File kinship_id_map = remove_fam_pedigree.id_map_out
     }
 
 }
