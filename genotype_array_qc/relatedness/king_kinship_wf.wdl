@@ -2,6 +2,8 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/biocloud_wdl_tools/king/king.wdl" as KING
 import "biocloud_gwas_workflows/biocloud_wdl_tools/split_utils/split_utils.wdl" as SPLIT
 import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
+import "biocloud_gwas_workflows/helper_workflows/collect_large_file_list_wf.wdl" as COLLECT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV
 
 workflow king_kinship_wf{
     File bed_in
@@ -89,15 +91,28 @@ workflow king_kinship_wf{
         }
     }
 
-    # Flatten to get all files in a single array
-    # Have to do a select_all on pairwise combo outputs because we skipped identity combos
+    # Flatten to get all files in a 1-D array
     call UTILS.flatten_string_array{
         input:
             array=[select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output]
     }
 
+    # Zip into single tarball for tsv-concat
+    call COLLECT.collect_large_file_list_wf as collect_kinships{
+        input:
+            input_files = flatten_string_array.flat_array,
+            output_dir_name = "${output_basename}_kinships"
+    }
+
+    # Concat all kinship files (preserving header) into single kinship file
+    call TSV.tsv_append as cat_kinships{
+        input:
+            tsv_inputs_tarball = collect_kinships.output_dir,
+            output_filename = "${output_basename}.merged.kinship.kin0"
+    }
+
     output{
-        Array[File] kinship_outputs = flatten_string_array.flat_array
+        File kinship_output = cat_kinships.tsv_output
     }
 
 }
