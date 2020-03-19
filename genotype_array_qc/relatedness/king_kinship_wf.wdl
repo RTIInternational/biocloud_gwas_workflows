@@ -11,8 +11,8 @@ workflow king_kinship_wf{
     File fam_in
     String output_basename
 
-    # Degree of relatedness to consider
-    Int degree
+    # Degree of relatedness cutoff for kinship file
+    Int? degree
 
     # Number of subsets to make for splitting
     Int num_splits = 4
@@ -117,10 +117,20 @@ workflow king_kinship_wf{
         }
     }
 
+    File king_kinship = select_first([cat_kinships.tsv_output, subset_kinships.kinship_output[0]])
+    # Prune resulting kinship file to generate minimal set of related individuals
+    call KING.prune_related_samples{
+        input:
+            kinship_in = king_kinship,
+            output_basename = "${output_basename}.pruned",
+            mem_gb = ceil(size(king_kinship, "GB")) + 1
+    }
 
     output{
         # Select either the merged kinship file (num_splits > 1) or the first shard (num_splits == 1)
-        File kinship_output = select_first([cat_kinships.tsv_output, subset_kinships.kinship_output[0]])
+        File raw_kinship_output = king_kinship
+        File related_samples = prune_related_samples.related_samples
+        File annotated_kinship_output = prune_related_samples.annotated_kinship_out
     }
 
 }
