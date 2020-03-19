@@ -68,55 +68,59 @@ workflow king_kinship_wf{
         }
     }
 
-    # Do kinship across all combinations of subsets
-    Array[Int] split_ids = range(length(split_plink.bed_out))
-    # Make cross product of all possible pairwise combinations
-    Array[Pair[Int, Int]] split_combos = cross(split_ids, split_ids)
-    scatter(split_combo in split_combos){
-        Int split_1 = split_combo.left
-        Int split_2 = split_combo.right
-        # Neat trick to only do unique combos
-        # E.g. if you cross [1,2] with [1,2] split_combos will contain (1,2) and (2,1)
-        # This automatically eliminates identity and duplicate pairwise runs
-        if(split_1 < split_2){
-            call KING.kinship as pairwise_kinships{
-                input:
-                    bed_in = split_plink.bed_out[split_1],
-                    bim_in = split_plink.bim_out[split_1],
-                    fam_in = split_plink.fam_out[split_1],
-                    bed_in_pair = split_plink.bed_out[split_2],
-                    bim_in_pair = split_plink.bim_out[split_2],
-                    fam_in_pair = split_plink.fam_out[split_2],
-                    degree = degree,
-                    output_basename = "${output_basename}.splitcombo.${split_1}.${split_2}",
-                    cpu = king_split_cpu,
-                    mem_gb = king_split_mem_gb
+    # Compute kinship between all pairwise combinations of sample subsets if parallelizing
+    if(num_splits > 1){
+        # Make cross product of all possible pairwise combinations
+        Array[Int] split_ids = range(length(split_plink.bed_out))
+        Array[Pair[Int, Int]] split_combos = cross(split_ids, split_ids)
+        scatter(split_combo in split_combos){
+            Int split_1 = split_combo.left
+            Int split_2 = split_combo.right
+            # Neat trick to only do unique combos
+            # E.g. if you cross [1,2] with [1,2] split_combos will contain (1,2) and (2,1)
+            # This automatically eliminates identity and duplicate pairwise runs
+            if(split_1 < split_2){
+                call KING.kinship as pairwise_kinships{
+                    input:
+                        bed_in = split_plink.bed_out[split_1],
+                        bim_in = split_plink.bim_out[split_1],
+                        fam_in = split_plink.fam_out[split_1],
+                        bed_in_pair = split_plink.bed_out[split_2],
+                        bim_in_pair = split_plink.bim_out[split_2],
+                        fam_in_pair = split_plink.fam_out[split_2],
+                        degree = degree,
+                        output_basename = "${output_basename}.splitcombo.${split_1}.${split_2}",
+                        cpu = king_split_cpu,
+                        mem_gb = king_split_mem_gb
+                }
             }
+        }
+
+        # Flatten to get all files in a 1-D array
+        call UTILS.flatten_string_array{
+            input:
+                array=[select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output]
+        }
+
+        # Zip into single tarball for tsv-concat
+        call COLLECT.collect_large_file_list_wf as collect_kinships{
+            input:
+                input_files = flatten_string_array.flat_array,
+                output_dir_name = "${output_basename}_kinships"
+        }
+
+        # Concat all kinship files (preserving header) into single kinship file
+        call TSV.tsv_append as cat_kinships{
+            input:
+                tsv_inputs_tarball = collect_kinships.output_dir,
+                output_filename = "${output_basename}.merged.kinship.kin0"
         }
     }
 
-    # Flatten to get all files in a 1-D array
-    call UTILS.flatten_string_array{
-        input:
-            array=[select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output]
-    }
-
-    # Zip into single tarball for tsv-concat
-    call COLLECT.collect_large_file_list_wf as collect_kinships{
-        input:
-            input_files = flatten_string_array.flat_array,
-            output_dir_name = "${output_basename}_kinships"
-    }
-
-    # Concat all kinship files (preserving header) into single kinship file
-    call TSV.tsv_append as cat_kinships{
-        input:
-            tsv_inputs_tarball = collect_kinships.output_dir,
-            output_filename = "${output_basename}.merged.kinship.kin0"
-    }
 
     output{
-        File kinship_output = cat_kinships.tsv_output
+        # Select either the merged kinship file (num_splits > 1) or the first shard (num_splits == 1)
+        File kinship_output = select_first([cat_kinships.tsv_output, subset_kinships.kinship_output[0]])
     }
 
 }
