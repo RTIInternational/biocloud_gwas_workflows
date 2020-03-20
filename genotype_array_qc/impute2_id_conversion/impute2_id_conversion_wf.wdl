@@ -202,6 +202,7 @@ workflow impute2_id_conversion_wf{
     # PAR/NONPAR Split/Merge parameters
     String build_code
     Boolean no_fail = true
+    String file_in_monomorphic_allele = "0"
 
     # Resources subtasks
     # The only one you'll likely need to play for huge files is the id_convert cpu/mem
@@ -269,13 +270,13 @@ workflow impute2_id_conversion_wf{
             input:
                 in_file = split_bed.bim_out,
                 legend_file = id_legend_files[chr_index],
-                contains_header = 0,
+                file_in_header = 0,
                 id_col = 1,
                 chr_col = 0,
                 pos_col = 3,
                 a1_col = 4,
                 a2_col = 5,
-                chr = chr,
+                file_in_monomorphic_allele = file_in_monomorphic_allele,
                 output_filename = "${output_basename}.impute2",
                 cpu = id_convert_cpu,
                 mem_gb = id_convert_mem_gb
