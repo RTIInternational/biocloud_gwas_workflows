@@ -33,8 +33,6 @@ workflow genotype_array_qc_wf{
     Int ld_window_size = 20000
     Int ld_step_size = 2000
     Float ld_r2_threshold = 0.5
-    Int ld_cpu = 1
-    Int ld_mem_gb = 2
 
     # Structure ancestry partitioning filtering parameters
     File structure_ref_bed
@@ -55,8 +53,6 @@ workflow genotype_array_qc_wf{
 
     # Various TeraStructure params
     Float terastructure_rfreq_perc = 0.2
-    Int terastructure_cpu = 32
-    Int terastructure_mem_gb = 32
 
     # Sex-check filter parameters
     Boolean filter_discrepant_sex = true
@@ -78,12 +74,8 @@ workflow genotype_array_qc_wf{
     Boolean filter_related_samples = true
     Int degree = 3
     Int num_king_splits = 4
-    Int king_cpu_per_split = 4
-    Int king_mem_gb_per_split = 8
 
     # PCA parameters
-    Int pca_cpu = 4
-    Int pca_mem_gb = 8
     Int kinship_pcs_to_analyze = 3
 
     # Ancestral SNP filtering parameters
@@ -94,14 +86,28 @@ workflow genotype_array_qc_wf{
     Float max_ancestral_pca_loading_cutoff = 0.01
 
     # Resources for various modules
-    Int plink_cpu = 1
-    Int plink_mem_gb = 2
-    Int split_bed_cpu = 4
-    Int split_bed_mem_gb = 8
+
+    # General CPU/Mem for basically any PLINK task that runs on the whole dataset
+    Int plink_filter_cpu = 1
+    Int plink_filter_mem_gb = 2
+
+    # General CPU/MEM for basically any PLINK task that runs on a single chr
+    Int plink_chr_cpu = 1
+    Int plink_chr_mem_gb = 2
+
+    # General CPU/MEM for jobs that merge bed files either by chr or sample
     Int merge_bed_cpu = 4
     Int merge_bed_mem_gb = 8
+
+    # Speicific tasks where resource limits may need to be adjusted for larger/smaller inputs
+    Int terastructure_cpu = 32
+    Int terastructure_mem_gb = 32
     Int sex_check_cpu = 4
     Int sex_check_mem_gb = 8
+    Int king_cpu_per_split = 4
+    Int king_mem_gb_per_split = 8
+    Int pca_cpu = 4
+    Int pca_mem_gb = 8
 
     # Remove phenotype from fam file
     call PLINK.remove_fam_phenotype{
@@ -122,12 +128,10 @@ workflow genotype_array_qc_wf{
             remove_duplicates = true,
             build_code = build_code,
             no_fail = true,
-            split_bed_cpu = split_bed_cpu,
-            split_bed_mem_gb = split_bed_mem_gb,
+            split_bed_cpu = plink_chr_cpu,
+            split_bed_mem_gb = plink_chr_mem_gb,
             merge_bed_cpu = merge_bed_cpu,
-            merge_bed_mem_gb = merge_bed_mem_gb,
-            duplicate_id_cpu = split_bed_cpu,
-            duplicate_id_mem_gb = split_bed_mem_gb
+            merge_bed_mem_gb = merge_bed_mem_gb
     }
 
     # Remove failed subjects with >99% missing data so they don't throw off anything downstream
@@ -138,8 +142,8 @@ workflow genotype_array_qc_wf{
             fam_in = convert_impute2_ids.fam_out,
             output_basename = "${output_basename}.filter_failed_samples",
             mind = 0.99,
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb
+            cpu = plink_filter_cpu,
+            mem_gb = plink_filter_mem_gb
     }
 
     # STRUCTURE WF to partition by ancestry
@@ -162,8 +166,8 @@ workflow genotype_array_qc_wf{
             window_size = ld_window_size,
             step_size = ld_step_size,
             r2_threshold = ld_r2_threshold,
-            ld_cpu = ld_cpu,
-            ld_mem_gb = ld_mem_gb,
+            ld_cpu = plink_filter_cpu,
+            ld_mem_gb = plink_chr_mem_gb,
             min_ld_maf = ld_maf_cutoff,
             merge_bed_cpu = merge_bed_cpu,
             merge_bed_mem_gb = merge_bed_mem_gb,
@@ -205,8 +209,8 @@ workflow genotype_array_qc_wf{
                 output_basename = "${output_basename}.${ancestry}.snp_miss",
                 keep_samples = ancestry_samples,
                 geno = max_missing_site_rate,
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                cpu = plink_filter_cpu,
+                mem_gb = plink_filter_mem_gb
         }
 
         # Apply HWE filter
@@ -217,8 +221,8 @@ workflow genotype_array_qc_wf{
                 fam_in = subset_ancestry.fam_out,
                 hwe_filter_pvalue = hwe_filter_pvalue,
                 output_basename = "${output_basename}.${ancestry}.snp_miss.hwe",
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                cpu = plink_filter_cpu,
+                mem_gb = plink_filter_mem_gb
         }
 
         # Set het haploids to missing
@@ -229,8 +233,8 @@ workflow genotype_array_qc_wf{
                 fam_in = hwe_filter_wf.fam_out,
                 set_hh_missing = true,
                 output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_auto",
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                cpu = plink_filter_cpu,
+                mem_gb = plink_filter_mem_gb
         }
 
         # Get samples to filter based on call rate (autosomes)
@@ -242,8 +246,8 @@ workflow genotype_array_qc_wf{
                 autosome = true,
                 mind = max_sample_missing_rate,
                 output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss",
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                cpu = plink_filter_cpu,
+                mem_gb = plink_filter_mem_gb
         }
 
         # Filter out low call-rate samples
@@ -254,8 +258,8 @@ workflow genotype_array_qc_wf{
                 fam_in = het_hap_to_missing.fam_out,
                 keep_samples = get_low_called_samples.fam_out,
                 output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss.sample_miss",
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                cpu = plink_filter_cpu,
+                mem_gb = plink_filter_mem_gb
         }
 
         # Get list of samples with excess homozygosity
@@ -267,8 +271,8 @@ workflow genotype_array_qc_wf{
                 output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss.sample_miss.het",
                 min_he = min_sample_he,
                 max_he = max_sample_he,
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                cpu = plink_filter_cpu,
+                mem_gb = plink_filter_mem_gb
         }
 
         # Filter them out (if they exist)
@@ -281,8 +285,8 @@ workflow genotype_array_qc_wf{
                     fam_in = filter_low_called_samples.fam_out,
                     remove_samples = get_excess_homo_samples.excess_homos,
                     output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss.sample_miss.het",
-                    cpu = plink_cpu,
-                    mem_gb = plink_mem_gb
+                    cpu = plink_filter_cpu,
+                    mem_gb = plink_filter_mem_gb
             }
         }
 
@@ -317,10 +321,10 @@ workflow genotype_array_qc_wf{
                 king_mem_gb_per_split = king_mem_gb_per_split,
                 pca_cpu = pca_cpu,
                 pca_mem_gb = pca_mem_gb,
-                qc_cpu = plink_cpu,
-                qc_mem_gb = plink_mem_gb,
-                ld_cpu = ld_cpu,
-                ld_mem_gb = ld_mem_gb,
+                qc_cpu = plink_filter_cpu,
+                qc_mem_gb = plink_filter_mem_gb,
+                ld_cpu = plink_chr_cpu,
+                ld_mem_gb = plink_chr_mem_gb,
                 merge_bed_cpu = merge_bed_cpu,
                 merge_bed_mem_gb = merge_bed_mem_gb,
         }
@@ -348,10 +352,8 @@ workflow genotype_array_qc_wf{
                 min_ld_maf = ld_maf_cutoff,
                 build_code = build_code,
                 no_fail = true,
-                ld_cpu = ld_cpu,
-                ld_mem_gb = ld_mem_gb,
-                ld_cpu = ld_cpu,
-                ld_mem_gb = ld_mem_gb,
+                ld_cpu = plink_chr_cpu,
+                ld_mem_gb = plink_chr_mem_gb,
                 sex_check_cpu = sex_check_cpu,
                 sex_check_mem_gb = sex_check_mem_gb
         }
@@ -398,8 +400,8 @@ workflow genotype_array_qc_wf{
                         fam_in = qc_fam,
                         remove_samples = final_filter,
                         output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss.sample_miss.het.${final_suffix}",
-                        cpu = plink_cpu,
-                        mem_gb = plink_mem_gb
+                        cpu = plink_filter_cpu,
+                        mem_gb = plink_filter_mem_gb
                 }
             }
         }
@@ -418,8 +420,8 @@ workflow genotype_array_qc_wf{
             output_basename = final_basename,
             merge_x = true,
             merge_no_fail = true,
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb
+            cpu = plink_filter_cpu,
+            mem_gb = plink_filter_mem_gb
         }
     }
 
