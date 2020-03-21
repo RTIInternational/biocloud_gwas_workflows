@@ -130,8 +130,10 @@ workflow genotype_array_qc_wf{
             remove_duplicates = true,
             build_code = build_code,
             no_fail = true,
-            split_bed_cpu = plink_chr_cpu,
-            split_bed_mem_gb = plink_chr_mem_gb,
+            plink_cpu = plink_filter_cpu,
+            plink_mem_gb = plink_filter_mem_gb,
+            plink_chr_cpu = plink_chr_cpu,
+            plink_chr_mem_gb = plink_chr_mem_gb,
             merge_bed_cpu = merge_bed_cpu,
             merge_bed_mem_gb = merge_bed_mem_gb
     }
@@ -169,7 +171,7 @@ workflow genotype_array_qc_wf{
             step_size = ld_step_size,
             r2_threshold = ld_r2_threshold,
             ld_cpu = plink_filter_cpu,
-            ld_mem_gb = plink_chr_mem_gb,
+            ld_mem_gb = plink_filter_mem_gb,
             min_ld_maf = ld_maf_cutoff,
             merge_bed_cpu = merge_bed_cpu,
             merge_bed_mem_gb = merge_bed_mem_gb,
