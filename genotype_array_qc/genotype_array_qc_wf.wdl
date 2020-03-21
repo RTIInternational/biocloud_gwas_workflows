@@ -118,6 +118,18 @@ workflow genotype_array_qc_wf{
             output_basename = "${output_basename}.no_pheno"
     }
 
+    # Count initial number of samples and sites
+    call UTILS.wc as init_snp_count{
+        input:
+            input_file = bim
+    }
+
+    # Count initial number of samples and sites
+    call UTILS.wc as init_sample_count{
+        input:
+            input_file = fam
+    }
+
     # Convert variant IDs to impute2 format and remove duplicate variants
     call IDCONVERT.impute2_id_conversion_wf as convert_impute2_ids{
         input:
@@ -138,6 +150,12 @@ workflow genotype_array_qc_wf{
             merge_bed_mem_gb = merge_bed_mem_gb
     }
 
+    # Count sites after removing dups
+    call UTILS.wc as impute2_snp_count{
+        input:
+            input_file = convert_impute2_ids.bim_out
+    }
+
     # Remove failed subjects with >99% missing data so they don't throw off anything downstream
     call PLINK.make_bed as filter_failed_samples{
         input:
@@ -148,6 +166,12 @@ workflow genotype_array_qc_wf{
             mind = 0.99,
             cpu = plink_filter_cpu,
             mem_gb = plink_filter_mem_gb
+    }
+
+    # Count samples after removing failed samples
+    call UTILS.wc as failed_sample_count{
+        input:
+            input_file = filter_failed_samples.fam_out
     }
 
     # STRUCTURE WF to partition by ancestry
@@ -183,13 +207,13 @@ workflow genotype_array_qc_wf{
     # Filter out any ancestries with less than a minimum cutoff of samples
     scatter(ancestry_index in range(length(ancestries_to_include))){
         # Count number of samples in each ancestry
-        call UTILS.wc as count_samples{
+        call UTILS.wc as count_structure_samples{
             input:
                 input_file = structure_wf.samples_by_ancestry[ancestry_index]
         }
 
         # Only include ancestries exceeding minimum number of samples
-        if(count_samples.num_lines > min_ancestry_samples_to_postprocess){
+        if(count_structure_samples.num_lines > min_ancestry_samples_to_postprocess){
             String ancestries_maybe = ancestries_to_include[ancestry_index]
             File ancestry_samples_maybe = structure_wf.samples_by_ancestry[ancestry_index]
         }
@@ -203,6 +227,7 @@ workflow genotype_array_qc_wf{
     scatter(ancestry_index in range(length(postprocess_ancestries))){
         String ancestry = postprocess_ancestries[ancestry_index]
         File ancestry_samples = postprocess_ancestry_samples[ancestry_index]
+        Int init_ancestry_sample_count = count_structure_samples.num_lines[ancestry_index]
 
         # Partition data by ancestry and apply SNP call rate filter
         call PLINK.make_bed as subset_ancestry{
@@ -217,6 +242,13 @@ workflow genotype_array_qc_wf{
                 mem_gb = plink_filter_mem_gb
         }
 
+        # Count number of SNPs that didn't pass call rate filter
+        call UTILS.wc as subset_ancestry_snp_count{
+            input:
+                input_file = subset_ancestry.bim_out
+        }
+        Int low_call_snp_count = failed_sample_count.num_lines - subset_ancestry_snp_count.num_lines
+
         # Apply HWE filter
         call HWE.hwe_filter_wf{
             input:
@@ -228,6 +260,13 @@ workflow genotype_array_qc_wf{
                 cpu = plink_filter_cpu,
                 mem_gb = plink_filter_mem_gb
         }
+
+        # Count number of snps not in hwe
+        call UTILS.wc as hwe_snp_count{
+            input:
+                input_file = hwe_filter_wf.bim_out
+        }
+        Int hwe_failed_snp_count = subset_ancestry_snp_count.num_lines - hwe_snp_count.num_lines
 
         # Set het haploids to missing
         call PLINK.make_bed as het_hap_to_missing{
@@ -254,6 +293,13 @@ workflow genotype_array_qc_wf{
                 mem_gb = plink_filter_mem_gb
         }
 
+        # Count samples removed due to low call rates
+        call UTILS.wc as count_sample_call_filter{
+            input:
+                input_file = get_low_called_samples.fam_out
+        }
+        Int low_call_sample_count = init_ancestry_sample_count - count_sample_call_filter.num_lines
+
         # Filter out low call-rate samples
         call PLINK.make_bed as filter_low_called_samples{
             input:
@@ -279,9 +325,15 @@ workflow genotype_array_qc_wf{
                 mem_gb = plink_filter_mem_gb
         }
 
+        # Count number of samples removed due to excess homo
+        call UTILS.wc as excess_homo_count{
+            input:
+                input_file = get_excess_homo_samples.excess_homos
+        }
+        Int excess_homo_sample_count = hwe_snp_count.num_lines - excess_homo_count.num_lines
+
         # Filter them out (if they exist)
         if(size(get_excess_homo_samples.excess_homos) > 0){
-            # Filter out low call-rate samples
             call PLINK.make_bed as remove_excess_homos{
                 input:
                     bed_in = filter_low_called_samples.bed_out,
@@ -333,6 +385,13 @@ workflow genotype_array_qc_wf{
                 merge_bed_mem_gb = merge_bed_mem_gb,
         }
 
+        # Count number of related samples that need to be removed
+        call UTILS.wc as count_related_samples{
+            input:
+                input_file = relatedness_wf.related_samples
+        }
+        Int related_sample_removal_candidate_count = count_related_samples.num_lines
+
         # Sex check to see if sex matches phenotype file
         call SEX.sex_check_wf{
             input:
@@ -361,6 +420,13 @@ workflow genotype_array_qc_wf{
                 sex_check_cpu = sex_check_cpu,
                 sex_check_mem_gb = sex_check_mem_gb
         }
+
+        # Count number of sex-discrepant samples
+        call UTILS.wc as count_sex_check_failed_samples{
+            input:
+                input_file = relatedness_wf.related_samples
+        }
+        Int sex_check_failed_samples = count_sex_check_failed_samples.num_lines
 
         # Optionally apply filter lists from sex/relatedness workflows to QC filtered samples
         # This section looks kinda weird but it's only because WDL doesn't have 'else/elseif'
@@ -427,9 +493,46 @@ workflow genotype_array_qc_wf{
             cpu = plink_filter_cpu,
             mem_gb = plink_filter_mem_gb
         }
+
+        # Final snp count
+        call UTILS.wc as final_snp_count{
+            input:
+                input_file = split_final_bim
+        }
+
+        # Final sample count
+        call UTILS.wc as final_sample_count{
+            input:
+                input_file = split_final_fam
+        }
+
+        Int total_removed_snps = init_snp_count.num_lines - final_snp_count.num_lines
+        Int total_removed_samples = init_sample_count.num_lines - final_sample_count.num_lines
+        Float pct_pass_snps = (final_snp_count.num_lines * 1.0)/(init_snp_count.num_lines * 1.0)
+        Float pct_pass_samples = (final_sample_count.num_lines * 1.0)/(init_sample_count.num_lines * 1.0)
     }
 
+
+
     output{
+        # Filter count metrics
+        Int init_snps = init_snp_count.num_lines
+        Int init_samples = init_sample_count.num_lines
+        Int duplicate_snps = init_snp_count.num_lines - impute2_snp_count.num_lines
+        Int failed_samples = init_sample_count.num_lines - failed_sample_count.num_lines
+        Array[Int] structure_samples_by_ancestry = count_structure_samples.num_lines
+        Array[Int] low_call_snps_by_ancestry = low_call_snp_count
+        Array[Int] hwe_failed_snps_by_ancestry = hwe_failed_snp_count
+        Array[Int] excess_homo_samples_by_ancestry = excess_homo_sample_count
+        Array[Int] related_samples_by_ancestry = related_sample_removal_candidate_count
+        Array[Int] failed_sex_check_by_ancestry = sex_check_failed_samples
+        Array[Int] final_qc_snps_by_ancestry = final_snp_count.num_lines
+        Array[Int] final_qc_samples_by_ancestry = final_sample_count.num_lines
+        Array[Int] total_removed_snps_by_ancestry = total_removed_snps
+        Array[Int] total_removed_samples_by_ancestry = total_removed_samples
+        Array[Float] pct_pass_snps_by_ancestry = pct_pass_snps
+        Array[Float] pct_pass_samples_by_ancestry = pct_pass_samples
+
         # Fully filtered qc beds that have been through all filters
         Array[File] final_qc_bed = final_merge_x_chr.bed_out
         Array[File] final_qc_bim = final_merge_x_chr.bim_out

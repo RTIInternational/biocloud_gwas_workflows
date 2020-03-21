@@ -1,14 +1,16 @@
 {
   "genotype_array_qc_wf.output_basename": "aric_qc",
-  "genotype_array_qc_wf.bed": "s3://rti-biocloud-test-data/plink/aric/ARIC_PLINK_flagged_chromosomal_abnormalities_zeroed_out.flipped.bed.gz",
-  "genotype_array_qc_wf.bim": "s3://rti-biocloud-test-data/plink/aric/ARIC_PLINK_flagged_chromosomal_abnormalities_zeroed_out.flipped.bim.gz",
-  "genotype_array_qc_wf.fam": "s3://rti-biocloud-test-data/plink/aric/ARIC_PLINK_flagged_chromosomal_abnormalities_zeroed_out.flipped.fam.gz",
+  "genotype_array_qc_wf.bed": "s3://rti-biocloud-test-data/plink/aric/ARIC_b37.bed.gz",
+  "genotype_array_qc_wf.bim": "s3://rti-biocloud-test-data/plink/aric/ARIC_b37.bim.gz",
+  "genotype_array_qc_wf.fam": "s3://rti-biocloud-test-data/plink/aric/ARIC_b37.fam.gz",
   "genotype_array_qc_wf.sex_check_phenotype_file": "s3://rti-biocloud-test-data/plink/aric/aric_combined.var.good.ped",
   "genotype_array_qc_wf.phenotype_header_rows": 1,
   "genotype_array_qc_wf.phenotype_fid_col": 0,
   "genotype_array_qc_wf.phenotype_iid_col": 6,
   "genotype_array_qc_wf.phenotype_sex_col": 4,
   "genotype_array_qc_wf.phenotype_delimiter": "tab",
+
+  "genotype_array_qc_wf.terastructure_rfreq_perc": 0.2,
 
   "genotype_array_qc_wf.chrs": [
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
