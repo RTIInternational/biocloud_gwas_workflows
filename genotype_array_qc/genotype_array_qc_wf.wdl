@@ -64,7 +64,9 @@ workflow genotype_array_qc_wf{
     # If that's the fam file that's fine too but the important thing is to check that the sex calls that will
     # Be used in association testing are actually accurate
     File sex_check_phenotype_file
+    # Number of header rows (all header rows must be removed)
     Int phenotype_header_rows
+    # 0-based indices of required columns for sex check
     Int phenotype_fid_col
     Int phenotype_iid_col
     Int phenotype_sex_col
