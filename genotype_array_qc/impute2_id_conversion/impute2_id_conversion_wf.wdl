@@ -207,8 +207,11 @@ workflow impute2_id_conversion_wf{
     # Resources subtasks
     # The only one you'll likely need to play for huge files is the id_convert cpu/mem
     # But mainly you just need to make sure the mem is roughly the size of the largest id_legend file
-    Int split_bed_cpu = 1
-    Int split_bed_mem_gb = 2
+    Int plink_cpu = 1
+    Int plink_mem_gb = 2
+
+    Int plink_chr_cpu = 1
+    Int plink_chr_mem_gb = 2
 
     Int merge_bed_cpu = 4
     Int merge_bed_mem_gb = 8
@@ -219,9 +222,6 @@ workflow impute2_id_conversion_wf{
     Int duplicate_id_cpu = 2
     Int duplicate_id_mem_gb = 6
 
-    Int x_merge_cpu = 1
-    Int x_merge_mem_gb = 2
-
     # Merge X chr to ensure PAR/NONPAR are not split (split-x will fail for pre-split files)
     call PLINK.make_bed as merge_x_chr{
         input:
@@ -231,8 +231,8 @@ workflow impute2_id_conversion_wf{
             output_basename = "${output_basename}.mergex",
             merge_x = true,
             merge_no_fail = no_fail,
-            cpu = x_merge_cpu,
-            mem_gb = x_merge_mem_gb
+            cpu = plink_cpu,
+            mem_gb = plink_mem_gb
     }
 
     # Split X chr by PAR/NONPAR
@@ -245,8 +245,8 @@ workflow impute2_id_conversion_wf{
             split_x = true,
             build_code = build_code,
             split_no_fail = no_fail,
-            cpu = x_merge_cpu,
-            mem_gb = x_merge_mem_gb
+            cpu = plink_cpu,
+            mem_gb = plink_mem_gb
     }
 
     # Parallelize impute2 id conversion by chr
@@ -261,8 +261,8 @@ workflow impute2_id_conversion_wf{
                 fam_in = split_x_chr.fam_out,
                 output_basename = "${output_basename}.chr.${chr}",
                 chr = chr,
-                cpu = split_bed_cpu,
-                mem_gb = split_bed_mem_gb
+                cpu = plink_chr_cpu,
+                mem_gb = plink_chr_mem_gb
         }
 
         # Convert IDs to Impute2 format
@@ -335,7 +335,9 @@ workflow impute2_id_conversion_wf{
                     bim_in = merge_beds.bim_out,
                     fam_in = merge_beds.fam_out,
                     exclude = get_variants_to_remove.dups_to_remove,
-                    output_basename = "${output_basename}.impute2_id.unique"
+                    output_basename = "${output_basename}.impute2_id.unique",
+                    cpu = plink_cpu,
+                    mem_gb = plink_mem_gb
             }
 
             # Remove numbers from duplicate variant IDs
