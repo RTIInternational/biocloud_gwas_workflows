@@ -10,6 +10,8 @@ task format_phenotype_file{
     Int sex_col
     String delimiter
 
+    Int tail_n = header_rows + 1
+
     # Runtime environment
     String docker = "ubuntu:18.04"
     Int cpu = 1
@@ -17,7 +19,7 @@ task format_phenotype_file{
 
     command {
         set -e
-        tail -n +${header_rows} ${phenotype_in} |
+        tail -n +${tail_n} ${phenotype_in} |
         perl -lne '
             $delimiter = lc("${delimiter}");
             $delimiter = ($delimiter eq "comma") ? "," : (($delimiter eq "tab") ? "\t" : (($delimiter eq "space") ? " " : ""));
