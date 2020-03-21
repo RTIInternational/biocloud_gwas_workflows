@@ -1,8 +1,14 @@
 {
-  "genotype_array_qc_wf.output_basename": "test_array_qc",
-  "genotype_array_qc_wf.bed": "s3://rti-biocloud-test-data/plink/kreek/ea_chr_all.bed.gz",
-  "genotype_array_qc_wf.bim": "s3://rti-biocloud-test-data/plink/kreek/ea_chr_all.bim.gz",
-  "genotype_array_qc_wf.fam": "s3://rti-biocloud-test-data/plink/kreek/ea_chr_all.fam.gz",
+  "genotype_array_qc_wf.output_basename": "aric_qc",
+  "genotype_array_qc_wf.bed": "s3://rti-biocloud-test-data/plink/aric/ARIC_PLINK_flagged_chromosomal_abnormalities_zeroed_out.flipped.bed.gz",
+  "genotype_array_qc_wf.bim": "s3://rti-biocloud-test-data/plink/aric/ARIC_PLINK_flagged_chromosomal_abnormalities_zeroed_out.flipped.bim.gz",
+  "genotype_array_qc_wf.fam": "s3://rti-biocloud-test-data/plink/aric/ARIC_PLINK_flagged_chromosomal_abnormalities_zeroed_out.flipped.fam.gz",
+  "genotype_array_qc_wf.sex_check_phenotype_file": "s3://rti-biocloud-test-data/plink/aric/aric_combined.var.good.ped",
+  "genotype_array_qc_wf.phenotype_header_rows": 1,
+  "genotype_array_qc_wf.phenotype_fid_col": 0,
+  "genotype_array_qc_wf.phenotype_iid_col": 6,
+  "genotype_array_qc_wf.phenotype_sex_col": 4,
+  "genotype_array_qc_wf.phenotype_delimiter": "tab",
 
   "genotype_array_qc_wf.chrs": [
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
@@ -40,12 +46,19 @@
   "genotype_array_qc_wf.structure_ref_bim": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.bim",
   "genotype_array_qc_wf.structure_ref_fam": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.fam",
   "genotype_array_qc_wf.structure_ref_ancestry_psam": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/phase3_orig.psam",
-  "genotype_array_qc_wf.sex_check_phenotype_file": "s3://rti-biocloud-test-data/plink/kreek/phs001109.v1.pht005447.v1.p1.c1.Addictive_Diseases_Subject_Phenotypes.DS-ADX-IRB-NPU.txt",
-  "genotype_array_qc_wf.phenotype_header_rows": 11,
-  "genotype_array_qc_wf.phenotype_fid_col": 0,
-  "genotype_array_qc_wf.phenotype_iid_col": 1,
-  "genotype_array_qc_wf.phenotype_sex_col": 3,
-  "genotype_array_qc_wf.phenotype_delimiter": "tab"
+
+  "genotype_array_qc_wf.plink_filter_cpu": 4,
+  "genotype_array_qc_wf.plink_filter_mem_gb": 8,
+  "genotype_array_qc_wf.plink_chr_cpu": 1,
+  "genotype_array_qc_wf.plink_chr_mem_gb": 2,
+  "genotype_array_qc_wf.sex_check_cpu": 8,
+  "genotype_array_qc_wf.sex_check_mem_gb": 8,
+  "genotype_array_qc_wf.merge_bed_cpu": 8,
+  "genotype_array_qc_wf.merge_bed_mem_gb": 16,
+  "genotype_array_qc_wf.king_cpu_per_split": 16,
+  "genotype_array_qc_wf.king_mem_gb_per_split": 16,
+  "genotype_array_qc_wf.pca_cpu": 16,
+  "genotype_array_qc_wf.pca_mem_gb": 16
 }
 
 
