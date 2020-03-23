@@ -42,14 +42,15 @@ workflow genotype_array_qc_wf{
     Int max_structure_snps = 1000000
 
     # Ancestries to partition samples between
-    Array[String] ancestries_to_include = ["EUR", "EAS", "AFR"]
+    Array[String] ancestries_to_include = ["EUR", "EAS", "AFR", "AMR"]
     Int min_ancestry_samples_to_postprocess = 10
 
     # What level of ancestry is being examined [SUPERPOP | POP]
     String ancestry_pop_type = "SUPERPOP"
 
     # Cutoffs defining how to call ancestry from admixture proportions
-    Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25"]
+    Array[String] ancestry_definitions = ["AFR=EAS<0.25;AMR<0.25;AFR>0.25", "EUR=EUR>0.25;EAS<0.25;AMR<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25;EUR<0.25;AMR<0.25", "AMR=AMR>0.25;AFR<0.25;EAS<0.25;EUR<0.25"]
+    #Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25",]
 
     # Various TeraStructure params
     Float terastructure_rfreq_perc = 0.2
@@ -247,7 +248,7 @@ workflow genotype_array_qc_wf{
             input:
                 input_file = subset_ancestry.bim_out
         }
-        Int low_call_snp_count = failed_sample_count.num_lines - subset_ancestry_snp_count.num_lines
+        Int low_call_snp_count = impute2_snp_count.num_lines - subset_ancestry_snp_count.num_lines
 
         # Apply HWE filter
         call HWE.hwe_filter_wf{
@@ -330,7 +331,7 @@ workflow genotype_array_qc_wf{
             input:
                 input_file = get_excess_homo_samples.excess_homos
         }
-        Int excess_homo_sample_count = hwe_snp_count.num_lines - excess_homo_count.num_lines
+        Int excess_homo_sample_count = excess_homo_count.num_lines
 
         # Filter them out (if they exist)
         if(size(get_excess_homo_samples.excess_homos) > 0){
@@ -424,7 +425,7 @@ workflow genotype_array_qc_wf{
         # Count number of sex-discrepant samples
         call UTILS.wc as count_sex_check_failed_samples{
             input:
-                input_file = relatedness_wf.related_samples
+                input_file = sex_check_wf.samples_to_remove
         }
         Int sex_check_failed_samples = count_sex_check_failed_samples.num_lines
 
@@ -507,9 +508,9 @@ workflow genotype_array_qc_wf{
         }
 
         Int total_removed_snps = init_snp_count.num_lines - final_snp_count.num_lines
-        Int total_removed_samples = init_sample_count.num_lines - final_sample_count.num_lines
+        Int total_removed_samples = init_ancestry_sample_count - final_sample_count.num_lines
         Float pct_pass_snps = (final_snp_count.num_lines * 1.0)/(init_snp_count.num_lines * 1.0)
-        Float pct_pass_samples = (final_sample_count.num_lines * 1.0)/(init_sample_count.num_lines * 1.0)
+        Float pct_pass_samples = (final_sample_count.num_lines * 1.0)/(init_ancestry_sample_count * 1.0)
     }
 
 
@@ -523,6 +524,8 @@ workflow genotype_array_qc_wf{
         Array[Int] structure_samples_by_ancestry = count_structure_samples.num_lines
         Array[Int] low_call_snps_by_ancestry = low_call_snp_count
         Array[Int] hwe_failed_snps_by_ancestry = hwe_failed_snp_count
+        Array[Int] low_call_samples_by_ancestry = low_call_sample_count
+
         Array[Int] excess_homo_samples_by_ancestry = excess_homo_sample_count
         Array[Int] related_samples_by_ancestry = related_sample_removal_candidate_count
         Array[Int] failed_sex_check_by_ancestry = sex_check_failed_samples
