@@ -42,15 +42,15 @@ workflow genotype_array_qc_wf{
     Int max_structure_snps = 1000000
 
     # Ancestries to partition samples between
-    Array[String] ancestries_to_include = ["EUR", "EAS", "AFR", "AMR"]
+    Array[String] ancestries_to_include = ["EUR", "EAS", "AFR"]
     Int min_ancestry_samples_to_postprocess = 10
 
     # What level of ancestry is being examined [SUPERPOP | POP]
     String ancestry_pop_type = "SUPERPOP"
 
     # Cutoffs defining how to call ancestry from admixture proportions
-    Array[String] ancestry_definitions = ["AFR=EAS<0.25;AMR<0.25;AFR>0.25", "EUR=EUR>0.25;EAS<0.25;AMR<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25;EUR<0.25;AMR<0.25", "AMR=AMR>0.25;AFR<0.25;EAS<0.25;EUR<0.25"]
-    #Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25",]
+    #Array[String] ancestry_definitions = ["AFR=EAS<0.25;AMR<0.25;AFR>0.25", "EUR=EUR>0.25;EAS<0.25;AMR<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25;EUR<0.25;AMR<0.25", "AMR=AMR>0.25;AFR<0.25;EAS<0.25;EUR<0.25"]
+    Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25"]
 
     # Various TeraStructure params
     Float terastructure_rfreq_perc = 0.2
@@ -484,15 +484,15 @@ workflow genotype_array_qc_wf{
         String final_basename = basename(split_final_bed, ".bed") + ".xmerged"
 
         call PLINK.make_bed as final_merge_x_chr{
-        input:
-            bed_in = split_final_bed,
-            bim_in = split_final_bim,
-            fam_in = split_final_fam,
-            output_basename = final_basename,
-            merge_x = true,
-            merge_no_fail = true,
-            cpu = plink_filter_cpu,
-            mem_gb = plink_filter_mem_gb
+            input:
+                bed_in = split_final_bed,
+                bim_in = split_final_bim,
+                fam_in = split_final_fam,
+                output_basename = final_basename,
+                merge_x = true,
+                merge_no_fail = true,
+                cpu = plink_filter_cpu,
+                mem_gb = plink_filter_mem_gb
         }
 
         # Final snp count
