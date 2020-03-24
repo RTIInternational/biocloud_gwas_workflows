@@ -28,7 +28,7 @@ workflow genotype_array_qc_wf{
 
     # LD-Filtering parameters for subworkflows (structure, relatedness, sex-check)
     File? ld_exclude_regions
-    Float ld_maf_cutoff = 0.1
+    Float ld_maf_cutoff = 0.01
     String ld_type = "indep-pairphase"
     Int ld_window_size = 20000
     Int ld_step_size = 2000
@@ -42,6 +42,7 @@ workflow genotype_array_qc_wf{
     Int max_structure_snps = 1000000
 
     # Ancestries to partition samples between
+    #Array[String] ancestries_to_include = ["EUR", "EAS", "AFR", "AMR"]
     Array[String] ancestries_to_include = ["EUR", "EAS", "AFR"]
     Int min_ancestry_samples_to_postprocess = 10
 
@@ -49,7 +50,7 @@ workflow genotype_array_qc_wf{
     String ancestry_pop_type = "SUPERPOP"
 
     # Cutoffs defining how to call ancestry from admixture proportions
-    #Array[String] ancestry_definitions = ["AFR=EAS<0.25;AMR<0.25;AFR>0.25", "EUR=EUR>0.25;EAS<0.25;AMR<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25;EUR<0.25;AMR<0.25", "AMR=AMR>0.25;AFR<0.25;EAS<0.25;EUR<0.25"]
+    #Array[String] ancestry_definitions = ["AFR=EAS<0.25;AMR<0.25;AFR>0.25", "EUR=EUR>0.25;EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25;EUR<0.25;AMR<0.25", "AMR=AMR>0.25;AFR<0.25;EUR<0.25"]
     Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25"]
 
     # Various TeraStructure params
@@ -439,6 +440,15 @@ workflow genotype_array_qc_wf{
                     output_filename = "${output_basename}.sex.kin.remove"
             }
             String combined_suffix = "sex_check.unrelated"
+
+            # Count length of samples in union
+            call UTILS.wc as get_sex_kin_filter_count{
+                input:
+                    input_file = get_file_union.output_file
+            }
+
+            # Number of related samples that also failed sex check
+            Int sex_related_overlap = sex_check_failed_samples + related_sample_removal_candidate_count - get_sex_kin_filter_count.num_lines
         }
 
         # Set sex file if doing only sex removal
@@ -477,6 +487,12 @@ workflow genotype_array_qc_wf{
             }
         }
 
+        # Get number of overlapping samples in related/sex check to account for differences
+        # In cases of overlap, final_samples + related_samples + sex_failed_samples + homo_samples + low_call_samples will != init_ancestry samples
+        # Need a convenient way to tell if someting is wrong so we correct explicitly for this overlap
+        Int sex_related_overlap_count = select_first([sex_related_overlap, 0])
+
+
         # Finally re-merge PAR/NONPAR regions of chrX
         File split_final_bed = select_first([filter_sex_and_kin.bed_out, qc_bed])
         File split_final_bim = select_first([filter_sex_and_kin.bim_out, qc_bim])
@@ -507,10 +523,16 @@ workflow genotype_array_qc_wf{
                 input_file = split_final_fam
         }
 
+        # Check that number of samples removed makes sense
         Int total_removed_snps = init_snp_count.num_lines - final_snp_count.num_lines
         Int total_removed_samples = init_ancestry_sample_count - final_sample_count.num_lines
         Float pct_pass_snps = (final_snp_count.num_lines * 1.0)/(init_snp_count.num_lines * 1.0)
         Float pct_pass_samples = (final_sample_count.num_lines * 1.0)/(init_ancestry_sample_count * 1.0)
+
+        # Check to make sure actual number of removed samples == expected removed samples
+        # If this number is different from total_removed_samples something unexpected happened
+        Int expected_removed_samples = sex_check_failed_samples + related_sample_removal_candidate_count + excess_homo_sample_count + low_call_sample_count - sex_related_overlap_count
+        Int unaccounted_samples = total_removed_samples - expected_removed_samples
     }
 
 
@@ -535,6 +557,11 @@ workflow genotype_array_qc_wf{
         Array[Int] total_removed_samples_by_ancestry = total_removed_samples
         Array[Float] pct_pass_snps_by_ancestry = pct_pass_snps
         Array[Float] pct_pass_samples_by_ancestry = pct_pass_samples
+        Array[Int] unaccounted_samples_by_ancestry = unaccounted_samples
+
+        # Ref samples that were misclassified by STRUCTURE and input samples that couldn't be classified
+        Int structure_misclassified_ref_samples = structure_wf.misclassified_ref_samples
+        Int structure_unclassified_samples = structure_wf.unclassified_samples
 
         # Fully filtered qc beds that have been through all filters
         Array[File] final_qc_bed = final_merge_x_chr.bed_out

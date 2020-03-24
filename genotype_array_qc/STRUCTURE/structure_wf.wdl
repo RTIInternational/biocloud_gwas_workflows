@@ -2,6 +2,7 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
 import "biocloud_gwas_workflows/biocloud_wdl_tools/terastructure/terastructure.wdl" as TSTRUCT
 import "biocloud_gwas_workflows/biocloud_wdl_tools/terastructure_postprocessing/terastructure_postprocessing.wdl" as TSP
+import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
 
 task get_structure_variants{
     File ref_bim
@@ -273,10 +274,25 @@ workflow structure_wf{
             ancestries = ancestries_to_include
     }
 
+    # Count number of 1000G ref samples that weren't classified correctly
+    call UTILS.wc as count_misclassified_ref_samples{
+        input:
+            input_file = terastructure_postprocess.misclassified_ref_samples
+    }
+
+    # Count number of samples that weren't classified as anything by structure
+    call UTILS.wc as count_unclassified_samples{
+        input:
+            input_file = terastructure_postprocess.unclassified_samples
+    }
+
+
     output{
         Array[File] ancestry_thetas = terastructure_postprocess.ancestry_thetas
         Array[File] triangle_plots = terastructure_postprocess.triangle_plots
         Array[File] samples_by_ancestry = order_by_ancestry.ancestry_file_out
+        Int misclassified_ref_samples = count_misclassified_ref_samples.num_lines
+        Int unclassified_samples = count_unclassified_samples.num_lines
     }
 
 }
