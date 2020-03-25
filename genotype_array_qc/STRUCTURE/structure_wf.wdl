@@ -87,6 +87,7 @@ workflow structure_wf{
     Int max_snps_to_analyze = 10000
 
     # 1000G ref files
+    Boolean include_ref_samples = true
     File ref_bed
     File ref_bim
     File ref_fam
@@ -102,6 +103,7 @@ workflow structure_wf{
     Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25"]
 
     # LD params
+    Boolean do_ld_prune = true
     File? ld_exclude_regions
     String ld_type
     Int window_size
@@ -112,6 +114,8 @@ workflow structure_wf{
     Float min_ld_maf
     Int merge_bed_cpu = 4
     Int merge_bed_mem_gb = 8
+    Int plink_cpu = 1
+    Int plink_mem_gb = 2
 
     # TeraStructur parameters
     Float terastructure_rfreq_perc = 0.2
@@ -122,44 +126,51 @@ workflow structure_wf{
     Boolean? compute_beta
     File? id_map
 
-    # Do LD-prune of autosomes
-    scatter(chr_index in range(22)){
-        Int chr = chr_index + 1
-        # Get subset of markers in LD
-        call LD.ld_prune_wf as ld_prune{
+    if(do_ld_prune){
+        # Do LD-prune of autosomes
+        scatter(chr_index in range(22)){
+            Int chr = chr_index + 1
+            # Get subset of markers in LD
+            call LD.ld_prune_wf as ld_prune{
+                input:
+                    bed_in = bed_in,
+                    bim_in = bim_in,
+                    fam_in = fam_in,
+                    output_basename = "${output_basename}.chr${chr}.ldprune",
+                    ld_type = ld_type,
+                    window_size = window_size,
+                    step_size = step_size,
+                    r2_threshold = r2_threshold,
+                    cpu = ld_cpu,
+                    mem_gb = ld_mem_gb,
+                    maf = min_ld_maf,
+                    chr = chr,
+                    exclude_regions = ld_exclude_regions
+            }
+        }
+
+        # Merge chromosomes
+        call PLINK.merge_beds{
             input:
-                bed_in = bed_in,
-                bim_in = bim_in,
-                fam_in = fam_in,
-                output_basename = "${output_basename}.chr${chr}.ldprune",
-                ld_type = ld_type,
-                window_size = window_size,
-                step_size = step_size,
-                r2_threshold = r2_threshold,
-                cpu = ld_cpu,
-                mem_gb = ld_mem_gb,
-                maf = min_ld_maf,
-                chr = chr,
-                exclude_regions = ld_exclude_regions
+                bed_in = ld_prune.bed_out,
+                bim_in = ld_prune.bim_out,
+                fam_in = ld_prune.fam_out,
+                output_basename = "${output_basename}.ldprune",
+                cpu = merge_bed_cpu,
+                mem_gb = merge_bed_mem_gb
         }
     }
 
-    # Merge chromosomes
-    call PLINK.merge_beds{
-        input:
-            bed_in = ld_prune.bed_out,
-            bim_in = ld_prune.bim_out,
-            fam_in = ld_prune.fam_out,
-            output_basename = "${output_basename}.ldprune",
-            cpu = merge_bed_cpu,
-            mem_gb = merge_bed_mem_gb
-    }
+    File sample_bed = select_first([merge_beds.bed_out, bed_in])
+    File sample_bim = select_first([merge_beds.bim_out, bim_in])
+    File sample_fam = select_first([merge_beds.fam_out, fam_in])
+
 
     # Get list of SNPs to include
     call get_structure_variants{
         input:
             ref_bim = ref_bim,
-            data_bim = merge_beds.bim_out,
+            data_bim = sample_bim,
             output_filename = "structure.variants",
             num_snps = max_snps_to_analyze
     }
@@ -167,13 +178,15 @@ workflow structure_wf{
     # Subset the selected overlapping SNPs from each dataset
     call PLINK.make_bed as subset_data{
         input:
-            bed_in = merge_beds.bed_out,
-            bim_in = merge_beds.bim_out,
-            fam_in = merge_beds.fam_out,
+            bed_in = sample_bed,
+            bim_in = sample_bim,
+            fam_in = sample_fam,
             extract = get_structure_variants.variant_ids,
             snps_only = true,
             snps_only_type = "just-acgt",
-            output_basename = "${output_basename}.structure_snps"
+            output_basename = "${output_basename}.structure_snps",
+            cpu = plink_cpu,
+            mem_gb = plink_mem_gb
     }
 
     # Subset SNPs from ref dataset
@@ -196,6 +209,8 @@ workflow structure_wf{
             snps_only = true,
             snps_only_type = 'just-acgt',
             output_basename = "${output_basename}.1000g.ref.structure_snps",
+            cpu = plink_cpu,
+            mem_gb = plink_mem_gb
     }
 
     # Check to see if there are any merge conflicts that require strand-flipping
@@ -209,7 +224,10 @@ workflow structure_wf{
             fam_in_b = subset_ref.fam_out,
             merge_mode = 7,
             ignore_errors = true,
-            output_basename = "${output_basename}.combined.merge_conflicts"
+            output_basename = "${output_basename}.combined.merge_conflicts",
+            cpu = merge_bed_cpu,
+            mem_gb = merge_bed_mem_gb
+
     }
 
     # Flip ref SNPs if there are merge conflicts
@@ -222,7 +240,9 @@ workflow structure_wf{
                 bim_in = subset_ref.bim_out,
                 fam_in = subset_ref.fam_out,
                 output_basename = "${output_basename}.1000g.ref.structure_snps.flipped",
-                flip = get_merge_conflicts.missnp_out
+                flip = get_merge_conflicts.missnp_out,
+                cpu = plink_cpu,
+                mem_gb = plink_mem_gb
         }
     }
 
@@ -236,7 +256,9 @@ workflow structure_wf{
             bim_in_b = select_first([flip_ref.bim_out, subset_ref.bim_out]),
             fam_in_b = select_first([flip_ref.fam_out, subset_ref.fam_out]),
             ignore_errors = false,
-            output_basename = "${output_basename}.combined.structure_snps"
+            output_basename = "${output_basename}.combined.structure_snps",
+            cpu = merge_bed_cpu,
+            mem_gb = merge_bed_mem_gb
     }
 
     # Cluster dataset using terastructure

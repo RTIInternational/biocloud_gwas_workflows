@@ -35,6 +35,7 @@ workflow genotype_array_qc_wf{
     Float ld_r2_threshold = 0.5
 
     # Structure ancestry partitioning filtering parameters
+    Boolean structure_do_ld_prune = true
     File structure_ref_bed
     File structure_ref_bim
     File structure_ref_fam
@@ -112,6 +113,23 @@ workflow genotype_array_qc_wf{
     Int king_mem_gb_per_split = 8
     Int pca_cpu = 4
     Int pca_mem_gb = 8
+
+    # Check some common errors to save time because otherwise it would take like 2 hours to catch these
+    # Quit if ancestry definitions and ancestries aren't same length
+    if(length(ancestries_to_include) != length(ancestry_definitions)){
+        call UTILS.raise_error as ancestry_definition_fail{
+            input:
+                msg = "Workflow input error: ancestries_to_incude must be same length as ancestry_definitions!"
+        }
+    }
+
+    # Quit if ancestry != POP or SUPERPOP
+    if(ancestry_pop_type != "SUPERPOP" && ancestry_pop_type != "POP"){
+        call UTILS.raise_error as ancestry_pop_type_fail{
+            input:
+                msg = "Workflow input error: ancestry_type MUST be either POP or SUPERPOP!"
+        }
+    }
 
     # Remove phenotype from fam file
     call PLINK.remove_fam_phenotype{
@@ -191,6 +209,7 @@ workflow genotype_array_qc_wf{
             ancestries_to_include = ancestries_to_include,
             ancestry_pop_type = ancestry_pop_type,
             ancestry_definitions = ancestry_definitions,
+            do_ld_prune = structure_do_ld_prune,
             ld_exclude_regions = ld_exclude_regions,
             ld_type = ld_type,
             window_size = ld_window_size,

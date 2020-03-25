@@ -11,6 +11,7 @@
   "genotype_array_qc_wf.phenotype_delimiter": "tab",
 
   "genotype_array_qc_wf.terastructure_rfreq_perc": 0.2,
+  "genotype_array_qc_wf.structure_do_ld_prune": false,
 
   "genotype_array_qc_wf.chrs": [
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
