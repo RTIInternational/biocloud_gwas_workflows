@@ -42,22 +42,16 @@ workflow genotype_array_qc_wf{
     File structure_ref_bim
     File structure_ref_fam
     File structure_ref_ancestry_psam
-    Int max_structure_snps = 1000000
+    Int max_structure_snps = 100000000
 
-    # Ancestries to partition samples between
-    #Array[String] ancestries_to_include = ["EUR", "EAS", "AFR", "AMR"]
-    Array[String] ancestries_to_include = ["EUR", "EAS", "AFR"]
-    #Array[String] ancestries_to_include = ["CEU", "CHB", "YRI"]
+    # Ancestries to partition samples between 
+    Array[String] ancestries_to_include = ["CEU", "CHB", "YRI"]
+    Array[String] ancestry_definitions = ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"]
+    String ancestry_pop_type = "POP"
 
+    # Cutoff below which an ancestry group of samples won't go through full pipeline
+    # Handles cases where you might only be excluding a handful of outlier samples and only care about the main ancestry groups
     Int min_ancestry_samples_to_postprocess = 10
-
-    # What level of ancestry is being examined [SUPERPOP | POP]
-    String ancestry_pop_type = "SUPERPOP"
-
-    # Cutoffs defining how to call ancestry from admixture proportions
-    #Array[String] ancestry_definitions = ["AFR=EAS<0.25;AMR<0.25;AFR>0.25", "EUR=EUR>0.25;EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25;EUR<0.25;AMR<0.25", "AMR=AMR>0.25;AFR<0.25;EUR<0.25"]
-    Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25"]
-    #Array[String] ancestry_definitions = ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"]
 
     # Various TeraStructure params
     Float terastructure_rfreq_perc = 0.2
