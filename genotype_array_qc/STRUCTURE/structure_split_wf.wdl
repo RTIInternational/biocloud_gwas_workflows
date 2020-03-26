@@ -101,13 +101,13 @@ workflow structure_wf{
 
     # 1000G ancestry phenotype info
     String ancestry_psam
-    Array[String] ancestries_to_include = ["EUR", "EAS", "AFR"]
+    Array[String] ancestries_to_include = ["CEU", "CHB", "YRI"]
     # Column where 1000G sample id is found in ancestry psam file
     Int ancestry_sample_id_col = 1
     # What level of ancestry is being examined [SUPERPOP | POP]
-    String ancestry_pop_type = "SUPERPOP"
+    String ancestry_pop_type = "POP"
     # Cutoffs defining how to call ancestry from admixture proportions
-    Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25"]
+    Array[String] ancestry_definitions = ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"]
 
     # LD params
     Boolean do_ld_prune = true
