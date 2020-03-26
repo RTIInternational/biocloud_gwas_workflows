@@ -7,7 +7,6 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
 import "biocloud_gwas_workflows/biocloud_wdl_tools/split_utils/split_utils.wdl" as SPLIT
 import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV
 
-
 task get_structure_variants{
     File ref_bim
     File data_bim
@@ -133,6 +132,7 @@ workflow structure_wf{
     Boolean? compute_beta
     File? id_map
 
+    # Optionally reduce to set of SNPs in LD
     if(do_ld_prune){
         # Do LD-prune of autosomes
         scatter(chr_index in range(22)){
@@ -156,7 +156,7 @@ workflow structure_wf{
             }
         }
 
-        # Merge chromosomes
+        # Merge LD chromosomes into single dataset
         call PLINK.merge_beds{
             input:
                 bed_in = ld_prune.bed_out,
@@ -205,7 +205,6 @@ workflow structure_wf{
             cpu = plink_cpu,
             mem_gb = plink_mem_gb
     }
-
 
     # Split fam file into subsets of samples
     call SPLIT.split_file as get_sample_splits{
