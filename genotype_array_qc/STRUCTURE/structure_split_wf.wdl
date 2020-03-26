@@ -2,53 +2,11 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
 import "biocloud_gwas_workflows/biocloud_wdl_tools/terastructure/terastructure.wdl" as TSTRUCT
 import "biocloud_gwas_workflows/biocloud_wdl_tools/terastructure_postprocessing/terastructure_postprocessing.wdl" as TSP
+import "biocloud_gwas_workflows/biocloud_wdl_tools/terastructure_merger/terastructure_merger.wdl" as TSM
 import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
 import "biocloud_gwas_workflows/biocloud_wdl_tools/split_utils/split_utils.wdl" as SPLIT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV
 
-task standardize_theta_cols{
-    File theta
-    File ref_fam
-
-    # Runtime environment
-    String docker = "ubuntu:18.04"
-    Int cpu = 4
-    Int mem_gb = 8
-
-    command <<<
-        set -e
-        # Get lists of non-A/T and non-C/G SNPs
-        perl -lane 'if (($F[4] eq "A" && $F[5] ne "T") || ($F[4] eq "T" && $F[5] ne "A") || ($F[4] eq "C" && $F[5] ne "G") || ($F[4] eq "G" && $F[5] ne "C")) { print $F[1]; }' \
-            ${data_bim} | \
-            sort -u | \
-            grep "rs" \
-            > data.variants
-
-        # Get variants from full ref dataset
-        cut -f 2,2 ${ref_bim} | \
-            grep "rs" | \
-            sort -u > ref.variants
-
-        # Get intersection
-        comm -12 data.variants ref.variants > intersect.variants
-
-        # Get random subset
-        perl -ne 'print rand()."\t".$_' intersect.variants | \
-            sort -k1,1 | \
-            head -${num_snps} | \
-            cut -f2,2 > ${output_filename}
-    >>>
-
-    runtime {
-        docker: docker
-        cpu: cpu
-        memory: "${mem_gb} GB"
-    }
-
-    output {
-        File variant_ids = "${output_filename}"
-    }
-
-}
 
 task get_structure_variants{
     File ref_bim
@@ -133,7 +91,7 @@ workflow structure_wf{
     Int max_snps_to_analyze = 10000
 
     Boolean split_mode = true
-    Int max_samples_per_split = 4000
+    Int max_samples_per_split = 2000
 
     # 1000G ref files
     Boolean include_ref_samples = true
@@ -154,13 +112,13 @@ workflow structure_wf{
     # LD params
     Boolean do_ld_prune = true
     File? ld_exclude_regions
-    String ld_type
-    Int window_size
-    Int step_size
-    Float r2_threshold
+    String? ld_type
+    Int? window_size
+    Int? step_size
+    Float? r2_threshold
     Int ld_cpu = 1
     Int ld_mem_gb = 2
-    Float min_ld_maf
+    Float? min_ld_maf
     Int merge_bed_cpu = 4
     Int merge_bed_mem_gb = 8
     Int plink_cpu = 1
@@ -338,6 +296,23 @@ workflow structure_wf{
                 cpu = terastructure_cpu,
                 mem_gb = terastructure_mem_gb
         }
+
+    }
+
+    # Put terastructure theta split outputs into a standardized order
+    # Otherwise the columns wouldn't necessarily align.
+    File template_theta = terastructure.admixture_proportions[0]
+    File template_fam   = combine_ref_and_data.fam_out[0]
+    scatter(split_index in range(length(get_sample_splits.output_files))){
+        call TSM.terastructure_merger{
+            input:
+                template_theta = template_theta,
+                template_fam = template_fam,
+                theta = terastructure.admixture_proportions[split_index],
+                fam = combine_ref_and_data.fam_out[split_index],
+                output_filename = "${output_basename}.${split_index}.standardized.theta.txt"
+        }
+
     }
 
     # Combine FAM files into single file
@@ -350,8 +325,8 @@ workflow structure_wf{
     # Combine theta files into single file
     call UTILS.cat as merge_theta_files{
         input:
-            input_files = terastructure.admixture_proportions,
-            output_filename = "${output_basename}.merged.theta.txt"
+            input_files = terastructure_merger.theta_out,
+            output_filename = "${output_basename}.standardized.merged.theta.txt"
     }
 
     # Analyze results and get ancestry groups from terastructure output

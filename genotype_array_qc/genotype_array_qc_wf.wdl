@@ -1,6 +1,6 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/genotype_array_qc/impute2_id_conversion/impute2_id_conversion_wf.wdl" as IDCONVERT
-import "biocloud_gwas_workflows/genotype_array_qc/STRUCTURE/structure_wf.wdl" as STRUCTURE
+import "biocloud_gwas_workflows/genotype_array_qc/STRUCTURE/structure_split_wf.wdl" as STRUCTURE
 import "biocloud_gwas_workflows/genotype_array_qc/hwe_filter/hwe_filter_wf.wdl" as HWE
 import "biocloud_gwas_workflows/genotype_array_qc/relatedness/relatedness_wf.wdl" as REL
 import "biocloud_gwas_workflows/genotype_array_qc/sex_check/sex_check_wf.wdl" as SEX
@@ -36,6 +36,8 @@ workflow genotype_array_qc_wf{
 
     # Structure ancestry partitioning filtering parameters
     Boolean structure_do_ld_prune = true
+    Boolean structure_split_mode = true
+    Int structure_max_samples_per_split = 4000
     File structure_ref_bed
     File structure_ref_bim
     File structure_ref_fam
@@ -45,6 +47,8 @@ workflow genotype_array_qc_wf{
     # Ancestries to partition samples between
     #Array[String] ancestries_to_include = ["EUR", "EAS", "AFR", "AMR"]
     Array[String] ancestries_to_include = ["EUR", "EAS", "AFR"]
+    #Array[String] ancestries_to_include = ["CEU", "CHB", "YRI"]
+
     Int min_ancestry_samples_to_postprocess = 10
 
     # What level of ancestry is being examined [SUPERPOP | POP]
@@ -53,6 +57,7 @@ workflow genotype_array_qc_wf{
     # Cutoffs defining how to call ancestry from admixture proportions
     #Array[String] ancestry_definitions = ["AFR=EAS<0.25;AMR<0.25;AFR>0.25", "EUR=EUR>0.25;EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25;EUR<0.25;AMR<0.25", "AMR=AMR>0.25;AFR<0.25;EUR<0.25"]
     Array[String] ancestry_definitions = ["AFR=EAS<0.25;AFR>0.25", "EUR=EAS<0.25;AFR<0.25", "EAS=EAS>0.25;AFR<0.25"]
+    #Array[String] ancestry_definitions = ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"]
 
     # Various TeraStructure params
     Float terastructure_rfreq_perc = 0.2
@@ -202,6 +207,8 @@ workflow genotype_array_qc_wf{
             fam_in = filter_failed_samples.fam_out,
             output_basename = "${output_basename}.structure",
             max_snps_to_analyze = max_structure_snps,
+            split_mode = structure_split_mode,
+            max_samples_per_split = structure_max_samples_per_split,
             ref_bed = structure_ref_bed,
             ref_bim = structure_ref_bim,
             ref_fam = structure_ref_fam,
