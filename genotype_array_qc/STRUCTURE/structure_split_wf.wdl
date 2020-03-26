@@ -20,15 +20,30 @@ task get_structure_variants{
 
     command <<<
         set -e
+
+        data_bim=${data_bim}
+        ref_bim=${ref_bim}
+
+        # Unzip bims if necessary
+        if [[ ${data_bim} =~ \.gz$ ]]; then
+            gunzip -c ${data_bim} > data.bim
+            data_bim=data.bim
+        fi
+
+        if [[ ${ref_bim} =~ \.gz$ ]]; then
+            gunzip -c ${ref_bim} > ref.bim
+            ref_bim=ref.bim
+        fi
+
         # Get lists of non-A/T and non-C/G SNPs
         perl -lane 'if (($F[4] eq "A" && $F[5] ne "T") || ($F[4] eq "T" && $F[5] ne "A") || ($F[4] eq "C" && $F[5] ne "G") || ($F[4] eq "G" && $F[5] ne "C")) { print $F[1]; }' \
-            ${data_bim} | \
+            $data_bim | \
             sort -u | \
             grep "rs" \
             > data.variants
 
         # Get variants from full ref dataset
-        cut -f 2,2 ${ref_bim} | \
+        cut -f 2,2 $ref_bim | \
             grep "rs" | \
             sort -u > ref.variants
 
@@ -68,7 +83,17 @@ task get_ancestry_sample_ids{
     command <<<
         # Grep anything that matches any of the ancestries
         # And then select the sample IDs (adding 0 as the first column as a family id for plink1.9)
-        grep "${sep="\\|" ancestries_to_include}" ${ancestry_psam} | awk '{print "0",$${sample_id_col}}' > ${output_filename}
+        set -e
+
+        psam=${ancestry_psam}
+
+         # Unzip psam if necessary
+        if [[ ${ancestry_psam} =~ \.gz$ ]]; then
+            gunzip -c ${ancestry_psam} > ref.psam
+            psam=ref.psam
+        fi
+
+        grep "${sep="\\|" ancestries_to_include}" $psam | awk '{print "0",$${sample_id_col}}' > ${output_filename}
     >>>
 
     runtime {
