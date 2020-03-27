@@ -9,6 +9,8 @@ workflow hwe_filter_wf{
     Float hwe_filter_pvalue
     Int cpu
     Int mem_gb
+    Int merge_cpu = 4
+    Int merge_mem_gb
 
     # HWE filter on autosomes
     call PLINK.make_bed as hwe_auto{
@@ -90,7 +92,9 @@ workflow hwe_filter_wf{
                 bim_in_b = extract_hwe_chrx.bim_out,
                 fam_in_b = extract_hwe_chrx.fam_out,
                 ignore_errors = false,
-                output_basename = "${output_basename}"
+                output_basename = "${output_basename}",
+                cpu = merge_cpu,
+                mem_gb = merge_mem_gb
         }
     }
 
