@@ -61,7 +61,7 @@
   "genotype_array_qc_wf.sex_check_cpu": 16,
   "genotype_array_qc_wf.sex_check_mem_gb": 24,
   "genotype_array_qc_wf.merge_bed_cpu": 32,
-  "genotype_array_qc_wf.merge_bed_mem_gb": 64,
+  "genotype_array_qc_wf.merge_bed_mem_gb": 128,
   "genotype_array_qc_wf.king_cpu_per_split": 32,
   "genotype_array_qc_wf.king_mem_gb_per_split": 32,
   "genotype_array_qc_wf.pca_cpu": 64,
