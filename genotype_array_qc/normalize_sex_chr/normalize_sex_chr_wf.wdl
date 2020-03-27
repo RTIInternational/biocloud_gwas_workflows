@@ -54,7 +54,7 @@ workflow normalize_sex_chr_wf{
                 output_basename = "${output_basename}.splitx",
                 split_x = true,
                 build_code = build_code,
-                merge_no_fail = no_fail,
+                split_no_fail = no_fail,
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb
         }
@@ -71,7 +71,7 @@ workflow normalize_sex_chr_wf{
                 fam_in = fam_in,
                 output_basename = "${output_basename}.mergex",
                 merge_x = true,
-                split_no_fail = no_fail,
+                merge_no_fail = no_fail,
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb
         }
