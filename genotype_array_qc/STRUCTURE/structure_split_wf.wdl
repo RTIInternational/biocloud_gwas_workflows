@@ -207,7 +207,7 @@ workflow structure_wf{
             num_snps = max_snps_to_analyze
     }
 
-    # Subset SNPs from ref dataset
+    # Get IDs of individuals from desired ancestry pops
     call get_ancestry_sample_ids{
         input:
             ancestry_psam = ancestry_psam,
@@ -216,7 +216,7 @@ workflow structure_wf{
             output_filename = "${output_basename}.ancestry.samples"
     }
 
-    # Get IDs of individuals of that ancestry
+    # Subset SNPs and samples from ref dataset to get overlapping SNPs from desired ancestries
     call PLINK.make_bed as subset_ref{
         input:
             bed_in = ref_bed,
