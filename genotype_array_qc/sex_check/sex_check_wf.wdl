@@ -1,5 +1,6 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
+import "biocloud_gwas_workflows/genotype_array_qc/normalize_sex_chr/normalize_sex_chr_wf.wdl" as NORM
 
 task format_phenotype_file{
     File phenotype_in
@@ -73,6 +74,8 @@ workflow sex_check_wf{
     Float male_min_f = 0.8
 
     # Runtime options
+    Int plink_cpu = 1
+    Int plink_mem_gb = 2
     Int ld_cpu = 8
     Int ld_mem_gb = 16
     Int sex_check_cpu = 8
@@ -90,37 +93,27 @@ workflow sex_check_wf{
             delimiter = delimiter
     }
 
-
-    # Merge X chr to ensure PAR/NONPAR are not split (split-x will fail for pre-split files)
-    call PLINK.make_bed as merge_x_chr{
+    # Make sure PAR/NONPAR regions are split
+    call NORM.normalize_sex_chr_wf{
         input:
             bed_in = bed_in,
             bim_in = bim_in,
             fam_in = fam_in,
-            output_basename = "${output_basename}.mergex",
-            merge_x = true,
-            merge_no_fail = no_fail
-    }
-
-
-    # Split X chr by PAR/NONPAR
-    call PLINK.make_bed as split_x_chr{
-        input:
-            bed_in = merge_x_chr.bed_out,
-            bim_in = merge_x_chr.bim_out,
-            fam_in = merge_x_chr.fam_out,
-            output_basename = "${output_basename}.splitx",
-            split_x = true,
+            expected_chrs = ["23","25"],
             build_code = build_code,
-            split_no_fail = no_fail
+            no_fail = no_fail,
+            output_basename = output_basename,
+            plink_cpu = plink_cpu,
+            plink_mem_gb = plink_mem_gb
     }
 
     # Get LD pruning set
     call LD.ld_prune_wf as ld_prune{
         input:
-            bed_in = split_x_chr.bed_out,
-            bim_in = split_x_chr.bim_out,
-            fam_in = split_x_chr.fam_out,
+            bed_in = normalize_sex_chr_wf.bed_out,
+            bim_in = normalize_sex_chr_wf.bim_out,
+            fam_in = normalize_sex_chr_wf.fam_out,
+            chr = "23, 25",
             output_basename = "${output_basename}.ldprune",
             ld_type = ld_type,
             window_size = window_size,
