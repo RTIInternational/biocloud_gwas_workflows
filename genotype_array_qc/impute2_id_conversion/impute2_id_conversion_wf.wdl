@@ -1,5 +1,34 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_to_impute2_ids/convert_to_impute2_ids.wdl" as IDCONVERT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV
+import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
+import "biocloud_gwas_workflows/genotype_array_qc/normalize_sex_chr/normalize_sex_chr_wf.wdl" as NORM
+
+task chr_sort_check{
+    # Return whether input chrs are in numerical sort order
+    Array[String] chrs
+
+    command<<<
+        sort -n ${write_lines(chrs)} > sorted.txt
+        diff sorted.txt ${write_lines(chrs)} > diff.txt
+        if [ $? -eq 0 ];then
+            echo "false"
+        else
+            echo "true"
+        fi
+    >>>
+
+    runtime {
+        docker: "ubuntu:18.04"
+        cpu: 1
+        memory: "100 MB"
+    }
+
+    output{
+        Boolean failed = read_boolean(stdout())
+    }
+
+}
 
 task label_duplicate_variants{
     File bim_in
@@ -80,6 +109,7 @@ task get_variants_to_remove{
     File bim_in
     File fam_in
     File duplicate_snp_ids
+    String? chr
     String output_basename
     String input_prefix = basename(sub(bed_in, "\\.gz$", ""), ".bed")
 
@@ -96,7 +126,7 @@ task get_variants_to_remove{
         # Bed file preprocessing
         if [[ ${bed_in} =~ \.gz$ ]]; then
             # Append gz tag to let plink know its gzipped input
-            gunzip -c ${bed_in} > plink_input/${input_prefix}.bed
+            unpigz -p ${cpu} -c ${bed_in} > plink_input/${input_prefix}.bed
         else
             # Otherwise just create softlink with normal
             ln -s ${bed_in} plink_input/${input_prefix}.bed
@@ -104,14 +134,14 @@ task get_variants_to_remove{
 
         # Bim file preprocessing
         if [[ ${bim_in} =~ \.gz$ ]]; then
-            gunzip -c ${bim_in} > plink_input/${input_prefix}.bim
+            unpigz -p ${cpu} -c ${bim_in} > plink_input/${input_prefix}.bim
         else
             ln -s ${bim_in} plink_input/${input_prefix}.bim
         fi
 
         # Fam file preprocessing
         if [[ ${fam_in} =~ \.gz$ ]]; then
-            gunzip -c ${fam_in} > plink_input/${input_prefix}.fam
+            unpigz -p ${cpu} -c ${fam_in} > plink_input/${input_prefix}.fam
         else
             ln -s ${fam_in} plink_input/${input_prefix}.fam
         fi
@@ -120,6 +150,7 @@ task get_variants_to_remove{
         plink --bfile plink_input/${input_prefix} \
             --missing \
             --extract ${duplicate_snp_ids} \
+            ${'--chr ' + chr} \
             --out ${output_basename}
 
         # Create remove list containing dupliicate with higher missing rate
@@ -213,62 +244,75 @@ workflow impute2_id_conversion_wf{
     Int plink_chr_cpu = 1
     Int plink_chr_mem_gb = 2
 
-    Int merge_bed_cpu = 4
-    Int merge_bed_mem_gb = 8
-
     Int id_convert_cpu = 2
     Int id_convert_mem_gb = 6
 
     Int duplicate_id_cpu = 2
     Int duplicate_id_mem_gb = 6
 
-    # Merge X chr to ensure PAR/NONPAR are not split (split-x will fail for pre-split files)
-    call PLINK.make_bed as merge_x_chr{
+
+    # Make sure chromsomes are provided in numerical sort order and error out if they aren't
+    # This is because the bim file output of this workflow will be concatenated in that order
+    # And plink chromosomes always appear in numerical order
+    call chr_sort_check{
+        input:
+            chrs = chrs
+    }
+
+    if(chr_sort_check.failed){
+        call UTILS.raise_error{
+            input:
+                msg = "Input chromosomes MUST be provided in numerical sort order!"
+        }
+    }
+
+    # Conditionally split/merge PAR/NONPAR regions of input chrX based on list of provided chromosomes
+    call NORM.normalize_sex_chr_wf{
         input:
             bed_in = bed_in,
             bim_in = bim_in,
             fam_in = fam_in,
-            output_basename = "${output_basename}.mergex",
-            merge_x = true,
-            merge_no_fail = no_fail,
+            expected_chrs = chrs,
+            build_code = build_code,
+            no_fail = no_fail,
+            output_basename = output_basename,
+            plink_cpu = plink_cpu,
+            plink_mem_gb = plink_mem_gb
+    }
+
+    # Get only the chrs you actually want from the plink dataset
+    call PLINK.make_bed as extract_chrs{
+        input:
+            bed_in = normalize_sex_chr_wf.bed_out,
+            bim_in = normalize_sex_chr_wf.bim_out,
+            fam_in = normalize_sex_chr_wf.fam_out,
+            chrs = chrs,
+            output_basename = "${output_basename}.extract_chrs",
             cpu = plink_cpu,
             mem_gb = plink_mem_gb
     }
 
-    # Split X chr by PAR/NONPAR
-    call PLINK.make_bed as split_x_chr{
-        input:
-            bed_in = merge_x_chr.bed_out,
-            bim_in = merge_x_chr.bim_out,
-            fam_in = merge_x_chr.fam_out,
-            output_basename = "${output_basename}.splitx",
-            split_x = true,
-            build_code = build_code,
-            split_no_fail = no_fail,
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb
-    }
+    File norm_bed = extract_chrs.bed_out
+    File norm_bim = extract_chrs.bim_out
+    File norm_fam = extract_chrs.fam_out
 
     # Parallelize impute2 id conversion by chr
     scatter(chr_index in range(length(chrs))){
         String chr = chrs[chr_index]
 
-        # Split by chr
-        call PLINK.make_bed as split_bed{
+        # Subset bim file to get only bim entries for current chr
+        call TSV.tsv_filter as split_bim{
             input:
-                bed_in = split_x_chr.bed_out,
-                bim_in = split_x_chr.bim_out,
-                fam_in = split_x_chr.fam_out,
-                output_basename = "${output_basename}.chr.${chr}",
-                chr = chr,
-                cpu = plink_chr_cpu,
-                mem_gb = plink_chr_mem_gb
+                tsv_input = norm_bim,
+                output_filename = "${output_basename}.chr.${chr}.bim",
+                header = false,
+                filter_string = "--eq 1:${chr}"
         }
 
         # Convert IDs to Impute2 format
         call IDCONVERT.convert_to_impute2_ids as impute2_id_bim{
             input:
-                in_file = split_bed.bim_out,
+                in_file = split_bim.tsv_output,
                 legend_file = id_legend_files[chr_index],
                 file_in_header = 0,
                 id_col = 1,
@@ -277,7 +321,7 @@ workflow impute2_id_conversion_wf{
                 a1_col = 4,
                 a2_col = 5,
                 file_in_monomorphic_allele = file_in_monomorphic_allele,
-                output_filename = "${output_basename}.impute2",
+                output_filename = "${output_basename}.chr.${chr}.impute2",
                 cpu = id_convert_cpu,
                 mem_gb = id_convert_mem_gb
         }
@@ -287,53 +331,51 @@ workflow impute2_id_conversion_wf{
             call label_duplicate_variants{
                 input:
                     bim_in = impute2_id_bim.output_file,
-                    output_basename = "${output_basename}.impute2.mrkdup",
+                    output_basename = "${output_basename}.chr.${chr}.impute2.mrkdup",
                     cpu = duplicate_id_cpu,
                     mem_gb = duplicate_id_mem_gb
             }
         }
-        File bim_files = select_first([label_duplicate_variants.bim_out, impute2_id_bim.output_file])
+        File chr_bim = select_first([label_duplicate_variants.bim_out, impute2_id_bim.output_file])
     }
 
-    # Merge into single file
-    #Array[File] bim_files = if(remove_duplicates) then select_all(label_duplicate_variants.bim_out) else impute2_id_bim.output_file
-    call PLINK.merge_beds{
+    # Concatenate chr bims into single bim
+    call UTILS.cat as cat_chr_bim{
         input:
-            bed_in = split_bed.bed_out,
-            bim_in = bim_files,
-            fam_in = split_bed.fam_out,
-            output_basename = "${output_basename}.impute2_id",
-            cpu = merge_bed_cpu,
-            mem_gb = merge_bed_mem_gb
+            input_files = chr_bim,
+            output_filename = "${output_basename}.impute2.bim"
     }
 
-    # Remove duplicates if specified
+    # Remove duplicates if desired
     if(remove_duplicates){
+
         # Get list of variant IDs labeled as duplicates
         call get_duplicate_variant_ids{
             input:
-                bim_in = merge_beds.bim_out,
+                bim_in = cat_chr_bim.output_file,
                 output_filename = "${output_basename}.dup_ids.txt"
         }
 
-        # Only do rest of workflow if there are actually duplicate variants to remove
+        # If duplicates, select variant with highest call rate from each group
         if (size(get_duplicate_variant_ids.duplicate_ids) > 0){
             # Get list of variants to remove
             call get_variants_to_remove{
                 input:
-                    bed_in = merge_beds.bed_out,
-                    bim_in = merge_beds.bim_out,
-                    fam_in = merge_beds.fam_out,
+                    bed_in = norm_bed,
+                    bim_in = cat_chr_bim.output_file,
+                    fam_in = norm_fam,
                     duplicate_snp_ids = get_duplicate_variant_ids.duplicate_ids,
-                    output_basename = output_basename
+                    output_basename = output_basename,
+                    cpu = plink_cpu,
+                    mem_gb = plink_mem_gb
             }
 
-            # Remove duplicate SNPs with lowest call rates
+            # Remove duplicates from dataset
             call PLINK.make_bed as remove_dups{
                 input:
-                    bed_in = merge_beds.bed_out,
-                    bim_in = merge_beds.bim_out,
-                    fam_in = merge_beds.fam_out,
+                    bed_in = norm_bed,
+                    bim_in = cat_chr_bim.output_file,
+                    fam_in = norm_fam,
                     exclude = get_variants_to_remove.dups_to_remove,
                     output_basename = "${output_basename}.impute2_id.unique",
                     cpu = plink_cpu,
@@ -344,17 +386,15 @@ workflow impute2_id_conversion_wf{
             call fix_ids{
                 input:
                     bim_in = remove_dups.bim_out,
-                    output_basename = "${output_basename}.impute2_id.unique"
+                    output_basename = "${output_basename}.impute2_id.unique.fixed"
             }
         }
     }
 
-    output{
-        File bed_out = select_first([remove_dups.bed_out, merge_beds.bed_out])
-        File bim_out = select_first([fix_ids.bim_out, merge_beds.bim_out])
-        File fam_out = select_first([remove_dups.fam_out, merge_beds.fam_out])
-        File? all_duplicate_ids = get_duplicate_variant_ids.duplicate_ids
-        File? duplicate_id_call_rates = get_variants_to_remove.dup_missing_report
+    output {
+        File bed_out = select_first([remove_dups.bed_out, norm_bed])
+        File bim_out = select_first([fix_ids.bim_out, cat_chr_bim.output_file])
+        File fam_out = select_first([remove_dups.fam_out, norm_fam])
         File? removed_duplicate_ids = get_variants_to_remove.dups_to_remove
     }
 }
