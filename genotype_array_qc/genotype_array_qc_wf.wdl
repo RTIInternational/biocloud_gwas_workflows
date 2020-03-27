@@ -44,7 +44,7 @@ workflow genotype_array_qc_wf{
     File structure_ref_ancestry_psam
     Int max_structure_snps = 100000000
 
-    # Ancestries to partition samples between 
+    # Ancestries to partition samples between
     Array[String] ancestries_to_include = ["CEU", "CHB", "YRI"]
     Array[String] ancestry_definitions = ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"]
     String ancestry_pop_type = "POP"
@@ -164,9 +164,7 @@ workflow genotype_array_qc_wf{
             plink_cpu = plink_filter_cpu,
             plink_mem_gb = plink_filter_mem_gb,
             plink_chr_cpu = plink_chr_cpu,
-            plink_chr_mem_gb = plink_chr_mem_gb,
-            merge_bed_cpu = merge_bed_cpu,
-            merge_bed_mem_gb = merge_bed_mem_gb
+            plink_chr_mem_gb = plink_chr_mem_gb
     }
 
     # Count sites after removing dups
@@ -223,7 +221,9 @@ workflow genotype_array_qc_wf{
             merge_bed_mem_gb = merge_bed_mem_gb,
             terastructure_rfreq_perc = terastructure_rfreq_perc,
             terastructure_cpu = terastructure_cpu,
-            terastructure_mem_gb = terastructure_mem_gb
+            terastructure_mem_gb = terastructure_mem_gb,
+            plink_cpu = plink_filter_cpu,
+            plink_mem_gb = plink_filter_mem_gb
     }
 
     # Filter out any ancestries with less than a minimum cutoff of samples
@@ -280,7 +280,9 @@ workflow genotype_array_qc_wf{
                 hwe_filter_pvalue = hwe_filter_pvalue,
                 output_basename = "${output_basename}.${ancestry}.snp_miss.hwe",
                 cpu = plink_filter_cpu,
-                mem_gb = plink_filter_mem_gb
+                mem_gb = plink_filter_mem_gb,
+                merge_cpu = merge_bed_cpu,
+                merge_mem_gb = merge_bed_mem_gb
         }
 
         # Count number of snps not in hwe
@@ -440,7 +442,9 @@ workflow genotype_array_qc_wf{
                 ld_cpu = plink_chr_cpu,
                 ld_mem_gb = plink_chr_mem_gb,
                 sex_check_cpu = sex_check_cpu,
-                sex_check_mem_gb = sex_check_mem_gb
+                sex_check_mem_gb = sex_check_mem_gb,
+                plink_cpu = plink_filter_cpu,
+                plink_mem_gb = plink_filter_mem_gb
         }
 
         # Count number of sex-discrepant samples
