@@ -2,9 +2,7 @@
     "hwe_filter_wf.bed_in": "s3://rti-biocloud-test-data/plink/kreek/ea_chr_all.bed.gz",
     "hwe_filter_wf.bim_in": "s3://rti-biocloud-test-data/plink/kreek/ea_chr_all.bim.gz",
     "hwe_filter_wf.fam_in": "s3://rti-biocloud-test-data/plink/kreek/ea_chr_all.fam.gz",
-    "hwe_filter_wf.output_basename": "test_hwe",
-    "hwe_filter_wf.hwe_filter_pvalue": 0.003,
-    "hwe_filter_wf.cpu": 2,
-    "hwe_filter_wf.mem_gb": 4
+    "hwe_filter_wf.output_basename": "kreek",
+    "hwe_filter_wf.hwe_filter_pvalue": 0.003
 }
 

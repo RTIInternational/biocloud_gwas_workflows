@@ -2,9 +2,7 @@
     "hwe_filter_wf.bed_in": "s3://gwas-cromwell/cromwell-execution/impute2_id_conversion_wf/cbea66f3-dd06-487d-8338-9ad6c7037dbd/call-remove_dups/test_id_wf.impute2_id.unique.bed",
     "hwe_filter_wf.bim_in": "s3://gwas-cromwell/cromwell-execution/impute2_id_conversion_wf/cbea66f3-dd06-487d-8338-9ad6c7037dbd/call-remove_dups/test_id_wf.impute2_id.unique.bim",
     "hwe_filter_wf.fam_in": "s3://gwas-cromwell/cromwell-execution/impute2_id_conversion_wf/cbea66f3-dd06-487d-8338-9ad6c7037dbd/call-remove_dups/test_id_wf.impute2_id.unique.fam",
-    "hwe_filter_wf.output_basename": "test_hwe",
-    "hwe_filter_wf.hwe_filter_pvalue": 0.003,
-    "hwe_filter_wf.cpu": 2,
-    "hwe_filter_wf.mem_gb": 4
+    "hwe_filter_wf.output_basename": "vidus",
+    "hwe_filter_wf.hwe_filter_pvalue": 0.003
 }
 
