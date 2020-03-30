@@ -1,4 +1,5 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
+import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
 
 workflow ld_prune_wf{
     File bed_in
@@ -20,6 +21,12 @@ workflow ld_prune_wf{
     Int cpu
     Int mem_gb
 
+    # Count number of samples (if <50 set --bad-ld option or plink2 will error out
+    call UTILS.wc as get_num_samples{
+        input:
+            input_file = fam_in
+    }
+
     # Get LD pruning set
     call PLINK.prune_ld_markers{
         input:
@@ -38,6 +45,7 @@ workflow ld_prune_wf{
             mem_gb = mem_gb,
             maf = maf,
             chr = chr,
+            bad_ld = (get_num_samples.num_lines <= 50),
             exclude_regions = exclude_regions
     }
 
