@@ -278,7 +278,7 @@ workflow structure_wf{
         if(size(get_merge_conflicts.missnp_out) > 0){
 
             # Try flipping alleles for erroroneous SNPs
-            call PLINK.make_bed as flip_ref{
+            call PLINK.make_bed_plink1 as flip_ref{
                 input:
                     bed_in = subset_ref.bed_out,
                     bim_in = subset_ref.bim_out,
