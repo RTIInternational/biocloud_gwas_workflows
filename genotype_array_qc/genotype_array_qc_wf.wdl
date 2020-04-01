@@ -236,12 +236,14 @@ workflow genotype_array_qc_wf{
 
         # Only include ancestries exceeding minimum number of samples
         if(count_structure_samples.num_lines > min_ancestry_samples_to_postprocess){
+            Int ancestry_sample_count_maybe = count_structure_samples.num_lines
             String ancestries_maybe = ancestries_to_include[ancestry_index]
             File ancestry_samples_maybe = structure_wf.samples_by_ancestry[ancestry_index]
         }
     }
 
     # Remove null values from filtered ancestries to create list of ancestries to postprocess
+    Array[Int] ancestry_sample_count = select_all(ancestry_sample_count_maybe)
     Array[String] postprocess_ancestries = select_all(ancestries_maybe)
     Array[File] postprocess_ancestry_samples = select_all(ancestry_samples_maybe)
 
@@ -249,7 +251,7 @@ workflow genotype_array_qc_wf{
     scatter(ancestry_index in range(length(postprocess_ancestries))){
         String ancestry = postprocess_ancestries[ancestry_index]
         File ancestry_samples = postprocess_ancestry_samples[ancestry_index]
-        Int init_ancestry_sample_count = count_structure_samples.num_lines[ancestry_index]
+        Int init_ancestry_sample_count = ancestry_sample_count[ancestry_index]
 
         # Partition data by ancestry and apply SNP call rate filter
         call PLINK.make_bed as subset_ancestry{
