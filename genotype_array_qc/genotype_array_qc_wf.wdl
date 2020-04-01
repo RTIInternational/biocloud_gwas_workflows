@@ -51,7 +51,7 @@ workflow genotype_array_qc_wf{
 
     # Cutoff below which an ancestry group of samples won't go through full pipeline
     # Handles cases where you might only be excluding a handful of outlier samples and only care about the main ancestry groups
-    Int min_ancestry_samples_to_postprocess = 10
+    Int min_ancestry_samples_to_postprocess = 50
 
     # Various TeraStructure params
     Float terastructure_rfreq_perc = 0.2
