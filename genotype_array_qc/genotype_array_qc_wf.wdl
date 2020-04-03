@@ -1,6 +1,6 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/genotype_array_qc/impute2_id_conversion/impute2_id_conversion_wf.wdl" as IDCONVERT
-import "biocloud_gwas_workflows/genotype_array_qc/STRUCTURE/structure_split_wf.wdl" as STRUCTURE
+import "biocloud_gwas_workflows/genotype_array_qc/STRUCTURE/classic_structure_split_wf.wdl" as STRUCTURE
 import "biocloud_gwas_workflows/genotype_array_qc/hwe_filter/fast_hwe_filter_wf.wdl" as HWE
 import "biocloud_gwas_workflows/genotype_array_qc/relatedness/relatedness_wf.wdl" as REL
 import "biocloud_gwas_workflows/genotype_array_qc/sex_check/sex_check_wf.wdl" as SEX
@@ -35,14 +35,17 @@ workflow genotype_array_qc_wf{
     Float ld_r2_threshold = 0.5
 
     # Structure ancestry partitioning filtering parameters
-    Boolean structure_do_ld_prune = true
+    Boolean structure_do_ld_prune = false
     Boolean structure_split_mode = true
-    Int structure_max_samples_per_split = 4000
+    Int structure_max_samples_per_split = 500
     File structure_ref_bed
     File structure_ref_bim
     File structure_ref_fam
     File structure_ref_ancestry_psam
-    Int max_structure_snps = 100000000
+    Int max_structure_snps = 25000
+    Int structure_numreps = 1000
+    Int structure_burnin = 1000
+    Int structure_seed = 1523031945
 
     # Ancestries to partition samples between
     Array[String] ancestries_to_include = ["CEU", "CHB", "YRI"]
@@ -52,9 +55,6 @@ workflow genotype_array_qc_wf{
     # Cutoff below which an ancestry group of samples won't go through full pipeline
     # Handles cases where you might only be excluding a handful of outlier samples and only care about the main ancestry groups
     Int min_ancestry_samples_to_postprocess = 50
-
-    # Various TeraStructure params
-    Float terastructure_rfreq_perc = 0.2
 
     # Sex-check filter parameters
     Boolean filter_discrepant_sex = true
@@ -104,8 +104,8 @@ workflow genotype_array_qc_wf{
     Int merge_bed_mem_gb = 8
 
     # Speicific tasks where resource limits may need to be adjusted for larger/smaller inputs
-    Int terastructure_cpu = 32
-    Int terastructure_mem_gb = 32
+    Int structure_cpu = 1
+    Int structure_mem_gb = 4
     Int sex_check_cpu = 4
     Int sex_check_mem_gb = 8
     Int king_cpu_per_split = 4
@@ -208,6 +208,9 @@ workflow genotype_array_qc_wf{
             ancestries_to_include = ancestries_to_include,
             ancestry_pop_type = ancestry_pop_type,
             ancestry_definitions = ancestry_definitions,
+            numreps = structure_numreps,
+            burnin = structure_burnin,
+            seed = structure_seed,
             do_ld_prune = structure_do_ld_prune,
             ld_exclude_regions = ld_exclude_regions,
             ld_type = ld_type,
@@ -219,9 +222,8 @@ workflow genotype_array_qc_wf{
             min_ld_maf = ld_maf_cutoff,
             merge_bed_cpu = merge_bed_cpu,
             merge_bed_mem_gb = merge_bed_mem_gb,
-            terastructure_rfreq_perc = terastructure_rfreq_perc,
-            terastructure_cpu = terastructure_cpu,
-            terastructure_mem_gb = terastructure_mem_gb,
+            structure_cpu = structure_cpu,
+            structure_mem_gb = structure_mem_gb,
             plink_cpu = plink_filter_cpu,
             plink_mem_gb = plink_filter_mem_gb
     }
@@ -586,7 +588,6 @@ workflow genotype_array_qc_wf{
         Array[Int] unaccounted_samples_by_ancestry = unaccounted_samples
 
         # Ref samples that were misclassified by STRUCTURE and input samples that couldn't be classified
-        Int structure_misclassified_ref_samples = structure_wf.misclassified_ref_samples
         Int structure_unclassified_samples = structure_wf.unclassified_samples
 
         # Fully filtered qc beds that have been through all filters
@@ -595,7 +596,7 @@ workflow genotype_array_qc_wf{
         Array[File] final_qc_fam = final_merge_x_chr.fam_out
 
         # Outputs summarizing TeraStructure ancestry analysis
-        Array[File] ancestry_thetas = structure_wf.ancestry_thetas
+        Array[File] ancestry_proportions = structure_wf.ancestry_proportions
         Array[File] triangle_plots = structure_wf.triangle_plots
         Array[File] samples_by_ancestry = structure_wf.samples_by_ancestry
 
