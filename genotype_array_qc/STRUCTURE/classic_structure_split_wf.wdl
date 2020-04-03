@@ -449,8 +449,6 @@ workflow structure_wf{
         Array[File] triangle_plots = structure_postprocess.triangle_plots
         Array[File] samples_by_ancestry = order_by_ancestry.ancestry_file_out
         Int unclassified_samples = count_unclassified_samples.num_lines
-        File fam_file = merge_fam_files.output_file
-        File theta_file = merge_structure_output.output_file
     }
 
 }
