@@ -3,18 +3,24 @@
   "structure_wf.bim_in": "s3://rti-biocloud-test-data/plink/wihs2/wihs.1000g.bim.gz",
   "structure_wf.fam_in": "s3://rti-biocloud-test-data/plink/wihs2/wihs.1000g.fam.gz",
   "structure_wf.output_basename": "wihs2",
-  "structure_wf.max_snps_to_analyze": 50000000,
   "structure_wf.ref_bed": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.bed",
   "structure_wf.ref_bim": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.bim",
   "structure_wf.ref_fam": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.fam",
   "structure_wf.ancestry_psam": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/phase3_orig.psam",
-  "structure_wf.ancestries_to_include": ["CEU", "CHB", "YRI"],
-  "structure_wf.ancestry_definitions": ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"],
+  "structure_wf.ancestries_to_include": [
+    "CEU",
+    "CHB",
+    "YRI"
+  ],
+  "structure_wf.ancestry_definitions": [
+    "YRI=CHB<0.25;YRI>0.25",
+    "CEU=CHB<0.25;YRI<0.25",
+    "CHB=CHB>0.25;YRI<0.25"
+  ],
   "structure_wf.ancestry_pop_type": "POP",
   "structure_wf.do_ld_prune": false,
-  "structure_wf.terastructure_rfreq_perc": 0.2,
-  "structure_wf.terastructure_cpu": 8,
-  "structure_wf.terastructure_mem_gb": 12,
+  "structure_wf.structure_cpu": 1,
+  "structure_wf.structure_mem_gb": 4,
   "structure_wf.max_samples_per_split": 300
 }
 

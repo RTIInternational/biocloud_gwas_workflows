@@ -5,6 +5,7 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
 import "biocloud_gwas_workflows/biocloud_wdl_tools/split_utils/split_utils.wdl" as SPLIT
 import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV
 import "biocloud_gwas_workflows/helper_workflows/collect_large_file_list_wf.wdl" as COLLECT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/structure_postprocessing/structure_postprocessing.wdl" as STRUCT_PP
 
 task get_structure_variants{
     File ref_bim
@@ -107,41 +108,56 @@ task get_ancestry_samples{
 }
 
 workflow structure_wf{
+    # Dataset containing samples you want to classify
     File bed_in
     File bim_in
     File fam_in
     String output_basename
-    Int max_snps_to_analyze = 10000
 
-    Boolean split_mode = true
-    Int max_samples_per_split = 1000
-
-    # 1000G ref files
+    ##### Define ancestry groups and 1000G reference samples you want to include in STRUCTURE run
     Boolean include_ref_samples = true
     File ref_bed
     File ref_bim
     File ref_fam
-
-    # 1000G ancestry phenotype info
+    # PSAM mappping ref_fam sample IDs to ancestry groups defined below (e.g. AFR, CEU)
     String ancestry_psam
+
+    # Ancestries to pull ref samples from
     Array[String] ancestries_to_include = ["CEU", "CHB", "YRI"]
-    # Column where 1000G sample id is found in ancestry psam file
-    Int ancestry_sample_id_col = 1
-    # What level of ancestry is being examined [SUPERPOP | POP]
+    # Ancestry pop type [SUPERPOP | POP] telling downstream modules which PSAM column to search for ancestry assignment
     String ancestry_pop_type = "POP"
-    # Cutoffs defining how to call ancestry from admixture proportions
+    # Define how ancestry determinatoins are made from STRUCTURE admixture proportions
+    # Must have 1 definition for each ancestry in ancestries_to_include
     Array[String] ancestry_definitions = ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"]
 
+    ##### STRUCTURE-specific options
+    # Number of SNPs to subset
+    Int max_snps_to_analyze = 10000
+    # Whether or not to split samples into smaller groups for parallel processing (HIGHLY RECOMMENDED)
+    Boolean split_mode = true
+    # Max number of samples that will be included in a single STRUCTURE run when using split mode
+    Int max_samples_per_split = 1000
+    # Additional structure parameters that don't need to be changed in 99% of cases
+    Int numreps = 1000
+    Int burnin = 1000
+    Int seed = 1523031945
     File? mainparams
     File? extraparams
 
-    # LD params
+    ##### LD-pruning parameters
+    # Flag to determine whether structure SNPs should be LD-pruned
     Boolean do_ld_prune = true
+    # Optinal list of high-linkage regions to exclude
     File? ld_exclude_regions
     String? ld_type
     Int? window_size
     Int? step_size
     Float? r2_threshold
+
+    # Task-specific resources
+    # STRUCTURE resources are per split so be careful if you're creating like 1000 splits. You don't actually need that much per job.
+    Int structure_cpu = 8
+    Int structure_mem_gb = 16
     Int ld_cpu = 1
     Int ld_mem_gb = 2
     Float? min_ld_maf
@@ -149,13 +165,6 @@ workflow structure_wf{
     Int merge_bed_mem_gb = 8
     Int plink_cpu = 1
     Int plink_mem_gb = 2
-
-    # TeraStructur parameters
-    Int structure_cpu = 8
-    Int structure_mem_gb = 16
-    Int numreps = 1000
-    Int burnin = 1000
-    Int seed = 1523031945
 
     # Set false to do unsuperviesed clustering (but realistically don't touch this)
     # Controls whether structure uses ref pop assignments, which it pretty much always should
@@ -233,7 +242,7 @@ workflow structure_wf{
             input:
                 ancestry_psam = ancestry_psam,
                 ancestry = ancestry,
-                sample_id_col = ancestry_sample_id_col,
+                sample_id_col = 1,
                 output_filename = "${output_basename}.${ancestry}.samples"
         }
 
@@ -411,44 +420,35 @@ workflow structure_wf{
     }
 
 
-    # Analyze results and get ancestry groups from terastructure output
-    #call TSP.terastructure_postprocess{
-    #    input:
-    #        theta = merge_theta_files.output_file,
-    #        fam = merge_fam_files.output_file,
-    #        psam = ancestry_psam,
-    #        ref_pop_type = ancestry_pop_type,
-    #        ancestry_definitions = ancestry_definitions,
-    #        output_basename = output_basename,
-    #        dataset_label = "terrastructure_ancestry"
-    #}
+    #Analyze results and get ancestry groups from terastructure output
+    call STRUCT_PP.structure_postprocess{
+        input:
+            parsed_structure_output = merge_structure_output.output_file,
+            fam = merge_fam_files.output_file,
+            psam = ancestry_psam,
+            ref_pop_type = ancestry_pop_type,
+            ancestry_definitions = ancestry_definitions,
+            output_basename = output_basename
+    }
 
     # Order keep files to be same order as input ancestry groups
-    #call TSP.order_by_ancestry{
-    #    input:
-    #        ancestry_files_in = terastructure_postprocess.ancestry_samples,
-    #        ancestries = ancestries_to_include
-    #}
-
-    # Count number of 1000G ref samples that weren't classified correctly
-    #call UTILS.wc as count_misclassified_ref_samples{
-    #    input:
-    #        input_file = terastructure_postprocess.misclassified_ref_samples
-    #}
+    call STRUCT_PP.order_by_ancestry{
+        input:
+            ancestry_files_in = structure_postprocess.ancestry_samples,
+            ancestries = ancestries_to_include
+    }
 
     # Count number of samples that weren't classified as anything by structure
-    #call UTILS.wc as count_unclassified_samples{
-    #    input:
-    #        input_file = terastructure_postprocess.unclassified_samples
-    #}
-
+    call UTILS.wc as count_unclassified_samples{
+        input:
+            input_file = structure_postprocess.unclassified_samples
+    }
 
     output{
-        #Array[File] ancestry_thetas = terastructure_postprocess.ancestry_thetas
-        #Array[File] triangle_plots = terastructure_postprocess.triangle_plots
-        #Array[File] samples_by_ancestry = order_by_ancestry.ancestry_file_out
-        #Int misclassified_ref_samples = count_misclassified_ref_samples.num_lines
-        #Int unclassified_samples = count_unclassified_samples.num_lines
+        Array[File] ancestry_proportions = structure_postprocess.ancestry_proportions
+        Array[File] triangle_plots = structure_postprocess.triangle_plots
+        Array[File] samples_by_ancestry = order_by_ancestry.ancestry_file_out
+        Int unclassified_samples = count_unclassified_samples.num_lines
         File fam_file = merge_fam_files.output_file
         File theta_file = merge_structure_output.output_file
     }
