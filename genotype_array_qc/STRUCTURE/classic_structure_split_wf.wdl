@@ -92,7 +92,7 @@ task get_ancestry_samples{
             psam=ref.psam
         fi
 
-        grep "$ancestry" $psam | awk '{print "0",$${sample_id_col}}' > ${output_filename}
+        grep ${ancestry} $psam | awk '{print "0",$${sample_id_col}}' > ${output_filename}
     >>>
 
     runtime {
@@ -105,7 +105,6 @@ task get_ancestry_samples{
         File sample_ids = "${output_filename}"
     }
 }
-
 
 workflow structure_wf{
     File bed_in
@@ -133,6 +132,9 @@ workflow structure_wf{
     # Cutoffs defining how to call ancestry from admixture proportions
     Array[String] ancestry_definitions = ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"]
 
+    File? mainparams
+    File? extraparams
+
     # LD params
     Boolean do_ld_prune = true
     File? ld_exclude_regions
@@ -149,12 +151,15 @@ workflow structure_wf{
     Int plink_mem_gb = 2
 
     # TeraStructur parameters
-    Int structure_cpu = 32
-    Int structure_mem_gb = 32
-    Boolean? force
-    Int? seed
-    Boolean? compute_beta
-    File? id_map
+    Int structure_cpu = 8
+    Int structure_mem_gb = 16
+    Int numreps = 1000
+    Int burnin = 1000
+    Int seed = 1523031945
+
+    # Set false to do unsuperviesed clustering (but realistically don't touch this)
+    # Controls whether structure uses ref pop assignments, which it pretty much always should
+    Boolean use_pop_info = true
 
     # Optionally reduce to set of SNPs in LD
     if(do_ld_prune){
@@ -196,6 +201,19 @@ workflow structure_wf{
     File sample_bim = select_first([merge_beds.bim_out, bim_in])
     File sample_fam = select_first([merge_beds.fam_out, fam_in])
 
+    # Create STRUCTURE param files based on what output files will look like
+    # Input will have no marker names and includes pop_data, pop_flag columns that will be used by STRUCTURE (USEPOPINFO=1)
+    call STRUCT.make_structure_param_files{
+        input:
+            markernames = 0,
+            pop_flag = 1,
+            pop_data = 1,
+            use_pop_info = if(use_pop_info) then 1 else 0,
+            burnin = burnin,
+            numreps = numreps,
+            randomize = 0,
+            pfrompopflagonly = 1
+    }
 
     # Get list of SNPs to include
     call get_structure_variants{
@@ -206,8 +224,11 @@ workflow structure_wf{
             num_snps = max_snps_to_analyze
     }
 
-    # Get ids of 1000G samples separately for each ancestry
-    scatter(ancestry in ancestries_to_include){
+    # Get sample ids to extract from 1000G ref for each ancestry of interest
+    scatter(ancestry_index in range(length(ancestries_to_include))){
+        String ancestry = ancestries_to_include[ancestry_index]
+
+        # Get list of samples from specified ancestry
         call get_ancestry_samples{
             input:
                 ancestry_psam = ancestry_psam,
@@ -215,12 +236,20 @@ workflow structure_wf{
                 sample_id_col = ancestry_sample_id_col,
                 output_filename = "${output_basename}.${ancestry}.samples"
         }
+
+        # Assign a numerical pop id to these samples that will later be used by STRUCTURE
+        call UTILS.append_column as add_pop_ids{
+            input:
+                input_file = get_ancestry_samples.sample_ids,
+                value = ancestry_index + 1,
+                output_filename = "${output_basename}.${ancestry}.samples.pop_id"
+        }
     }
 
-    # Cat into single list of 1000G samples to extract from reference dataset
+    # Cat sample ids into single list to be used to extract samples from reference dataset
     call UTILS.cat as cat_ancestry_ids{
         input:
-            input_files = get_ancestry_samples.sample_ids,
+            input_files = add_pop_ids.output_file,
             output_filename = "${output_basename}.ancestry.samples"
     }
 
@@ -243,7 +272,7 @@ workflow structure_wf{
     call SPLIT.split_file as get_sample_splits{
         input:
             input_file = sample_fam,
-            output_basename = basename(sample_fam, ".fam")+".split",
+            output_basename = basename(sample_fam, ".fam"),
             output_extension = ".fam",
             lines_per_split = max_samples_per_split,
     }
@@ -264,7 +293,7 @@ workflow structure_wf{
                 keep_samples = get_sample_splits.output_files[split_index],
                 snps_only = true,
                 snps_only_type = "just-acgt",
-                output_basename = "${split_basename}.data",
+                output_basename = "${output_basename}.split.${split_index}.data",
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb
             }
@@ -280,7 +309,7 @@ workflow structure_wf{
                 fam_in_b = subset_ref.fam_out,
                 merge_mode = 7,
                 ignore_errors = true,
-                output_basename = "${split_basename}.merge_conflicts",
+                output_basename = "${output_basename}.split.${split_index}.merge_conflicts",
                 cpu = merge_bed_cpu,
                 mem_gb = merge_bed_mem_gb
 
@@ -295,7 +324,7 @@ workflow structure_wf{
                     bed_in = subset_ref.bed_out,
                     bim_in = subset_ref.bim_out,
                     fam_in = subset_ref.fam_out,
-                    output_basename = "${split_basename}.ref",
+                    output_basename = "${output_basename}.split.${split_index}.ref",
                     flip = get_merge_conflicts.missnp_out,
                     cpu = plink_cpu,
                     mem_gb = plink_mem_gb
@@ -312,7 +341,7 @@ workflow structure_wf{
                 bim_in_b = select_first([flip_ref.bim_out, subset_ref.bim_out]),
                 fam_in_b = select_first([flip_ref.fam_out, subset_ref.fam_out]),
                 ignore_errors = false,
-                output_basename = "${split_basename}.combined",
+                output_basename = "${output_basename}.split.${split_index}.combined",
                 cpu = merge_bed_cpu,
                 mem_gb = merge_bed_mem_gb
         }
@@ -324,7 +353,7 @@ workflow structure_wf{
                 bed_in = combine_ref_and_data.bed_out,
                 bim_in = combine_ref_and_data.bim_out,
                 fam_in = combine_ref_and_data.fam_out,
-                output_basename = "${split_basename}.combined",
+                output_basename = "${output_basename}.split.${split_index}.combined",
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb
         }
@@ -335,22 +364,23 @@ workflow structure_wf{
                 input_file = recode_to_ped.map_out
         }
 
-        # Convert to STRUCTURE dataset with pop information included for ref samples
+        # Convert ped file to STRUCTURE dataset with pop information included for ref samples
         call STRUCT.ped2structure{
             input:
                 ped_in = recode_to_ped.ped_out,
-                pop_files = get_ancestry_samples.sample_ids,
-                output_filename = "${split_basename}.combined.structure.input"
+                ref_samples = cat_ancestry_ids.output_file,
+                ref_pop_col = 2,
+                ref_delim = "space",
+                output_filename = "${output_basename}.split.${split_index}.structure.input"
         }
 
-        # Cluster dataset using terastructure
+        # Cluster dataset using STRUCTURE
         call STRUCT.structure{
             input:
-                mainparams = "",
-                extraparams = "",
-                stratparams = "",
+                mainparams=make_structure_param_files.mainparams_out,
+                extraparams=make_structure_param_files.extraparams_out,
                 input_file = ped2structure.structure_input,
-                output_basename = "${split_basename}.structure",
+                output_basename = "${output_basename}.split.${split_index}.structure",
                 numloci = count_structure_snps.num_lines,
                 k = length(ancestries_to_include),
                 seed = seed,
@@ -358,28 +388,28 @@ workflow structure_wf{
                 mem_gb = structure_mem_gb
         }
 
+        # Extract just admixture proportions and corresponding sample ids
+        call STRUCT.parse_structure_output{
+            input:
+                structure_output = structure.structure_out,
+                output_filename = "${output_basename}.split.${split_index}.structure.results.txt"
+        }
     }
 
     # Combine FAM files into single file
     call UTILS.cat as merge_fam_files{
         input:
             input_files = combine_ref_and_data.fam_out,
-            output_filename = "${output_basename}.merged.fam"
+            output_filename = "${output_basename}.structure.merged.fam"
     }
 
-    # Need to compress into a tarzip for cat tsv files
-    #call COLLECT.collect_large_file_list_wf as collect_thetas{
-    #    input:
-    #        input_files = structure.theta,
-    #        output_dir_name = "${output_basename}_structure_output"
-    #}
+    # Combine structure ancestry proportions into single file
+    call UTILS.cat as merge_structure_output{
+        input:
+            input_files = parse_structure_output.structure_out,
+            output_filename = "${output_basename}.structure.results.merged.txt"
+    }
 
-    # Combine theta files into single file
-    #call TSV.append as merge_theta_files{
-    #    input:
-    #        input_files = collect_thetas.output_dir,
-    #        output_filename = "${output_basename}.merged.theta.txt"
-    #}
 
     # Analyze results and get ancestry groups from terastructure output
     #call TSP.terastructure_postprocess{
@@ -419,7 +449,8 @@ workflow structure_wf{
         #Array[File] samples_by_ancestry = order_by_ancestry.ancestry_file_out
         #Int misclassified_ref_samples = count_misclassified_ref_samples.num_lines
         #Int unclassified_samples = count_unclassified_samples.num_lines
-        Array[File] split_theta = structure.theta_out
+        File fam_file = merge_fam_files.output_file
+        File theta_file = merge_structure_output.output_file
     }
 
 }

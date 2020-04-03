@@ -2,8 +2,7 @@
   "structure_wf.bed_in": "s3://gwas-cromwell/cromwell-execution/genotype_array_qc_wf/c87936ce-23ad-4e1e-9638-dead157cc4ae/call-filter_failed_samples/aric_qc.filter_failed_samples.bed",
   "structure_wf.bim_in": "s3://gwas-cromwell/cromwell-execution/genotype_array_qc_wf/c87936ce-23ad-4e1e-9638-dead157cc4ae/call-filter_failed_samples/aric_qc.filter_failed_samples.bim",
   "structure_wf.fam_in": "s3://gwas-cromwell/cromwell-execution/genotype_array_qc_wf/c87936ce-23ad-4e1e-9638-dead157cc4ae/call-filter_failed_samples/aric_qc.filter_failed_samples.fam",
-  "structure_wf.output_basename": "test_structure",
-  "structure_wf.max_snps_to_analyze": 50000000,
+  "structure_wf.output_basename": "test_aric",
   "structure_wf.ref_bed": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.bed",
   "structure_wf.ref_bim": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.bim",
   "structure_wf.ref_fam": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.impute2_id.unique.fam",
@@ -12,9 +11,9 @@
   "structure_wf.ancestry_definitions": ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"],
   "structure_wf.ancestry_pop_type": "POP",
   "structure_wf.do_ld_prune": false,
-  "structure_wf.terastructure_rfreq_perc": 0.2,
-  "structure_wf.terastructure_cpu": 32,
-  "structure_wf.terastructure_mem_gb": 32
+  "structure_wf.structure_cpu": 2,
+  "structure_wf.structure_mem_gb": 4,
+  "structure_wf.max_samples_per_split": 300
 }
 
 
