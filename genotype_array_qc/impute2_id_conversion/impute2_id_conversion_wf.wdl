@@ -1,5 +1,5 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
-import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_to_impute2_ids/convert_to_impute2_ids.wdl" as IDCONVERT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_variant_ids/convert_variant_ids.wdl" as IDCONVERT
 import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV
 import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
 import "biocloud_gwas_workflows/genotype_array_qc/normalize_sex_chr/normalize_sex_chr_wf.wdl" as NORM
@@ -233,7 +233,10 @@ workflow impute2_id_conversion_wf{
     # PAR/NONPAR Split/Merge parameters
     String build_code
     Boolean no_fail = true
-    String file_in_monomorphic_allele = "0"
+    String in_monomorphic_allele
+    String in_deletion_allele
+    String ref_deletion_allele = "."
+    Boolean rescue_rsids = true
 
     # Resources subtasks
     # The only one you'll likely need to play for huge files is the id_convert cpu/mem
@@ -241,11 +244,8 @@ workflow impute2_id_conversion_wf{
     Int plink_cpu = 1
     Int plink_mem_gb = 2
 
-    Int plink_chr_cpu = 1
-    Int plink_chr_mem_gb = 2
-
-    Int id_convert_cpu = 2
-    Int id_convert_mem_gb = 6
+    Int id_convert_cpu = 1
+    Int id_convert_mem_gb = 3
 
     Int duplicate_id_cpu = 2
     Int duplicate_id_mem_gb = 6
@@ -300,30 +300,26 @@ workflow impute2_id_conversion_wf{
     scatter(chr_index in range(length(chrs))){
         String chr = chrs[chr_index]
 
-        # Subset bim file to get only bim entries for current chr
-        call TSV.tsv_filter as split_bim{
-            input:
-                tsv_input = norm_bim,
-                output_filename = "${output_basename}.chr.${chr}.bim",
-                header = false,
-                filter_string = "--eq 1:${chr}"
-        }
-
         # Convert IDs to Impute2 format
-        call IDCONVERT.convert_to_impute2_ids as impute2_id_bim{
+        call IDCONVERT.convert_variant_ids as impute2_id_bim{
             input:
-                in_file = split_bim.tsv_output,
-                legend_file = id_legend_files[chr_index],
-                file_in_header = 0,
-                id_col = 1,
-                chr_col = 0,
-                pos_col = 3,
-                a1_col = 4,
-                a2_col = 5,
-                file_in_monomorphic_allele = file_in_monomorphic_allele,
+                in_file = norm_bim,
+                ref = id_legend_files[chr_index],
+                chr = chr,
+                in_header = 0,
+                in_sep = "tab",
+                in_id_col = 1,
+                in_chr_col = 0,
+                in_pos_col = 3,
+                in_a1_col = 4,
+                in_a2_col = 5,
+                in_missing_allele = in_monomorphic_allele,
+                in_deletion_allele = in_deletion_allele,
+                ref_deletion_allele = ref_deletion_allele,
                 output_filename = "${output_basename}.chr.${chr}.impute2",
                 cpu = id_convert_cpu,
-                mem_gb = id_convert_mem_gb
+                mem_gb = id_convert_mem_gb,
+                rescue_rsids = rescue_rsids
         }
 
         # Mark variants with duplicate IDS if required

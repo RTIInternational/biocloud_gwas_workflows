@@ -1,107 +1,100 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
+import "biocloud_gwas_workflows/genotype_array_qc/normalize_sex_chr/normalize_sex_chr_wf.wdl" as NORM
 
 workflow hwe_filter_wf{
     File bed_in
     File bim_in
     File fam_in
     String output_basename
+
+    # HWE p-value filter threshold
     Float hwe_filter_pvalue
-    Int cpu
-    Int mem_gb
-    Int merge_cpu = 4
-    Int merge_mem_gb
+    String? hwe_mode
 
-    # HWE filter on autosomes
-    call PLINK.make_bed as hwe_auto{
+    # Workflow can optionally be used on a single chr
+    Array[String]? chrs
+
+    Int plink_chr_cpu = 1
+    Int plink_chr_mem_gb = 2
+    Int plink_filter_cpu = 1
+    Int plink_filter_mem_gb = 2
+
+    # If user provides a custom chr list, use that instead to prevent having to merge-par unnecessarily
+    # Default to merging sex chr (23 expected by norm_sex_wf)
+    Array[String] expected_chrs = select_first([chrs, ["23"]])
+
+    # Split PAR/NONPAR if not already split
+    call NORM.normalize_sex_chr_wf{
         input:
             bed_in = bed_in,
             bim_in = bim_in,
             fam_in = fam_in,
-            autosome = true,
-            hwe_pvalue = hwe_filter_pvalue,
-            output_basename = "${output_basename}.auto_only",
-            cpu = cpu,
-            mem_gb = mem_gb
+            expected_chrs = ["23"],
+            output_basename = "${output_basename}.sex_norm",
+            build_code = "dummy",
+            no_fail = true,
+            plink_cpu = plink_filter_cpu,
+            plink_mem_gb = plink_filter_mem_gb
     }
 
-    # Merge X chr to ensure PAR/NONPAR are not split (chr 23 won't exist for split bed/bim/fam datasets)
-    call PLINK.make_bed as merge_x_chr{
-        input:
-            bed_in = bed_in,
-            bim_in = bim_in,
-            fam_in = fam_in,
-            output_basename = "${output_basename}.mergex",
-            merge_x = true,
-            merge_no_fail = true,
-            cpu = cpu,
-            mem_gb = mem_gb
-    }
+    File norm_bed = normalize_sex_chr_wf.bed_out
+    File norm_bim = normalize_sex_chr_wf.bim_out
+    File norm_fam = normalize_sex_chr_wf.fam_out
 
-    # Check to see if dataset actually contains chrX
-    call PLINK.contains_chr{
-        input:
-            bim_in = merge_x_chr.bim_out,
-            chr = "23"
-    }
-
-    # Use females to compute HWE if sex chr present
-    if(contains_chr.contains){
-
-        # HWE filter on chrX for females
-        call PLINK.make_bed as hwe_chrx{
+    # Get all chromosomes in bim if no list provided by user
+    if(!defined(chrs)){
+        call PLINK.get_bim_chrs{
             input:
-                bed_in = merge_x_chr.bed_out,
-                bim_in = merge_x_chr.bim_out,
-                fam_in = merge_x_chr.fam_out,
-                chr = 23,
-                filter_females = true,
+                bim_in = norm_bim
+        }
+    }
+
+    Array[String] scatter_chrs = select_first([chrs, get_bim_chrs.chrs])
+
+    scatter(chr in scatter_chrs){
+
+        # HWE filter on autosomes
+        call PLINK.hardy as hwe{
+            input:
+                bed_in = norm_bed,
+                bim_in = norm_bim,
+                fam_in = norm_fam,
+                chrs = [chr],
+                filter_females = (chr == "23"),
                 hwe_pvalue = hwe_filter_pvalue,
-                output_basename = "${output_basename}.chrX.females.hwe",
-                cpu = cpu,
-                mem_gb = mem_gb
+                hwe_mode = hwe_mode,
+                output_basename = "${output_basename}.chr.${chr}",
+                cpu = plink_chr_cpu,
+                mem_gb = plink_chr_mem_gb
         }
+    }
 
-        # Get chrX SNPs in HWE
-        call UTILS.cut{
-            input:
-                input_file = hwe_chrx.bim_out,
-                args = "-f2",
-                output_filename = "${output_basename}.chrX.females.extract"
-        }
+    # Combine snps to remove across all chrs
+    call UTILS.cat as cat_remove{
+        input:
+            input_files = hwe.remove,
+            output_filename = "${output_basename}.hwe.remove"
+    }
 
-        # Extract chrX SNPs from full dataset
-        call PLINK.make_bed as extract_hwe_chrx{
-            input:
-                bed_in = bed_in,
-                bim_in = bim_in,
-                fam_in = fam_in,
-                extract = cut.output_file,
-                output_basename = "${output_basename}.chrX.hwe",
-                cpu = cpu,
-                mem_gb = mem_gb
-        }
 
-        # Now autosome HWE snps with chrX hwe snps
-        call PLINK.merge_two_beds as merge_auto_chrx{
-            input:
-                bed_in_a = hwe_auto.bed_out,
-                bim_in_a = hwe_auto.bim_out,
-                fam_in_a = hwe_auto.fam_out,
-                bed_in_b = extract_hwe_chrx.bed_out,
-                bim_in_b = extract_hwe_chrx.bim_out,
-                fam_in_b = extract_hwe_chrx.fam_out,
-                ignore_errors = false,
-                output_basename = "${output_basename}",
-                cpu = merge_cpu,
-                mem_gb = merge_mem_gb
-        }
+    # Remove failed HWE SNPs from full dataset
+    call PLINK.make_bed as filter_hwe{
+        input:
+            bed_in = norm_bed,
+            bim_in = norm_bim,
+            fam_in = norm_fam,
+            exclude = cat_remove.output_file,
+            chrs = scatter_chrs,
+            output_basename = "${output_basename}.hwe",
+            cpu = plink_filter_cpu,
+            mem_gb = plink_filter_mem_gb
     }
 
     output{
-        File bed_out = select_first([merge_auto_chrx.bed_out, hwe_auto.bed_out])
-        File bim_out = select_first([merge_auto_chrx.bim_out, hwe_auto.bim_out])
-        File fam_out = select_first([merge_auto_chrx.fam_out, hwe_auto.fam_out])
+        File bed_out = filter_hwe.bed_out
+        File bim_out = filter_hwe.bim_out
+        File fam_out = filter_hwe.fam_out
     }
 
 }
