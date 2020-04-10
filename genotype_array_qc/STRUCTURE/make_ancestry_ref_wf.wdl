@@ -105,7 +105,7 @@ workflow make_ancestry_ref_wf{
             plink_cpu = plink_cpu,
             plink_mem_gb = plink_mem_gb,
             id_convert_cpu = 1,
-            id_convert_mem_gb = 6,
+            id_convert_mem_gb = 10,
             in_monomorphic_allele = in_monomorphic_allele,
             in_deletion_allele = in_deletion_allele,
             ref_deletion_allele = "."
