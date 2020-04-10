@@ -1,5 +1,5 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
-import "biocloud_gwas_workflows/genotype_array_qc/impute2_id_conversion/updated_impute2_id_conversion_wf.wdl" as IDCONVERT
+import "biocloud_gwas_workflows/genotype_array_qc/impute2_id_conversion/impute2_id_conversion_wf.wdl" as IDCONVERT
 
 task convert_to_bed{
     File pgen_in
