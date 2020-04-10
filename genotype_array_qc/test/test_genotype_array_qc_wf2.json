@@ -14,7 +14,7 @@
   "genotype_array_qc_wf.ld_type": "indep-pairwise",
 
   "genotype_array_qc_wf.structure_max_samples_per_split": 500,
-  "genotype_array_qc_wf.max_structure_snps": 25000,
+  "genotype_array_qc_wf.max_structure_snps": 10000,
   "genotype_array_qc_wf.structure_do_ld_prune": false,
 
   "genotype_array_qc_wf.chrs": [
@@ -67,7 +67,7 @@
   "genotype_array_qc_wf.pca_cpu": 16,
   "genotype_array_qc_wf.pca_mem_gb": 16,
   "genotype_array_qc_wf.structure_cpu": 1,
-  "genotype_array_qc_wf.structure_mem_gb": 2
+  "genotype_array_qc_wf.structure_mem_gb": 4
 }
 
 
