@@ -280,30 +280,54 @@ workflow impute2_id_conversion_wf{
             plink_mem_gb = plink_mem_gb
     }
 
-    # Get only the chrs you actually want from the plink dataset
-    call PLINK.make_bed as extract_chrs{
+
+    # See if you actually even need to subset chrs. No need if chrs == chrs in bim
+    call PLINK.get_bim_chrs{
         input:
-            bed_in = normalize_sex_chr_wf.bed_out,
-            bim_in = normalize_sex_chr_wf.bim_out,
-            fam_in = normalize_sex_chr_wf.fam_out,
-            chrs = chrs,
-            output_basename = "${output_basename}.extract_chrs",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb
+            bim_in = normalize_sex_chr_wf.bim_out
+    }
+    call UTILS.array_equals{
+        input:
+            array_a = chrs,
+            array_b = get_bim_chrs.chrs
     }
 
-    File norm_bed = extract_chrs.bed_out
-    File norm_bim = extract_chrs.bim_out
-    File norm_fam = extract_chrs.fam_out
+    if(!array_equals.is_equal){
+
+        # Need to subset to make sure only chrs are included in bed file so we can work with the bim by itself
+        call PLINK.make_bed as extract_chrs{
+            input:
+                bed_in = normalize_sex_chr_wf.bed_out,
+                bim_in = normalize_sex_chr_wf.bim_out,
+                fam_in = normalize_sex_chr_wf.fam_out,
+                chrs = chrs,
+                output_basename = "${output_basename}.extract_chrs",
+                cpu = plink_cpu,
+                mem_gb = plink_mem_gb
+        }
+    }
+
+    File norm_bed = select_first([extract_chrs.bed_out, normalize_sex_chr_wf.bed_out])
+    File norm_bim = select_first([extract_chrs.bim_out, normalize_sex_chr_wf.bim_out])
+    File norm_fam = select_first([extract_chrs.fam_out, normalize_sex_chr_wf.fam_out])
 
     # Parallelize impute2 id conversion by chr
     scatter(chr_index in range(length(chrs))){
         String chr = chrs[chr_index]
 
+        # Subset bim file to get only bim entries for current chr
+        call TSV.tsv_filter as split_bim{
+            input:
+                tsv_input = norm_bim,
+                output_filename = "${output_basename}.chr.${chr}.bim",
+                header = false,
+                filter_string = "--eq 1:${chr}"
+        }
+
         # Convert IDs to Impute2 format
         call IDCONVERT.convert_variant_ids as impute2_id_bim{
             input:
-                in_file = norm_bim,
+                in_file = split_bim.tsv_output,
                 ref = id_legend_files[chr_index],
                 chr = chr,
                 in_header = 0,
