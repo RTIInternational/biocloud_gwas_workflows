@@ -3,9 +3,9 @@
   "make_ancestry_ref_wf.pvar_zst": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3.pvar.zst",
   "make_ancestry_ref_wf.psam_zst": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/phase3_orig.psam",
 
-  "make_ancestry_ref_wf.bed": "s3://gwas-cromwell/cromwell-execution/make_ancestry_ref_wf/58f02a79-e26d-4c02-8023-4af3aa14f0ec/call-convert_impute2_ids/IDCONVERT.impute2_id_conversion_wf/883c844b-d214-4b92-b1e7-71e05db1dd70/call-extract_chrs/all_phase3_new_ids.extract_chrs.bed",
-  "make_ancestry_ref_wf.bim": "s3://gwas-cromwell/cromwell-execution/make_ancestry_ref_wf/58f02a79-e26d-4c02-8023-4af3aa14f0ec/call-convert_impute2_ids/IDCONVERT.impute2_id_conversion_wf/883c844b-d214-4b92-b1e7-71e05db1dd70/call-extract_chrs/all_phase3_new_ids.extract_chrs.bim",
-  "make_ancestry_ref_wf.fam": "s3://gwas-cromwell/cromwell-execution/make_ancestry_ref_wf/58f02a79-e26d-4c02-8023-4af3aa14f0ec/call-convert_impute2_ids/IDCONVERT.impute2_id_conversion_wf/883c844b-d214-4b92-b1e7-71e05db1dd70/call-extract_chrs/all_phase3_new_ids.extract_chrs.fam",
+  "make_ancestry_ref_wf.bed": "s3://gwas-cromwell/cromwell-execution/make_ancestry_ref_wf/775dec05-0f93-4758-ab0b-38a8a4af6255/call-convert_to_bed/all_phase3.raw.bed",
+  "make_ancestry_ref_wf.bim": "s3://gwas-cromwell/cromwell-execution/make_ancestry_ref_wf/775dec05-0f93-4758-ab0b-38a8a4af6255/call-convert_to_bed/all_phase3.raw.bim",
+  "make_ancestry_ref_wf.fam": "s3://gwas-cromwell/cromwell-execution/make_ancestry_ref_wf/775dec05-0f93-4758-ab0b-38a8a4af6255/call-convert_to_bed/all_phase3.raw.fam",
 
   "make_ancestry_ref_wf.build_code": "b37",
   "make_ancestry_ref_wf.output_basename": "all_phase3_new_ids",
