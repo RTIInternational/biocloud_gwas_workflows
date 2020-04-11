@@ -10,9 +10,10 @@
   "genotype_array_qc_wf.phenotype_sex_col": 4,
   "genotype_array_qc_wf.phenotype_delimiter": "space",
 
-  "genotype_array_qc_wf.structure_max_samples_per_split": 10000,
-  "genotype_array_qc_wf.max_structure_snps": 2000000,
-  "genotype_array_qc_wf.terastructure_rfreq_perc": 0.2,
+  "genotype_array_qc_wf.ld_type": "indep-pairwise",
+
+  "genotype_array_qc_wf.structure_max_samples_per_split": 500,
+  "genotype_array_qc_wf.max_structure_snps": 10000,
   "genotype_array_qc_wf.structure_do_ld_prune": false,
 
   "genotype_array_qc_wf.num_king_splits": 8,
@@ -66,8 +67,8 @@
   "genotype_array_qc_wf.king_mem_gb_per_split": 32,
   "genotype_array_qc_wf.pca_cpu": 64,
   "genotype_array_qc_wf.pca_mem_gb": 64,
-  "genotype_array_qc_wf.terastructure_cpu": 32,
-  "genotype_array_qc_wf.terastructure_mem_gb": 32
+  "genotype_array_qc_wf.structure_cpu": 1,
+  "genotype_array_qc_wf.structure_mem_gb": 4
 }
 
 

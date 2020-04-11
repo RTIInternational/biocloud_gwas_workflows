@@ -1,0 +1,75 @@
+{
+  "genotype_array_qc_wf.output_basename": "wihs2_qc",
+  "genotype_array_qc_wf.bed": "s3://rti-biocloud-test-data/plink/wihs2/wihs.1000g.bed.gz",
+  "genotype_array_qc_wf.bim": "s3://rti-biocloud-test-data/plink/wihs2/wihs.1000g.bim.gz",
+  "genotype_array_qc_wf.fam": "s3://rti-biocloud-test-data/plink/wihs2/wihs.1000g.fam.gz",
+  "genotype_array_qc_wf.sex_check_phenotype_file": "s3://rti-biocloud-test-data/plink/wihs2/wihs.1000g.fam.gz",
+  "genotype_array_qc_wf.phenotype_header_rows": 0,
+  "genotype_array_qc_wf.phenotype_fid_col": 0,
+  "genotype_array_qc_wf.phenotype_iid_col": 1,
+  "genotype_array_qc_wf.phenotype_sex_col": 4,
+  "genotype_array_qc_wf.phenotype_delimiter": "space",
+
+  "genotype_array_qc_wf.in_monomorphic_allele": ".",
+  "genotype_array_qc_wf.in_deletion_allele": "-",
+
+
+  "genotype_array_qc_wf.ld_type": "indep-pairwise",
+
+  "genotype_array_qc_wf.structure_max_samples_per_split": 500,
+  "genotype_array_qc_wf.max_structure_snps": 10000,
+  "genotype_array_qc_wf.structure_do_ld_prune": false,
+
+  "genotype_array_qc_wf.chrs": [
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+    "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"],
+
+  "genotype_array_qc_wf.id_legend_files": [
+   "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr1.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr2.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr3.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr4.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr5.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr6.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr7.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr8.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr9.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr10.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr11.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr12.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr13.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr14.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr15.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr16.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr17.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr18.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr19.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr20.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr21.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr22.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr23.tsv.gz"
+  ],
+
+  "genotype_array_qc_wf.build_code": "b37",
+  "genotype_array_qc_wf.structure_ref_bed": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3_new_ids.impute2_id.unique.bed",
+  "genotype_array_qc_wf.structure_ref_bim": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3_new_ids.impute2_id.unique.bim",
+  "genotype_array_qc_wf.structure_ref_fam": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/all_phase3_new_ids.impute2_id.unique.fam",
+  "genotype_array_qc_wf.structure_ref_ancestry_psam": "s3://rti-biocloud-ref/ref_panels/1000g/phase3/2.0.0/plink/phase3_orig.psam",
+
+  "genotype_array_qc_wf.plink_filter_cpu": 2,
+  "genotype_array_qc_wf.plink_filter_mem_gb": 4,
+  "genotype_array_qc_wf.plink_chr_cpu": 1,
+  "genotype_array_qc_wf.plink_chr_mem_gb": 2,
+  "genotype_array_qc_wf.sex_check_cpu": 8,
+  "genotype_array_qc_wf.sex_check_mem_gb": 8,
+  "genotype_array_qc_wf.merge_bed_cpu": 8,
+  "genotype_array_qc_wf.merge_bed_mem_gb": 16,
+  "genotype_array_qc_wf.king_cpu_per_split": 16,
+  "genotype_array_qc_wf.king_mem_gb_per_split": 16,
+  "genotype_array_qc_wf.pca_cpu": 16,
+  "genotype_array_qc_wf.pca_mem_gb": 16,
+  "genotype_array_qc_wf.structure_cpu": 1,
+  "genotype_array_qc_wf.structure_mem_gb": 4
+}
+
+
