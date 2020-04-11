@@ -114,7 +114,7 @@ task get_variants_to_remove{
     String input_prefix = basename(sub(bed_in, "\\.gz$", ""), ".bed")
 
     # Runtime environment
-    String docker = "rtibiocloud/plink:v1.9-9e70778"
+    String docker = "rtibiocloud/plink:v1.9_178bb91"
     Int cpu = 4
     Int mem_gb = 8
 
@@ -250,16 +250,15 @@ workflow impute2_id_conversion_wf{
     Int duplicate_id_cpu = 2
     Int duplicate_id_mem_gb = 6
 
-
     # Make sure chromsomes are provided in numerical sort order and error out if they aren't
-    # This is because the bim file output of this workflow will be concatenated in that order
-    # And plink chromosomes always appear in numerical order
-    call chr_sort_check{
+    # This is to ensure that the id_legend_files, chrs, and bim file all have same sort order
+    # Necessary because we can then operate directly on the bim file without having to make chr-level that need to be merged at the end (costly, slow)
+    call chr_sort_check as check_id_legend_chr_sort{
         input:
             chrs = chrs
     }
 
-    if(chr_sort_check.failed){
+    if(check_id_legend_chr_sort.failed){
         call UTILS.raise_error{
             input:
                 msg = "Input chromosomes MUST be provided in numerical sort order!"
@@ -280,36 +279,22 @@ workflow impute2_id_conversion_wf{
             plink_mem_gb = plink_mem_gb
     }
 
-
-    # See if you actually even need to subset chrs. No need if chrs == chrs in bim
-    call PLINK.get_bim_chrs{
+    # Need to subset to make sure only chrs are included in bed file so we can work with the bim by itself
+    # Have to use Plink1.9 here bc it sorts automatically and plink2 doesn't sort at all (annoying)
+    call PLINK.make_bed_plink1 as extract_chrs{
         input:
-            bim_in = normalize_sex_chr_wf.bim_out
-    }
-    call UTILS.array_equals{
-        input:
-            array_a = chrs,
-            array_b = get_bim_chrs.chrs
-    }
-
-    if(!array_equals.is_equal){
-
-        # Need to subset to make sure only chrs are included in bed file so we can work with the bim by itself
-        call PLINK.make_bed as extract_chrs{
-            input:
-                bed_in = normalize_sex_chr_wf.bed_out,
-                bim_in = normalize_sex_chr_wf.bim_out,
-                fam_in = normalize_sex_chr_wf.fam_out,
-                chrs = chrs,
-                output_basename = "${output_basename}.extract_chrs",
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb
-        }
+            bed_in = normalize_sex_chr_wf.bed_out,
+            bim_in = normalize_sex_chr_wf.bim_out,
+            fam_in = normalize_sex_chr_wf.fam_out,
+            chrs = chrs,
+            output_basename = "${output_basename}.extract_chrs",
+            cpu = plink_cpu,
+            mem_gb = plink_mem_gb
     }
 
-    File norm_bed = select_first([extract_chrs.bed_out, normalize_sex_chr_wf.bed_out])
-    File norm_bim = select_first([extract_chrs.bim_out, normalize_sex_chr_wf.bim_out])
-    File norm_fam = select_first([extract_chrs.fam_out, normalize_sex_chr_wf.fam_out])
+    File norm_bed = extract_chrs.bed_out
+    File norm_bim = extract_chrs.bim_out
+    File norm_fam = extract_chrs.fam_out
 
     # Parallelize impute2 id conversion by chr
     scatter(chr_index in range(length(chrs))){
