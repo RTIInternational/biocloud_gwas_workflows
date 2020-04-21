@@ -60,6 +60,7 @@ workflow genotype_array_qc_wf{
     Array[String] ancestries_to_include = ["CEU", "CHB", "YRI"]
     Array[String] ancestry_definitions = ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"]
     String ancestry_pop_type = "POP"
+    Array[String]? ancestry_aliases
 
     # Cutoff below which an ancestry group of samples won't go through full pipeline
     # Handles cases where you might only be excluding a handful of outlier samples and only care about the main ancestry groups
@@ -224,6 +225,7 @@ workflow genotype_array_qc_wf{
             ancestries_to_include = ancestries_to_include,
             ancestry_pop_type = ancestry_pop_type,
             ancestry_definitions = ancestry_definitions,
+            ancestry_aliases = ancestry_aliases,
             numreps = structure_numreps,
             burnin = structure_burnin,
             seed = structure_seed,

@@ -129,6 +129,7 @@ workflow structure_wf{
     # Define how ancestry determinatoins are made from STRUCTURE admixture proportions
     # Must have 1 definition for each ancestry in ancestries_to_include
     Array[String] ancestry_definitions = ["YRI=CHB<0.25;YRI>0.25", "CEU=CHB<0.25;YRI<0.25", "CHB=CHB>0.25;YRI<0.25"]
+    Array[String]? ancestry_aliases
 
     ##### STRUCTURE-specific options
     # Number of SNPs to subset
@@ -435,7 +436,7 @@ workflow structure_wf{
     call STRUCT_PP.order_by_ancestry{
         input:
             ancestry_files_in = structure_postprocess.ancestry_samples,
-            ancestries = ancestries_to_include
+            ancestries = select_first([ancestry_aliases, ancestries_to_include])
     }
 
     # Count number of samples that weren't classified as anything by structure
