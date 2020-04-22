@@ -46,7 +46,7 @@ workflow normalize_sex_chr_wf{
     if(expect_sex_chr.contains && expect_split_sex_chr.contains && !bim_split_sex_chr.contains){
 
         # Split X chr by PAR/NONPAR
-        call PLINK.make_bed as split_x_chr{
+        call PLINK.make_bed_plink1 as split_x_chr{
             input:
                 bed_in = bed_in,
                 bim_in = bim_in,
@@ -64,7 +64,7 @@ workflow normalize_sex_chr_wf{
     # Case: You want PAR/NONPAR regions collapsed but bim contains 23 and 25
     if(expect_sex_chr.contains && !expect_split_sex_chr.contains && bim_split_sex_chr.contains){
         # Split X chr by PAR/NONPAR
-        call PLINK.make_bed as merge_x_chr{
+        call PLINK.make_bed_plink1 as merge_x_chr{
             input:
                 bed_in = bed_in,
                 bim_in = bim_in,
