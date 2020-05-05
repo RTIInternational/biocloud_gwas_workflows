@@ -1,0 +1,26 @@
+{
+    "convert_variant_ids_wf.input_files": [
+        "s3://rti-biocloud-test-data/convert_ids/chr22.info.gz"
+    ],
+    "convert_variant_ids_wf.ref_files": [
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr22.tsv.gz"
+    ],
+    "convert_variant_ids_wf.chrs": [
+        "22"
+    ],
+    "convert_variant_ids_wf.output_files": [
+        "chr22.GRCh37_dbsnp_b153_ids.info.gz"
+    ],
+    "convert_variant_ids_wf.header": 1,
+    "convert_variant_ids_wf.in_sep": "tab",
+    "convert_variant_ids_wf.in_id_col": 2,
+    "convert_variant_ids_wf.in_chr_col": 0,
+    "convert_variant_ids_wf.in_pos_col": 1,
+    "convert_variant_ids_wf.in_a1_col": 3,
+    "convert_variant_ids_wf.in_a2_col": 4,
+    "convert_variant_ids_wf.in_missing_allele": "0",
+    "convert_variant_ids_wf.in_deletion_allele": "-",
+    "convert_variant_ids_wf.ref_deletion_allele": ".",
+    "convert_variant_ids_wf.output_compression": "gzip"
+}
+
