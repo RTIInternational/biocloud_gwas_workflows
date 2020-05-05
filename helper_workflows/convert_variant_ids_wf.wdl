@@ -16,14 +16,13 @@ workflow convert_variant_ids_wf{
     String in_missing_allele
     String in_deletion_allele
     String ref_deletion_allele
-    Int chunk_size
+    Int? chunk_size
     Boolean? rescue_rsids
     String? output_compression
 
     # Resources
     Int cpu = 1
     Int mem_gb = 3
-
 
     # Parallelize
     scatter(i in range(length(input_files))){
@@ -46,8 +45,8 @@ workflow convert_variant_ids_wf{
                 ref_deletion_allele = ref_deletion_allele,
                 chunk_size = chunk_size,
                 output_filename = output_files[i],
-                rescue_rsids = if defined(rescue_rsids) then rescue_rsids else null,
-                output_compression = if defined(output_compression) then output_compression else null,
+                rescue_rsids = rescue_rsids,
+                output_compression = output_compression,
                 cpu = cpu,
                 mem_gb = mem_gb
         }
@@ -55,6 +54,6 @@ workflow convert_variant_ids_wf{
     }
 
     output{
-        Array[File] output_files = output_files
+        String results_files = output_files
     }
 }
