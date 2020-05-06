@@ -6,7 +6,7 @@ workflow convert_variant_ids_wf{
     Array[String] chrs
     Array[File] output_files
 
-    Int in_header = 0
+    Int in_header
     String in_sep
     Int in_id_col
     Int in_chr_col
@@ -27,10 +27,7 @@ workflow convert_variant_ids_wf{
 
     # Parallelize
     scatter(i in range(length(input_files))){
-        Int mem_gb = max_mem_gb - i
-        if (mem_gb < min_mem_gb) {
-            mem_gb = min_mem_gb
-        }
+        Int mem_gb = if (max_mem_gb - i) > min_mem_gb then (max_mem_gb - i) else min_mem_gb
         # Convert IDs
         call IDCONVERT.convert_variant_ids{
             input:

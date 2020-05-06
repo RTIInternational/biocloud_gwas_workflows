@@ -101,7 +101,7 @@
         "chr21_GRCh38_dbsnp_b153_ids.info.gz",
         "chr22_GRCh38_dbsnp_b153_ids.info.gz"
     ],
-    "convert_variant_ids_wf.header": 1,
+    "convert_variant_ids_wf.in_header": 1,
     "convert_variant_ids_wf.in_sep": "tab",
     "convert_variant_ids_wf.in_id_col": 2,
     "convert_variant_ids_wf.in_chr_col": 0,
