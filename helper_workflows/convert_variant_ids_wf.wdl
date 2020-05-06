@@ -22,11 +22,15 @@ workflow convert_variant_ids_wf{
 
     # Resources
     Int cpu = 1
-    Int mem_gb = 3
+    Int max_mem_gb = 30
+    Int min_mem_gb = 4
 
     # Parallelize
     scatter(i in range(length(input_files))){
-
+        Int mem_gb = max_mem_gb - i
+        if (mem_gb < min_mem_gb) {
+            mem_gb = min_mem_gb
+        }
         # Convert IDs
         call IDCONVERT.convert_variant_ids{
             input:
@@ -54,6 +58,6 @@ workflow convert_variant_ids_wf{
     }
 
     output{
-        String results_files = output_files
+        Array[File] results_files = output_files
     }
 }
