@@ -1,0 +1,16 @@
+{
+    "convert_bgen_to_vcf_wf.bgen_files": [
+        "s3://rti-biocloud-test-data/ukbiobank/ukb_imp_chr1_v3.bgen"
+    ],
+    "convert_bgen_to_vcf_wf.sample_files": [
+        "s3://rti-biocloud-test-data/ukbiobank/ukb24603_imp_chr1_v3_s487297.sample"
+    ],
+    "convert_bgen_to_vcf_wf.output_basenames": [
+        "ukb_imp_chr1_v3"
+    ],
+    "convert_bgen_to_vcf_wf.ref_alt_mode": "ref-first",
+    "convert_bgen_to_vcf_wf.vcf_dosage": "DS",
+    "convert_bgen_to_vcf_wf.cpu": 16,
+    "convert_bgen_to_vcf_wf.mem_gb": 4
+}
+
