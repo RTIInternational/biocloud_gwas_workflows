@@ -81,6 +81,9 @@ workflow rvtests_gwas_wf{
     File? kinship
     Boolean do_kinship_generate = (!defined(xHemiKinship)) || (!defined(kinship))
 
+    # Mem for plotting
+    Int plot_mem_gb
+
     # Generate kinship matrix if samples are related
     if(is_related && do_kinship_generate){
         call KIN.generate_kinship_matrix_wf as get_kinship_mat{
@@ -185,7 +188,8 @@ workflow rvtests_gwas_wf{
                     output_basename = basename(sumstats_file, ".tsv"),
                     sig_alpha = sig_alpha,
                     sample_maf_cutoff = sample_maf_cutoff,
-                    pop_maf_cutoff = pop_maf_cutoff
+                    pop_maf_cutoff = pop_maf_cutoff,
+                    plot_mem_gb = plot_mem_gb
             }
         }
     }

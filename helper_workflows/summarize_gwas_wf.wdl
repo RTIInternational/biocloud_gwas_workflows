@@ -19,6 +19,8 @@ workflow summarize_gwas_wf{
     String pos_colname = "POS"
     String p_colname = "P"
 
+    Int plot_mem_gb
+
     # Optionally filter by sample MAF
     if(sample_maf_cutoff > 0.0){
         String sample_filter_string = "--is-numeric '${sample_maf_col}' --ge '${sample_maf_col}:${sample_maf_cutoff}'"
@@ -51,7 +53,8 @@ workflow summarize_gwas_wf{
             col_chromosome = chr_colname,
             col_position = pos_colname,
             col_p = p_colname,
-            output_basename = basename(summary_stats, ".tsv")
+            output_basename = basename(summary_stats, ".tsv"),
+            mem_gb = plot_mem_gb
         }
 
     # Filter by pvalue to get a more interesting set of significant hits
