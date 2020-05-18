@@ -173,7 +173,8 @@ workflow rvtests_gwas_wf{
         input:
             summary_stats_input = sumstats_file,
             output_basename = basename(sumstats_file, ".tsv"),
-            sig_alpha = sig_alpha
+            sig_alpha = sig_alpha,
+            plot_mem_gb = plot_mem_gb
     }
 
     # Summarize results after applying user-defined MAF cutoffs
