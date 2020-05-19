@@ -113,6 +113,6 @@
     "convert_variant_ids_wf.ref_deletion_allele": ".",
     "convert_variant_ids_wf.output_compression": "gzip",
     "convert_variant_ids_wf.cpu": 1,
-    "convert_variant_ids_wf.max_mem_gb": 28
+    "convert_variant_ids_wf.mem_gb": 4
 }
 
