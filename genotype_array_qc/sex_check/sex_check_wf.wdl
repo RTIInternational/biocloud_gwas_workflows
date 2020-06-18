@@ -20,7 +20,14 @@ task format_phenotype_file{
 
     command {
         set -e
-        tail -n +${tail_n} ${phenotype_in} |
+
+        if [[ ${phenotype_in} =~ \.gz$ ]]; then
+            unpigz -p ${cpu} -c ${phenotype_in} > ${output_filename}.tmp
+        else
+            ln -s ${phenotype_in} ${output_filename}.tmp
+        fi
+
+        tail -n +${tail_n} ${output_filename}.tmp |
         perl -lne '
             $delimiter = lc("${delimiter}");
             $delimiter = ($delimiter eq "comma") ? "," : (($delimiter eq "tab") ? "\t" : (($delimiter eq "space") ? " " : ""));
