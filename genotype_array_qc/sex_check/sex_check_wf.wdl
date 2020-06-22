@@ -22,7 +22,7 @@ task format_phenotype_file{
         set -e
 
         if [[ ${phenotype_in} =~ \.gz$ ]]; then
-            unpigz -p ${cpu} -c ${phenotype_in} > ${output_filename}.tmp
+            gunzip -p ${cpu} -c ${phenotype_in} > ${output_filename}.tmp
         else
             ln -s ${phenotype_in} ${output_filename}.tmp
         fi
