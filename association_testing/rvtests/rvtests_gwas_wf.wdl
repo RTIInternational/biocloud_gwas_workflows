@@ -3,6 +3,7 @@ import "biocloud_gwas_workflows/helper_workflows/collect_large_file_list_wf.wdl"
 import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV
 import "biocloud_gwas_workflows/helper_workflows/summarize_gwas_wf.wdl" as SUM
 import "biocloud_gwas_workflows/helper_workflows/generate_kinship_matrix_wf.wdl" as KIN
+import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_variant_ids/convert_variant_ids.wdl" as IDCONVERT
 
 workflow rvtests_gwas_wf{
     Array[File] vcfs_in
@@ -37,10 +38,17 @@ workflow rvtests_gwas_wf{
 
     # Optional MAF cutoffs levels used to generate summary stats/graphs across a range of MAF filters
     Array[Float]? maf_cutoffs
+
     # Boolean switches for whether to filter by sample/cohort MAF, 1000G populations MAF (can also be both/neither)
     Boolean filter_by_pop_maf
     Boolean filter_by_sample_maf
 
+    # ID conversion parameters
+    Array[File] id_ref_files
+    String in_missing_allele
+    String in_deletion_allele
+    String ref_deletion_allele = "."
+    Boolean rescue_rsids = false
 
     # RVTests arguments. These shouldn't change unless you REALLY know what you're doing.
     # Automatically set to the correct values based on continuous/binary flag above
@@ -141,12 +149,36 @@ workflow rvtests_gwas_wf{
                 kinship = kin_mat,
                 xHemiKinship = xHemi_kin_mat
         }
+
+        # Convert ids on summary stats output to standard ids
+        call IDCONVERT.convert_variant_ids{
+            input:
+                chr = chrs[chr_index],
+                in_file = rvtests.summary_stats,
+                in_header = 1,
+                in_sep = "tab",
+                ref = id_ref_files[chr_index],
+                in_id_col = 0,
+                in_chr_col = 1,
+                in_pos_col = 2,
+                in_a1_col = 3,
+                in_a2_col = 4,
+                in_missing_allele = in_missing_allele,
+                in_deletion_allele = in_deletion_allele,
+                ref_deletion_allele = ref_deletion_allele,
+                output_filename = basename(rvtests.summary_stats, ".tsv.gz") + "good_ids.tsv.gz",
+                rescue_rsids = rescue_rsids,
+                output_compression = "gzip",
+                cpu = rvtests_cpu_per_split,
+                mem_gb = rvtests_mem_gb_per_split
+        }
+
     }
 
     # Merge chr outputs into single file
     call COLLECT.collect_large_file_list_wf as collect_sumstats{
         input:
-            input_files = rvtests.summary_stats,
+            input_files = convert_variant_ids.output_file,
             output_dir_name = study_output_basename + "_rvtests_chr_output"
     }
 

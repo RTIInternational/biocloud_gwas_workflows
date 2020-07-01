@@ -1,4 +1,8 @@
 {
+    "rvtests_gwas_wf.chrs": [
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+    "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X"],
+
     "rvtests_gwas_wf.vcfs_in": [
         "s3://rti-biocloud-test-data/vcfs/GABC/chr1.dose.vcf.gz",
         "s3://rti-biocloud-test-data/vcfs/GABC/chr2.dose.vcf.gz",
@@ -79,15 +83,49 @@
     "rvtests_gwas_wf.covar_file": "s3://rti-biocloud-test-data/vcfs/GABC/gabc_ea.covar.ped",
     "rvtests_gwas_wf.covars": ["sex", "age", "EV7", "EV3", "EV5"],
     "rvtests_gwas_wf.dosage": "DS",
-    "rvtests_gwas_wf.study_output_basename": "test_rvtests_gwas",
+    "rvtests_gwas_wf.study_output_basename": "gabc",
     "rvtests_gwas_wf.maf_population" : "EUR",
+
     "rvtests_gwas_wf.is_continuous": false,
+    "rvtests_gwas_wf.is_related": false,
+
     "rvtests_gwas_wf.min_rsq": 0.3,
     "rvtests_gwas_wf.sig_alpha": 0.0005,
     "rvtests_gwas_wf.filter_by_pop_maf": false,
     "rvtests_gwas_wf.filter_by_sample_maf": true,
     "rvtests_gwas_wf.maf_cutoffs": [0.005, 0.01, 0.05],
+
     "rvtests_gwas_wf.split_vcfs": false,
     "rvtests_gwas_wf.rvtests_cpu_per_split": 1,
-    "rvtests_gwas_wf.rvtests_mem_gb_per_split": 1
+    "rvtests_gwas_wf.rvtests_mem_gb_per_split": 1,
+    "rvtests_gwas_wf.plot_mem_gb": 12,
+
+    "rvtests_gwas_wf.id_ref_files": [
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr1.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr2.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr3.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr4.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr5.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr6.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr7.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr8.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr9.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr10.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr11.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr12.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr13.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr14.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr15.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr16.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr17.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr18.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr19.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr20.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr21.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr22.tsv.gz",
+        "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr23.tsv.gz"
+    ],
+
+    "rvtests_gwas_wf.in_missing_allele": "0",
+    "rvtests_gwas_wf.in_deletion_allele": "-"
 }
