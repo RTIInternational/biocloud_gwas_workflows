@@ -1,5 +1,6 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV
 import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
+import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/io.wdl" as IO
 import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
 
 workflow summarize_gwas_wf{
@@ -8,11 +9,13 @@ workflow summarize_gwas_wf{
     String output_basename
     Float sample_maf_cutoff = 0.0
     Float pop_maf_cutoff = 0.0
+    Float min_rsq = 0.0
     Float sig_alpha
 
     Int sample_maf_col = 7
     Int pop_maf_col = 8
     Int pvalue_col = 14
+    Int rsq_col = 10
 
     String id_colname = "VARIANT_ID"
     String chr_colname = "CHR"
@@ -21,19 +24,30 @@ workflow summarize_gwas_wf{
 
     Int plot_mem_gb
 
+    # Optionally fiter on Rsq if desired
+    if (min_rsq > 0.0){
+        call TSV.tsv_filter as filter_rsq{
+            input:
+                tsv_input = summary_stats_input,
+                output_filename = output_basename + ".rsq.${min_rsq}.tsv",
+                filter_string = "--is-numeric '${rsq_col}' --ge '${rsq_col}:${min_rsq}'"
+        }
+    }
+
     # Optionally filter by sample MAF
+    File rsq_summary_stats = select_first([filter_rsq.tsv_output, summary_stats_input])
     if(sample_maf_cutoff > 0.0){
         String sample_filter_string = "--is-numeric '${sample_maf_col}' --ge '${sample_maf_col}:${sample_maf_cutoff}'"
         call TSV.tsv_filter as filter_sample_maf{
             input:
-                tsv_input = summary_stats_input,
-                output_filename = output_basename + ".sampleMAF.${sample_maf_cutoff}.tsv",
+                tsv_input = rsq_summary_stats,
+                output_filename = basename(rsq_summary_stats, ".tsv") + ".sampleMAF.${sample_maf_cutoff}.tsv",
                 filter_string = sample_filter_string
         }
     }
 
     # Optionally filter by population MAF
-    File sample_maf_summary_stats = select_first([filter_sample_maf.tsv_output, summary_stats_input])
+    File sample_maf_summary_stats = select_first([filter_sample_maf.tsv_output, rsq_summary_stats])
     if(pop_maf_cutoff > 0.0){
         String pop_filter_string = "--is-numeric '${pop_maf_col}' --ge '${pop_maf_col}:${pop_maf_cutoff}'"
         call TSV.tsv_filter as filter_pop_maf{
@@ -65,8 +79,15 @@ workflow summarize_gwas_wf{
             filter_string = "--is-numeric '${pvalue_col}' --le '${pvalue_col}:${sig_alpha}'"
     }
 
+    # Gzip summary stats for downstream easiness
+    call IO.gzip{
+        input:
+            input_file = summary_stats
+    }
+
     output{
         File summary_stats_output = summary_stats
+        File gzipped_summary_stats_output = gzip.output_file
         File sig_summary_stats_output = filter_pvalue.tsv_output
         Array[File] summary_plots = make_plots.plots
     }

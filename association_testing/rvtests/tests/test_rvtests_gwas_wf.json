@@ -89,16 +89,16 @@
     "rvtests_gwas_wf.is_continuous": false,
     "rvtests_gwas_wf.is_related": false,
 
-    "rvtests_gwas_wf.min_rsq": 0.3,
     "rvtests_gwas_wf.sig_alpha": 0.0005,
     "rvtests_gwas_wf.filter_by_pop_maf": false,
     "rvtests_gwas_wf.filter_by_sample_maf": true,
     "rvtests_gwas_wf.maf_cutoffs": [0.005, 0.01, 0.05],
+    "rvtests_gwas_wf.rsq_cutoffs": [0.3, 0.7],
 
     "rvtests_gwas_wf.split_vcfs": false,
     "rvtests_gwas_wf.rvtests_cpu_per_split": 1,
     "rvtests_gwas_wf.rvtests_mem_gb_per_split": 1,
-    "rvtests_gwas_wf.plot_mem_gb": 12,
+    "rvtests_gwas_wf.plot_mem_gb": 18,
 
     "rvtests_gwas_wf.id_ref_files": [
         "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr1.tsv.gz",

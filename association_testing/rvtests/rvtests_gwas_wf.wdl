@@ -30,8 +30,8 @@ workflow rvtests_gwas_wf{
     Array[File] pop_maf_files
     String maf_population
 
-    # Imputation quality filtering cutoff. Final outputs will have R2 >= this value
-    Float min_rsq
+    # Imputation quality filtering cutoffs. Final outputs will have R2 >= this value
+    Array[Float]? rsq_cutoffs
 
     # P-value cutoff for filtering set of interesting results
     Float sig_alpha
@@ -166,7 +166,7 @@ workflow rvtests_gwas_wf{
                 in_missing_allele = in_missing_allele,
                 in_deletion_allele = in_deletion_allele,
                 ref_deletion_allele = ref_deletion_allele,
-                output_filename = basename(rvtests.summary_stats, ".tsv.gz") + "good_ids.tsv.gz",
+                output_filename = basename(rvtests.summary_stats, ".tsv.gz") + ".good_ids.tsv.gz",
                 rescue_rsids = rescue_rsids,
                 output_compression = "gzip",
                 cpu = rvtests_cpu_per_split,
@@ -189,50 +189,37 @@ workflow rvtests_gwas_wf{
             output_filename = study_output_basename + ".rvtests.MetaAssoc.tsv"
     }
 
-    # Fiter on Rsq if desired
-    if (min_rsq > 0.0){
-        call TSV.tsv_filter as filter_rsq{
+    # Generate summaries for each possible combo of MAF/Rsq cutoff
+    Array[Float] actual_maf_cutoffs = select_first([maf_cutoffs, [0.0]])
+    Array[Float] actual_rsq_cutoffs = select_first([rsq_cutoffs, [0.0]])
+    Array[Pair[Float, Float]] filter_combos = cross(actual_maf_cutoffs, actual_rsq_cutoffs)
+    scatter(filter_combo in filter_combos){
+        # Get the MAF/Rsq cutoffs for this combo
+        Float min_rsq = filter_combo.right
+        Float min_maf = filter_combo.left
+
+        # Set the pop/sample mafs based on whether we want to filter on sample or population MAF
+        Float pop_maf_cutoff = if filter_by_pop_maf then min_maf else 0.0
+        Float sample_maf_cutoff = if filter_by_sample_maf then min_maf else 0.0
+
+        # Generate summary of
+        call SUM.summarize_gwas_wf as summarize_filtered_sumstats{
             input:
-                tsv_input = cat_sumstats.tsv_output,
-                output_filename = basename(cat_sumstats.tsv_output, ".tsv") + ".rsq.tsv",
-                filter_string = "--is-numeric '10' --ge '10:${min_rsq}'"
-        }
-    }
-
-    # Make manhattan, QQ plots of sumstats with no MAF filtering
-    File sumstats_file = select_first([filter_rsq.tsv_output, cat_sumstats.tsv_output])
-    call SUM.summarize_gwas_wf as summarize_rsq_sumstats{
-        input:
-            summary_stats_input = sumstats_file,
-            output_basename = basename(sumstats_file, ".tsv"),
-            sig_alpha = sig_alpha,
-            plot_mem_gb = plot_mem_gb
-    }
-
-    # Summarize results after applying user-defined MAF cutoffs
-    if((defined(maf_cutoffs)) && (filter_by_pop_maf || filter_by_sample_maf)){
-        Array[Float] actual_cutoffs = select_first([maf_cutoffs, []])
-        scatter(maf_cutoff in actual_cutoffs){
-            Float pop_maf_cutoff = if filter_by_pop_maf then maf_cutoff else 0.0
-            Float sample_maf_cutoff = if filter_by_sample_maf then maf_cutoff else 0.0
-            call SUM.summarize_gwas_wf as summarize_maf_sumstats{
-                input:
-                    summary_stats_input = sumstats_file,
-                    output_basename = basename(sumstats_file, ".tsv"),
-                    sig_alpha = sig_alpha,
-                    sample_maf_cutoff = sample_maf_cutoff,
-                    pop_maf_cutoff = pop_maf_cutoff,
-                    plot_mem_gb = plot_mem_gb
+                summary_stats_input = cat_sumstats.tsv_output,
+                output_basename = basename(cat_sumstats.tsv_output, ".tsv"),
+                sig_alpha = sig_alpha,
+                sample_maf_cutoff = sample_maf_cutoff,
+                pop_maf_cutoff = pop_maf_cutoff,
+                min_rsq = min_rsq,
+                plot_mem_gb = plot_mem_gb
             }
-        }
     }
 
     output{
-        File summary_stats = sumstats_file
-        File sig_summary_stats = summarize_rsq_sumstats.sig_summary_stats_output
-        Array[File] summary_stats_plots = summarize_rsq_sumstats.summary_plots
-        Array[File]? maf_summary_stats = summarize_maf_sumstats.summary_stats_output
-        Array[File]? sig_maf_summary_stats = summarize_maf_sumstats.sig_summary_stats_output
-        Array[Array[File]]? maf_summary_stats_plots = summarize_maf_sumstats.summary_plots
+        File raw_summary_stats = cat_sumstats.tsv_output
+        Array[File] filtered_summary_stats = summarize_filtered_sumstats.summary_stats_output
+        Array[File] gzipped_filtered_summary_stats = summarize_filtered_sumstats.gzipped_summary_stats_output
+        Array[File] sig_filtered_summary_stats = summarize_filtered_sumstats.sig_summary_stats_output
+        Array[Array[File]] filtered_summary_stats_plots = summarize_filtered_sumstats.summary_plots
     }
 }
