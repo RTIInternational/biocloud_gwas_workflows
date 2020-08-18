@@ -1,6 +1,6 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_vcf_to_gds/convert_vcf_to_gds.wdl" as CONVERT
 
-workflow convert_variant_ids_wf{
+workflow convert_vcf_to_gds_wf{
     Array[File] input_files
     Array[File] output_files
 
