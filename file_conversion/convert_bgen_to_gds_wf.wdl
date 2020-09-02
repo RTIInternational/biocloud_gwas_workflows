@@ -12,7 +12,6 @@ workflow convert_bgen_to_gds_wf{
     Int parallel = 8
 
     # Resources
-    Int cpu = ${parallel}
     Int mem_gb = 8
 
     # Parallelize
@@ -29,7 +28,7 @@ workflow convert_bgen_to_gds_wf{
                 prob = prob,
                 optimize = optimize,
                 parallel = parallel,
-                cpu = cpu,
+                cpu = parallel,
                 mem_gb = mem_gb
         }
 

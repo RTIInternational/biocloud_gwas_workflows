@@ -1,5 +1,5 @@
 {
-    "convert_vcf_to_gds_wf.input_files": [
+    "convert_bgen_to_gds_wf.input_files": [
         "<INPUT_PREFIX>chr1<INPUT_SUFFIX>",
         "<INPUT_PREFIX>chr2<INPUT_SUFFIX>",
         "<INPUT_PREFIX>chr3<INPUT_SUFFIX>",
@@ -23,7 +23,7 @@
         "<INPUT_PREFIX>chr21<INPUT_SUFFIX>",
         "<INPUT_PREFIX>chr22<INPUT_SUFFIX>"
     ],
-    "convert_vcf_to_gds_wf.output_files": [
+    "convert_bgen_to_gds_wf.output_files": [
         "<OUTPUT_PREFIX>chr1<OUTPUT_SUFFIX>",
         "<OUTPUT_PREFIX>chr2<OUTPUT_SUFFIX>",
         "<OUTPUT_PREFIX>chr3<OUTPUT_SUFFIX>",
@@ -47,13 +47,13 @@
         "<OUTPUT_PREFIX>chr21<OUTPUT_SUFFIX>",
         "<OUTPUT_PREFIX>chr22<OUTPUT_SUFFIX>"
     ],
-    "convert_vcf_to_gds_wf.storage_option": "LZMA_RA",
-    "convert_vcf_to_gds_wf.float_type": "double",
-    "convert_vcf_to_gds_wf.geno": "FALSE",
-    "convert_vcf_to_gds_wf.dosage": "FALSe",
-    "convert_vcf_to_gds_wf.prob": "FALSE",
-    "convert_vcf_to_gds_wf.optimize": "TRUE",
-    "convert_vcf_to_gds_wf.parallel": 8,
-    "convert_vcf_to_gds_wf.mem_gb": 8
+    "convert_bgen_to_gds_wf.storage_option": "LZMA_RA",
+    "convert_bgen_to_gds_wf.float_type": "double",
+    "convert_bgen_to_gds_wf.geno": "FALSE",
+    "convert_bgen_to_gds_wf.dosage": "FALSE",
+    "convert_bgen_to_gds_wf.prob": "FALSE",
+    "convert_bgen_to_gds_wf.optimize": "TRUE",
+    "convert_bgen_to_gds_wf.parallel": 8,
+    "convert_bgen_to_gds_wf.mem_gb": 8
 }
 
