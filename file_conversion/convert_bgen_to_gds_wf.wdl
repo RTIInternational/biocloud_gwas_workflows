@@ -28,7 +28,6 @@ workflow convert_bgen_to_gds_wf{
                 prob = prob,
                 optimize = optimize,
                 parallel = parallel,
-                cpu = parallel,
                 mem_gb = mem_gb
         }
 
