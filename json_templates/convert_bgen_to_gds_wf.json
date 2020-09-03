@@ -49,10 +49,10 @@
     ],
     "convert_bgen_to_gds_wf.storage_option": "LZMA_RA",
     "convert_bgen_to_gds_wf.float_type": "double",
-    "convert_bgen_to_gds_wf.geno": "FALSE",
-    "convert_bgen_to_gds_wf.dosage": "FALSE",
-    "convert_bgen_to_gds_wf.prob": "FALSE",
-    "convert_bgen_to_gds_wf.optimize": "TRUE",
+    "convert_bgen_to_gds_wf.geno": false,
+    "convert_bgen_to_gds_wf.dosage": true,
+    "convert_bgen_to_gds_wf.prob": false,
+    "convert_bgen_to_gds_wf.optimize": true,
     "convert_bgen_to_gds_wf.parallel": 8,
     "convert_bgen_to_gds_wf.mem_gb": 8
 }

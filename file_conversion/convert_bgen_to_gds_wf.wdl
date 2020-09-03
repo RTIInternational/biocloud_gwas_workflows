@@ -5,10 +5,10 @@ workflow convert_bgen_to_gds_wf{
     Array[File] output_files
     String storage_option = "LZMA_RA"
     String float_type = "double"
-    String geno = "FALSE"
-    String dosage = "FALSE"
-    String prob = "FALSE"
-    String optimize = "FALSE"
+    String geno = false
+    String dosage = false
+    String prob = false
+    String optimize = false
     Int parallel = 8
 
     # Resources
