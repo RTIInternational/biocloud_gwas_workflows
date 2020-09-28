@@ -12,6 +12,9 @@ workflow hwe_filter_wf{
     Float hwe_filter_pvalue
     String? hwe_mode
 
+    # Whether or not to include non-founders (i.e. samples with parent_id set) in HWE calculations (default: False)
+    Boolean? nonfounders
+
     # Workflow can optionally be used on a single chr
     Array[String]? chrs
 
@@ -64,6 +67,7 @@ workflow hwe_filter_wf{
                 filter_females = (chr == "23"),
                 hwe_pvalue = hwe_filter_pvalue,
                 hwe_mode = hwe_mode,
+                nonfounders = nonfounders,
                 output_basename = "${output_basename}.chr.${chr}",
                 cpu = plink_chr_cpu,
                 mem_gb = plink_chr_mem_gb
