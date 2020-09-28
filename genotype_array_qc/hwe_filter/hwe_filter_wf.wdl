@@ -18,6 +18,9 @@ workflow hwe_filter_wf{
     # Workflow can optionally be used on a single chr
     Array[String]? chrs
 
+    # Optional file of related individuals to exclude from HWE calculation
+    File? related_samples
+
     Int plink_chr_cpu = 1
     Int plink_chr_mem_gb = 2
     Int plink_filter_cpu = 1
@@ -68,6 +71,7 @@ workflow hwe_filter_wf{
                 hwe_pvalue = hwe_filter_pvalue,
                 hwe_mode = hwe_mode,
                 nonfounders = nonfounders,
+                remove_samples = related_samples,
                 output_basename = "${output_basename}.chr.${chr}",
                 cpu = plink_chr_cpu,
                 mem_gb = plink_chr_mem_gb
@@ -80,7 +84,6 @@ workflow hwe_filter_wf{
             input_files = hwe.remove,
             output_filename = "${output_basename}.hwe.remove"
     }
-
 
     # Remove failed HWE SNPs from full dataset
     call PLINK.make_bed as filter_hwe{
