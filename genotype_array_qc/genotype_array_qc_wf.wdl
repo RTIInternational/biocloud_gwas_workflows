@@ -293,35 +293,14 @@ workflow genotype_array_qc_wf{
         }
         Int low_call_snp_count = impute2_snp_count.num_lines - subset_ancestry_snp_count.num_lines
 
-        # Apply HWE filter
-        call HWE.hwe_filter_wf{
+        # Set het haploids to missing
+        call PLINK.make_bed as het_hap_to_missing{
             input:
                 bed_in = subset_ancestry.bed_out,
                 bim_in = subset_ancestry.bim_out,
                 fam_in = subset_ancestry.fam_out,
-                hwe_filter_pvalue = hwe_filter_pvalue,
-                output_basename = "${output_basename}.${ancestry}.snp_miss.hwe",
-                plink_filter_cpu = plink_filter_cpu,
-                plink_filter_mem_gb = plink_filter_mem_gb,
-                plink_chr_cpu = plink_chr_cpu,
-                plink_chr_mem_gb = plink_chr_mem_gb
-        }
-
-        # Count number of snps not in hwe
-        call UTILS.wc as hwe_snp_count{
-            input:
-                input_file = hwe_filter_wf.bim_out
-        }
-        Int hwe_failed_snp_count = subset_ancestry_snp_count.num_lines - hwe_snp_count.num_lines
-
-        # Set het haploids to missing
-        call PLINK.make_bed as het_hap_to_missing{
-            input:
-                bed_in = hwe_filter_wf.bed_out,
-                bim_in = hwe_filter_wf.bim_out,
-                fam_in = hwe_filter_wf.fam_out,
                 set_hh_missing = true,
-                output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_auto",
+                output_basename = "${output_basename}.${ancestry}.snp_miss.het_hap_auto",
                 cpu = plink_filter_cpu,
                 mem_gb = plink_filter_mem_gb
         }
@@ -334,7 +313,7 @@ workflow genotype_array_qc_wf{
                 fam_in = het_hap_to_missing.fam_out,
                 autosome = true,
                 mind = max_sample_missing_rate,
-                output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss",
+                output_basename = "${output_basename}.${ancestry}.snp_miss.het_hap_miss",
                 cpu = plink_filter_cpu,
                 mem_gb = plink_filter_mem_gb
         }
@@ -353,7 +332,7 @@ workflow genotype_array_qc_wf{
                 bim_in = het_hap_to_missing.bim_out,
                 fam_in = het_hap_to_missing.fam_out,
                 keep_samples = get_low_called_samples.fam_out,
-                output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss.sample_miss",
+                output_basename = "${output_basename}.${ancestry}.snp_miss.het_hap_miss.sample_miss",
                 cpu = plink_filter_cpu,
                 mem_gb = plink_filter_mem_gb
         }
@@ -364,7 +343,7 @@ workflow genotype_array_qc_wf{
                 bed_in = filter_low_called_samples.bed_out,
                 bim_in = filter_low_called_samples.bim_out,
                 fam_in = filter_low_called_samples.fam_out,
-                output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss.sample_miss.het",
+                output_basename = "${output_basename}.${ancestry}.snp_miss.het_hap_miss.sample_miss.het",
                 min_he = min_sample_he,
                 max_he = max_sample_he,
                 cpu = plink_filter_cpu,
@@ -438,6 +417,34 @@ workflow genotype_array_qc_wf{
         }
         Int related_sample_removal_candidate_count = count_related_samples.num_lines
 
+        # Filter SNPs for HWE after identifying related samples to remove
+        #### WHY ARE WE DOING THIS HERE? ####
+        # Great question! For two reasons.
+        # For 1, related individuals can mess up HWE calculations
+        # For 2, we also want to use plink's '--nonfounders' option because otherwise it excludes any site with a parent in the fam file
+        # Now, we can just run filter HWE sites based on all samples we KNOW are unrelated and completely ignore the parent/child/founder/nonfounder issues
+        call HWE.hwe_filter_wf{
+            input:
+                bed_in = qc_bed,
+                bim_in = qc_bim,
+                fam_in = qc_fam,
+                hwe_filter_pvalue = hwe_filter_pvalue,
+                nonfounders = true,
+                related_samples = relatedness_wf.related_samples,
+                output_basename = "${output_basename}.${ancestry}.snp_miss.het_hap_miss.sample_miss.het.hwe",
+                plink_filter_cpu = plink_filter_cpu,
+                plink_filter_mem_gb = plink_filter_mem_gb,
+                plink_chr_cpu = plink_chr_cpu,
+                plink_chr_mem_gb = plink_chr_mem_gb
+        }
+
+        # Count number of snps not in hwe
+        call UTILS.wc as hwe_snp_count{
+            input:
+                input_file = hwe_filter_wf.bim_out
+        }
+        Int hwe_failed_snp_count = subset_ancestry_snp_count.num_lines - hwe_snp_count.num_lines
+
         # Sex check to see if sex matches phenotype file
         call SEX.sex_check_wf{
             input:
@@ -475,6 +482,10 @@ workflow genotype_array_qc_wf{
                 input_file = sex_check_wf.samples_to_remove
         }
         Int sex_check_failed_samples = count_sex_check_failed_samples.num_lines
+
+        File hwe_qc_bed = hwe_filter_wf.bed_out
+        File hwe_qc_bim = hwe_filter_wf.bim_out
+        File hwe_qc_fam = hwe_filter_wf.fam_out
 
         # Optionally apply filter lists from sex/relatedness workflows to QC filtered samples
         # This section looks kinda weird but it's only because WDL doesn't have 'else/elseif'
@@ -522,9 +533,9 @@ workflow genotype_array_qc_wf{
                 # Filter out samples as determined by user options
                 call PLINK.make_bed as filter_sex_and_kin{
                     input:
-                        bed_in = qc_bed,
-                        bim_in = qc_bim,
-                        fam_in = qc_fam,
+                        bed_in = hwe_qc_bed,
+                        bim_in = hwe_qc_bim,
+                        fam_in = hwe_qc_fam,
                         remove_samples = final_filter,
                         output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss.sample_miss.het.${final_suffix}",
                         cpu = plink_filter_cpu,
@@ -540,9 +551,9 @@ workflow genotype_array_qc_wf{
 
 
         # Finally re-merge PAR/NONPAR regions of chrX
-        File split_final_bed = select_first([filter_sex_and_kin.bed_out, qc_bed])
-        File split_final_bim = select_first([filter_sex_and_kin.bim_out, qc_bim])
-        File split_final_fam = select_first([filter_sex_and_kin.fam_out, qc_fam])
+        File split_final_bed = select_first([filter_sex_and_kin.bed_out, hwe_qc_bed])
+        File split_final_bim = select_first([filter_sex_and_kin.bim_out, hwe_qc_bim])
+        File split_final_fam = select_first([filter_sex_and_kin.fam_out, hwe_qc_fam])
         String final_basename = basename(split_final_bed, ".bed") + ".xmerged"
 
         call PLINK.make_bed as final_merge_x_chr{
@@ -623,9 +634,9 @@ workflow genotype_array_qc_wf{
 
         # QC files that have gone through basic site/sample filter but no kinship/sex filters
         # Can be used later if you don't want to use kinship/sex-discrepancy filtered datasets
-        Array[File] basic_qc_bed = qc_bed
-        Array[File] basic_qc_bim = qc_bim
-        Array[File] basic_qc_fam = qc_fam
+        Array[File] basic_qc_bed = hwe_qc_bed
+        Array[File] basic_qc_bim = hwe_qc_bim
+        Array[File] basic_qc_fam = hwe_qc_fam
 
         # Kinship estimation outputs for each ancestry
         Array[File] related_samples = relatedness_wf.related_samples
