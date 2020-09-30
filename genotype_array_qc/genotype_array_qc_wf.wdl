@@ -151,6 +151,13 @@ workflow genotype_array_qc_wf{
             output_basename = "${output_basename}.no_pheno"
     }
 
+    # Fix founder information in pedigree to make sure mother and father ids actually exist in dataset
+    call PLINK.make_founders{
+        input:
+            fam_in = remove_fam_phenotype.fam_out,
+            output_basename = "${output_basename}.no_pheno.make_founders"
+    }
+
     # Count initial number of samples and sites
     call UTILS.wc as init_snp_count{
         input:
@@ -168,7 +175,7 @@ workflow genotype_array_qc_wf{
         input:
             bed_in = bed,
             bim_in = bim,
-            fam_in = remove_fam_phenotype.fam_out,
+            fam_in = make_founders.fam_out,
             output_basename = output_basename,
             chrs = chrs,
             id_legend_files = id_legend_files,
