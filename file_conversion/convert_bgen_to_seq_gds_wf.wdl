@@ -1,6 +1,6 @@
-import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_bgen_to_gds/convert_bgen_to_gds.wdl" as CONVERT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_bgen_to_seq_gds/convert_bgen_to_seq_gds.wdl" as CONVERT
 
-workflow convert_bgen_to_gds_wf{
+workflow convert_bgen_to_seq_gds_wf{
     Array[File] input_files
     Array[File] output_files
     String storage_option = "LZMA_RA"
@@ -17,7 +17,7 @@ workflow convert_bgen_to_gds_wf{
     # Parallelize
     scatter(i in range(length(input_files))){
         # Convert files
-        call CONVERT.convert_bgen_to_gds{
+        call CONVERT.convert_bgen_to_seq_gds{
             input:
                 in_bgen = input_files[i],
                 out_gds = output_files[i],
