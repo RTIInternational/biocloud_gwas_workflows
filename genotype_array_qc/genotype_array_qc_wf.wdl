@@ -4,7 +4,9 @@ import "biocloud_gwas_workflows/genotype_array_qc/STRUCTURE/classic_structure_sp
 import "biocloud_gwas_workflows/genotype_array_qc/hwe_filter/hwe_filter_wf.wdl" as HWE
 import "biocloud_gwas_workflows/genotype_array_qc/relatedness/relatedness_wf.wdl" as REL
 import "biocloud_gwas_workflows/genotype_array_qc/sex_check/sex_check_wf.wdl" as SEX
+import "biocloud_gwas_workflows/genotype_array_qc/missing_chr_filter/missing_chr_filter_wf.wdl" as CHRMISS
 import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
+import "biocloud_gwas_workflows/genotype_array_qc/bed_to_split_vcf/bed_to_split_vcf_wf.wdl" as BED2VCF
 
 workflow genotype_array_qc_wf{
     File bed
@@ -13,6 +15,7 @@ workflow genotype_array_qc_wf{
     Array[String] chrs
     Array[File] id_legend_files
     String output_basename
+    Boolean output_split_vcfs = true
 
     # Plink build code to use for PAR/NONPAR splitting
     String build_code
@@ -27,7 +30,10 @@ workflow genotype_array_qc_wf{
     Boolean rescue_monomorph_rsids = true
 
     # Sample filter cutoffs
+    # Overall missing rate above which a sample is pruned
     Float max_sample_missing_rate = 0.03
+    # Chromomsomme-level missing rate; prune sample if missing rate on any chromosome exceeds this threshold
+    Float max_sample_chr_missing_rate = 0.95
     Float min_sample_he = -0.2
     Float max_sample_he = 0.5
 
@@ -561,30 +567,50 @@ workflow genotype_array_qc_wf{
         File split_final_bed = select_first([filter_sex_and_kin.bed_out, hwe_qc_bed])
         File split_final_bim = select_first([filter_sex_and_kin.bim_out, hwe_qc_bim])
         File split_final_fam = select_first([filter_sex_and_kin.fam_out, hwe_qc_fam])
-        String final_basename = basename(split_final_bed, ".bed") + ".xmerged"
 
         call PLINK.make_bed as final_merge_x_chr{
             input:
                 bed_in = split_final_bed,
                 bim_in = split_final_bim,
                 fam_in = split_final_fam,
-                output_basename = final_basename,
+                output_basename = basename(split_final_bed, ".bed") + ".xmerged",
                 merge_x = true,
                 merge_no_fail = true,
                 cpu = plink_filter_cpu,
                 mem_gb = plink_filter_mem_gb
         }
 
+        # Remove any samples with failed chromosomes
+        call CHRMISS.missing_chr_filter_wf as prune_samples_missing_chr{
+            input:
+                bed_in = final_merge_x_chr.bed_out,
+                bim_in = final_merge_x_chr.bim_out,
+                fam_in = final_merge_x_chr.fam_out,
+                output_basename = basename(final_merge_x_chr.bed_out, ".bed") + ".noMissingChr",
+                max_sample_chr_missing_rate = max_sample_chr_missing_rate,
+                plink_filter_cpu = plink_filter_cpu,
+                plink_filter_mem_gb = plink_filter_mem_gb,
+                plink_chr_cpu = plink_chr_cpu,
+                plink_chr_mem_gb = plink_chr_mem_gb
+        }
+
+        # Count number of sex-discrepant samples
+        call UTILS.wc as count_missing_chr_samples{
+            input:
+                input_file = prune_samples_missing_chr.samples_missing_chr
+        }
+        Int missing_chr_sample_count = count_missing_chr_samples.num_lines
+
         # Final snp count
         call UTILS.wc as final_snp_count{
             input:
-                input_file = split_final_bim
+                input_file = prune_samples_missing_chr.bim_out
         }
 
         # Final sample count
         call UTILS.wc as final_sample_count{
             input:
-                input_file = split_final_fam
+                input_file = prune_samples_missing_chr.fam_out
         }
 
         # Check that number of samples removed makes sense
@@ -595,11 +621,23 @@ workflow genotype_array_qc_wf{
 
         # Check to make sure actual number of removed samples == expected removed samples
         # If this number is different from total_removed_samples something unexpected happened
-        Int expected_removed_samples = sex_check_failed_samples + related_sample_removal_candidate_count + excess_homo_sample_count + low_call_sample_count - sex_related_overlap_count
+        Int expected_removed_samples = sex_check_failed_samples + related_sample_removal_candidate_count + excess_homo_sample_count + low_call_sample_count - sex_related_overlap_count + missing_chr_sample_count
         Int unaccounted_samples = total_removed_samples - expected_removed_samples
+
+        # Most imputation programs accept files as chr split vcf files
+        # So...we optionally create these for the user if they want to take this output directly to imputation
+        if(output_split_vcfs){
+            call BED2VCF.bed_to_split_vcf_wf as make_impute_ready_vcfs{
+                input:
+                    bed_in = prune_samples_missing_chr.bed_out,
+                    bim_in = prune_samples_missing_chr.bim_out,
+                    fam_in = prune_samples_missing_chr.fam_out,
+                    output_basename = basename(prune_samples_missing_chr.bed_out, ".bed"),
+                    plink_chr_cpu = plink_chr_cpu,
+                    plink_chr_mem_gb = plink_chr_mem_gb
+            }
+        }
     }
-
-
 
     output{
         # Filter count metrics
@@ -615,6 +653,7 @@ workflow genotype_array_qc_wf{
         Array[Int] excess_homo_samples_by_ancestry = excess_homo_sample_count
         Array[Int] related_samples_by_ancestry = related_sample_removal_candidate_count
         Array[Int] failed_sex_check_by_ancestry = sex_check_failed_samples
+        Array[Int] missing_chr_samples_by_ancestry = missing_chr_sample_count
         Array[Int] final_qc_snps_by_ancestry = final_snp_count.num_lines
         Array[Int] final_qc_samples_by_ancestry = final_sample_count.num_lines
         Array[Int] total_removed_snps_by_ancestry = total_removed_snps
@@ -627,9 +666,9 @@ workflow genotype_array_qc_wf{
         Int structure_unclassified_samples = structure_wf.unclassified_samples
 
         # Fully filtered qc beds that have been through all filters
-        Array[File] final_qc_bed = final_merge_x_chr.bed_out
-        Array[File] final_qc_bim = final_merge_x_chr.bim_out
-        Array[File] final_qc_fam = final_merge_x_chr.fam_out
+        Array[File] final_qc_bed = prune_samples_missing_chr.bed_out
+        Array[File] final_qc_bim = prune_samples_missing_chr.bim_out
+        Array[File] final_qc_fam = prune_samples_missing_chr.fam_out
 
         # Outputs summarizing TeraStructure ancestry analysis
         Array[File] ancestry_proportions = structure_wf.ancestry_proportions
@@ -654,5 +693,11 @@ workflow genotype_array_qc_wf{
         # Sex discrepancy outputs for each ancestry
         Array[File] sex_check_report = sex_check_wf.plink_sex_check_output
         Array[File] sex_check_failed_samples = sex_check_wf.samples_to_remove
+
+        # Sample Missing chr output by ancestry
+        Array[File] missing_chr_samples = prune_samples_missing_chr.samples_missing_chr
+
+        # Impute-ready vcfs if requested by user
+        Array[Array[File]?] final_vcfs = make_impute_ready_vcfs.vcf_out
     }
 }
