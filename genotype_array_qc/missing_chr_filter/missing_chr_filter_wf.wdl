@@ -26,7 +26,7 @@ workflow missing_chr_filter_wf{
     String output_basename
 
     # HWE p-value filter threshold
-    Float max_sample_chr_missing_rate = 0.99
+    Float max_sample_chr_missing_rate = 0.95
 
     # Workflow can optionally be used on a single chr
     Array[String]? chrs
