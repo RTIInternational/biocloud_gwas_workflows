@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document details the standard analysis workflow for performing QC data from genotyping arrays. An automated pipeline, developed using WDL, Cromwell, and Docker, is available for this workflow.
+This document details the standard analysis workflow for performing QC on data from genotyping arrays. An automated pipeline, developed using WDL, Cromwell, and Docker, is available for this workflow.
 
 This workflow performs standard QC on genotypes in PLINK bed/bim/fam format. A full description of the inputs and outputs is provided in the appendix of this document.
 
