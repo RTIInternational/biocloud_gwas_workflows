@@ -23,7 +23,7 @@
         "<INPUT_PREFIX>chr21<INPUT_SUFFIX>",
         "<INPUT_PREFIX>chr22<INPUT_SUFFIX>"
     ],
-    "genesis_gwas_wf.output_files": [
+    "genesis_gwas_wf.output_file_prefixes": [
         "<OUTPUT_PREFIX>chr1<OUTPUT_SUFFIX>",
         "<OUTPUT_PREFIX>chr2<OUTPUT_SUFFIX>",
         "<OUTPUT_PREFIX>chr3<OUTPUT_SUFFIX>",
@@ -47,6 +47,10 @@
         "<OUTPUT_PREFIX>chr21<OUTPUT_SUFFIX>",
         "<OUTPUT_PREFIX>chr22<OUTPUT_SUFFIX>"
     ],
+    "genesis_gwas_wf.chrs": [
+        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+        "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"
+    ],
     "genesis_gwas_wf.pheno_file": "<PHENO_FILE>",
     "genesis_gwas_wf.pheno_name": "<PHENO_NAME>",
     "genesis_gwas_wf.covars": [
@@ -54,9 +58,39 @@
     ],
     "genesis_gwas_wf.geno_format": "<GENO_FORMAT>",
     "genesis_gwas_wf.family": "<FAMILY>",
-    "genesis_gwas_wf.gxE": "<GXE>",
-    "genesis_gwas_wf.gzip": true,
+    "genesis_gwas_wf.gxe": "<GXE>",
     "genesis_gwas_wf.genesis_cpu": 1,
-    "genesis_gwas_wf.genesis_mem_gb": 2
+    "genesis_gwas_wf.genesis_mem_gb": 2,
+    "genesis_gwas_wf.id_ref_files": [
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr1.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr2.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr3.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr4.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr5.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr6.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr7.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr8.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr9.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr10.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr11.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr12.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr13.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr14.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr15.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr16.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr17.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr18.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr19.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr20.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr21.tsv.gz",
+        "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr22.tsv.gz"
+    ],
+    "genesis_gwas_wf.in_missing_allele": "0",
+    "genesis_gwas_wf.in_deletion_allele": "-",
+    "genesis_gwas_wf.ref_deletion_allele": ".",
+    "genesis_gwas_wf.id_label": "grch37_dbsnp_b153",
+    "genesis_gwas_wf.id_conversion_cpu": 1,
+    "genesis_gwas_wf.id_conversion_mem_gb": 1
+
 }
 
