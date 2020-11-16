@@ -49,7 +49,6 @@ workflow genesis_gwas_chr_wf{
                 covars = covars,
                 family = family,
                 gxe = gxe,
-                gzip = gzip,
                 cpu = genesis_cpu,
                 mem_gb = genesis_mem_gb
         }

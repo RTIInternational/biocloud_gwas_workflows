@@ -1,4 +1,5 @@
 import "biocloud_gwas_workflows/association_testing/genesis/genesis_gwas_chr_wf.wdl" as GENESIS_CHR
+import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_variant_ids/convert_variant_ids.wdl" as IDCONVERT
 
 workflow genesis_gwas_wf{
     Array[File] genotype_files
@@ -11,7 +12,6 @@ workflow genesis_gwas_wf{
     String geno_format
     String family
     String gxe
-    Boolean? gzip = false
 
     Int genesis_cpu = 1
     Int genesis_mem_gb = 1
@@ -38,7 +38,6 @@ workflow genesis_gwas_wf{
                 covars = covars,
                 family = family,
                 gxe = gxe,
-                gzip = gzip,
                 genesis_cpu = genesis_cpu,
                 genesis_mem_gb = genesis_mem_gb
         }
