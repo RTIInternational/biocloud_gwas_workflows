@@ -49,7 +49,7 @@ workflow genesis_gwas_wf{
                 in_file = genesis.summary_stats,
                 in_header = 1,
                 in_sep = "tab",
-                ref = id_ref_files[chr_index],
+                ref = id_ref_files[index],
                 in_id_col = 0,
                 in_chr_col = 1,
                 in_pos_col = 2,
