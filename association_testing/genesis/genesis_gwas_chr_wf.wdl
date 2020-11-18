@@ -69,6 +69,6 @@ workflow genesis_gwas_chr_wf{
     }
 
     output {
-        File summary_stats = file_out_prefix + ".tsv"
+        File summary_stats = cat_sumstats.tsv_output
     }
 }
