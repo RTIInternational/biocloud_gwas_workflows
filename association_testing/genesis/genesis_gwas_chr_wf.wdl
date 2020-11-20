@@ -18,7 +18,7 @@ workflow genesis_gwas_chr_wf{
     Int genesis_mem_gb = 1
 
     # Split options
-    Int chunk_size = 100000
+    Int chunk_size = 500000
     String variant_id_field = "snp.id"
     Int split_by_variant_cpu = 1
     Int split_by_variant_mem_gb = 1

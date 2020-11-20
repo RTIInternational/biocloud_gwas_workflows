@@ -16,6 +16,12 @@ workflow genesis_gwas_wf{
     Int genesis_cpu = 1
     Int genesis_mem_gb = 1
 
+    # Split options
+    Int? chunk_size
+    String? variant_id_field
+    Int? split_by_variant_cpu
+    Int? split_by_variant_mem_gb
+
     # ID conversion parameters
     Array[File] id_ref_files
     String in_missing_allele
@@ -39,7 +45,11 @@ workflow genesis_gwas_wf{
                 family = family,
                 gxe = gxe,
                 genesis_cpu = genesis_cpu,
-                genesis_mem_gb = genesis_mem_gb
+                genesis_mem_gb = genesis_mem_gb,
+                chunk_size = chunk_size,
+                variant_id_field = variant_id_field,
+                split_by_variant_cpu = split_by_variant_cpu,
+                split_by_variant_mem_gb = split_by_variant_mem_gb
         }
 
         # Convert ids in summary stats output to standard ids
