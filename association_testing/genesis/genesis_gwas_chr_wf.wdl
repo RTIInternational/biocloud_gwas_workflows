@@ -14,6 +14,7 @@ workflow genesis_gwas_chr_wf{
     Array[String]? covars   # Array of column names of covars
     String family           # Options: gaussian
     String gxe              # Column name in phenotype file for GxE interaction
+    String chr              # Chr being analyzed
     Int genesis_cpu = 1
     Int genesis_mem_gb = 1
 
@@ -49,6 +50,7 @@ workflow genesis_gwas_chr_wf{
                 covars = covars,
                 family = family,
                 gxe = gxe,
+                chr = chr,
                 cpu = genesis_cpu,
                 mem_gb = genesis_mem_gb
         }

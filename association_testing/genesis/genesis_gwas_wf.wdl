@@ -44,6 +44,7 @@ workflow genesis_gwas_wf{
                 covars = covars,
                 family = family,
                 gxe = gxe,
+                chr = chrs[index],
                 genesis_cpu = genesis_cpu,
                 genesis_mem_gb = genesis_mem_gb,
                 chunk_size = chunk_size,
