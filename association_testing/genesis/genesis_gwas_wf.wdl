@@ -31,6 +31,9 @@ workflow genesis_gwas_wf{
     Int id_conversion_cpu = 1
     Int id_conversion_mem_gb = 1
 
+    # TSV utils options
+    Int tsv_append_mem_gb = 4
+
     # Do genesis chr workflow on each chromosome in parallel
     scatter(index in range(length(genotype_files))){
 
@@ -50,7 +53,8 @@ workflow genesis_gwas_wf{
                 chunk_size = chunk_size,
                 variant_id_field = variant_id_field,
                 split_by_variant_cpu = split_by_variant_cpu,
-                split_by_variant_mem_gb = split_by_variant_mem_gb
+                split_by_variant_mem_gb = split_by_variant_mem_gb,
+                tsv_append_mem_gb = tsv_append_mem_gb
         }
 
         # Convert ids in summary stats output to standard ids
