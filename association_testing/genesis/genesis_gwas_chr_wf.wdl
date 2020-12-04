@@ -24,6 +24,9 @@ workflow genesis_gwas_chr_wf{
     Int split_by_variant_cpu = 1
     Int split_by_variant_mem_gb = 1
 
+    # TSV utils options
+    Int tsv_append_mem_gb = 4
+
     # Split genotypes for parallel processing
     call SPLIT.split_by_variant as split_by_variant{
         input:
@@ -67,7 +70,8 @@ workflow genesis_gwas_chr_wf{
     call TSV.tsv_append as cat_sumstats{
         input:
             tsv_inputs_tarball = collect_sumstats.output_dir,
-            output_filename = file_out_prefix + ".tsv"
+            output_filename = file_out_prefix + ".tsv",
+            mem_gb = tsv_append_mem_gb
     }
 
     output {
