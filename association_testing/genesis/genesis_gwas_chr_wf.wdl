@@ -40,7 +40,7 @@ workflow genesis_gwas_chr_wf{
     Array[File] split_lists = split_by_variant.split_lists
     scatter(split_index in range(length(split_by_variant.split_lists))){
 
-        String split_file_out_prefix = file_out_prefix + "_" + split_index
+        String split_file_out_prefix = file_out_prefix + "_" + basename(split_lists[split_index], ".txt")
 
         call GENESIS.genesis{
             input:
