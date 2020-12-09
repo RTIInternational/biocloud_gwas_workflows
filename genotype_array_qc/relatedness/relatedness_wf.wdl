@@ -117,7 +117,7 @@ workflow relatedness_wf{
             hwe_pvalue = hwe_pvalue,
             hwe_mode = hwe_mode,
             cpu = qc_cpu,
-            cpu = qc_mem_gb
+            mem_gb = qc_mem_gb
     }
 
     # Do LD-prune of autosomes
