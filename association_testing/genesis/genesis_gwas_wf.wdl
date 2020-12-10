@@ -11,7 +11,7 @@ workflow genesis_gwas_wf{
     Array[String]? covars
     String geno_format
     String family
-    String gxe
+    String? gxe = ""
 
     Int genesis_cpu = 1
     Int genesis_mem_gb = 1
