@@ -1,0 +1,37 @@
+{
+  "structure_wf.bed_in": "<BED_IN>",
+  "structure_wf.bim_in": "<BIM_IN>",
+  "structure_wf.fam_in": "<FAM_IN>",
+  "structure_wf.output_basename": "<OUTPUT_BASENAME>",
+  "structure_wf.ref_bed": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch37_dbsnp_b153.bed",
+  "structure_wf.ref_bim": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch37_dbsnp_b153.bim",
+  "structure_wf.ref_fam": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch37_dbsnp_b153.fam",
+  "structure_wf.ancestry_psam": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/phase3_orig.psam",
+  "structure_wf.ancestries_to_include": [
+    "CEU",
+    "CHB",
+    "YRI"
+  ],
+  "structure_wf.ancestry_pop_type": "POP",
+  "structure_wf.ancestry_definitions": [
+    "YRI=CHB<0.25;CEU<0.25",
+    "CEU=CHB<0.25;YRI<0.25",
+    "CHB=CEU<0.25;YRI<0.25"
+  ],
+  "structure_wf.max_snps_to_analyze": 10000,
+  "structure_wf.split_mode": true,
+  "structure_wf.max_samples_per_split": 1000,
+  "structure_wf.max_snps_to_analyze": 10000,
+  "structure_wf.do_ld_prune": false,
+  "structure_wf.max_snps_to_analyze": 10000,
+  "structure_wf.structure_cpu": 1,
+  "structure_wf.structure_mem_gb": 4,
+  "structure_wf.ld_cpu": 1,
+  "structure_wf.ld_mem_gb": 2,
+  "structure_wf.merge_bed_cpu": 1,
+  "structure_wf.merge_bed_mem_gb": 4,
+  "structure_wf.plink_cpu": 1,
+  "structure_wf.plink_mem_gb": 4,
+}
+
+
