@@ -23,7 +23,6 @@
   "structure_wf.max_samples_per_split": 1000,
   "structure_wf.max_snps_to_analyze": 10000,
   "structure_wf.do_ld_prune": false,
-  "structure_wf.max_snps_to_analyze": 10000,
   "structure_wf.structure_cpu": 1,
   "structure_wf.structure_mem_gb": 4,
   "structure_wf.ld_cpu": 1,
