@@ -1,9 +1,10 @@
 import "biocloud_gwas_workflows/association_testing/genomic_sem/genomic_sem_chr_wf.wdl" as GSEM_CHR
 
 workflow genomic_sem_gwas_wf{
-    Array[File] LDSC_file
-    String out_dir
+    File LDSC_file
+    Array[String] out_prefixes
     Array[File] sumstats_files
+    Array[String] chrs
     String estimation
     Boolean common_factor_gwas
     File common_factor_gwas_model
@@ -41,16 +42,14 @@ workflow genomic_sem_gwas_wf{
                 reference = reference,
                 info_file = info_filter,
                 maf_filter = maf_filter,
-                outDir = out_dir,
+                outprefix = out_prefixes[index],
                 ld = ld,
                 LDSC_file = LDSC_file,
                 estimation = estimation,
                 common_factor_model = common_factor_model,
                 se_logit = se_logit,
-                sumstats_file = genotype_files[index],
+                sumstats_file = sumstats_files[index],
                 chr = chrs[index],
-                genesis_cpu = genesis_cpu,
-                genesis_mem_gb = genesis_mem_gb
         }
     }
 
