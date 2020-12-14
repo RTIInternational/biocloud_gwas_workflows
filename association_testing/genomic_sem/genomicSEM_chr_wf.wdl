@@ -2,7 +2,7 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/genomic_sem/genomic_sem.wdl" 
 
 workflow genomicSEM_chr_wf{
     File LDSC_file
-    String out_dir
+    String out_prefix
     File sumstats_file
     String estimation
     Boolean common_factor_gwas
@@ -39,7 +39,7 @@ workflow genomicSEM_chr_wf{
             reference = reference,
             info_file = info_filter,
             maf_filter = maf_filter,
-            outDir = out_dir,
+            out_prefix = out_prefix,
             ld = ld,
             LDSC_file = LDSC_file,
             estimation = estimation,
