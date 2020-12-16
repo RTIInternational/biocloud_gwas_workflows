@@ -29,7 +29,7 @@ workflow genomic_sem_gwas_wf{
     Int gsem_mem_gb = 10
 
     # Do genomic_sem chr workflow on each chromosome in parallel
-    scatter(index in range(length(genotype_files))){
+    scatter(index in range(length(sumstats_files))){
 
         call GSEM_CHR.genomicSEM_chr_wf as genomic_sem{
             input:
