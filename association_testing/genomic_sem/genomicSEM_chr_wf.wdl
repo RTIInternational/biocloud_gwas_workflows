@@ -23,7 +23,6 @@ workflow genomicSEM_chr_wf{
     Boolean? common_factor
     File? common_factor_model
     Array[String]? se_logit
-    File? sumstats_file
     String chr              # Chr being analyzed
     Int gsem_cpu = 16
     Int gsem_mem_gb = 10
