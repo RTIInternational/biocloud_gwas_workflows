@@ -64,6 +64,7 @@
     "genomic_sem_gwas_wf.pop_prev": "<POP_PREV>",
     "genomic_sem_gwas_wf.reference": "<REFERENCE>",
     "genomic_sem_gwas_wf.ld": "<LD>",
-    "genomic_sem_gwas_wf.se_logit": "<se_logit>"
+    "genomic_sem_gwas_wf.se_logit": "<se_logit>",
+    "genomic_sem_gwas_wf.parallel": "TRUE"
 }
 

@@ -8,6 +8,7 @@ workflow genomic_sem_gwas_wf{
     String estimation
     Boolean common_factor_gwas
     File common_factor_gwas_model
+    Boolean parallel
 
     # options
     Array[File]? input_files
@@ -49,6 +50,7 @@ workflow genomic_sem_gwas_wf{
                 se_logit = se_logit,
                 sumstats_file = sumstats_files[index],
                 chr = chrs[index],
+                parallel = parallel
         }
     }
 
