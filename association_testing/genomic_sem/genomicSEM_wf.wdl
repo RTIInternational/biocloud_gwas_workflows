@@ -26,8 +26,6 @@ workflow genomic_sem_gwas_wf{
     File? common_factor_model
     Array[String]? se_logit
 
-    Int gsem_cpu = 16
-    Int gsem_mem_gb = 10
 
     # Do genomic_sem chr workflow on each chromosome in parallel
     scatter(index in range(length(sumstats_files))){
