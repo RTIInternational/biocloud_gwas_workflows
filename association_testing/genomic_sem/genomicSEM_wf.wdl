@@ -31,7 +31,7 @@ workflow genomic_sem_gwas_wf{
     # Do genomic_sem chr workflow on each chromosome in parallel
     scatter(index in range(length(genotype_files))){
 
-        call GSEM_CHR.genomic_sem_chr_wf as genomic_sem{
+        call GSEM_CHR.genomicSEM_chr_wf as genomic_sem{
             input:
                 input_files = input_files,
                 trait_names = trait_names,
