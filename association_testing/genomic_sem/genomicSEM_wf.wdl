@@ -49,6 +49,8 @@ workflow genomic_sem_gwas_wf{
                 common_factor_model = common_factor_model,
                 se_logit = se_logit,
                 sumstats_file = sumstats_files[index],
+                common_factor_gwas_model = common_factor_gwas_model,
+                common_factor_gwas = common_factor_gwas,
                 chr = chrs[index],
                 parallel = parallel
         }
