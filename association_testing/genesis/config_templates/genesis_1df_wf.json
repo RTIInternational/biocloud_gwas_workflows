@@ -90,7 +90,7 @@
     "genesis_gwas_wf.id_label": "grch37_dbsnp_b153",
     "genesis_gwas_wf.id_conversion_cpu": 1,
     "genesis_gwas_wf.id_conversion_mem_gb": 1,
-    "genesis_gwas_wf.tsv_append_mem_gb": 4,
+    "genesis_gwas_wf.tsv_append_mem_gb": 4
 
 }
 
