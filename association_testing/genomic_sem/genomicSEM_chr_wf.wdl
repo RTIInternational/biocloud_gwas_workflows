@@ -1,6 +1,6 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/genomic_sem/genomic_sem.wdl" as GSEM
 
-workflow genomicSEM_chr_wf{
+workflow genomic_sem_chr_wf{
     File LDSC_file
     String out_prefix
     File sumstats_file
