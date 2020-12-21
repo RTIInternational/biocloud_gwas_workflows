@@ -50,7 +50,4 @@ workflow genomicSEM_chr_wf{
     }
     
 
-    output {
-        File summary_stats = genomic_sem.sumstats_out
-    }
 }

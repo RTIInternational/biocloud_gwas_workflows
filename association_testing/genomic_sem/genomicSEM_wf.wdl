@@ -54,7 +54,4 @@ workflow genomic_sem_gwas_wf{
         }
     }
 
-    output{
-        Array[File] genomic_sem_sumstats = genomic_sem.summary_stats
-    }
 }
