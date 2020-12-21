@@ -3,6 +3,8 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_variant_ids/convert_v
 
 workflow genesis_gwas_wf{
     Array[File] genotype_files
+    Array[File] variant_lists
+    Boolean use_variant_lists = false
     Array[File] output_file_prefixes
     Array[String] chrs
     File pheno_file
@@ -17,6 +19,7 @@ workflow genesis_gwas_wf{
     Int genesis_mem_gb = 1
 
     # Split options
+    Boolean split_gds = true
     Int? chunk_size
     String? variant_id_field
     Int? split_by_variant_cpu
@@ -40,6 +43,8 @@ workflow genesis_gwas_wf{
         call GENESIS_CHR.genesis_gwas_chr_wf as genesis{
             input:
                 file_in_geno = genotype_files[index],
+                file_in_variant_list = variant_lists[index],
+                use_variant_list = use_variant_lists,
                 file_out_prefix = output_file_prefixes[index],
                 file_in_pheno = pheno_file,
                 geno_format = geno_format,
@@ -50,6 +55,7 @@ workflow genesis_gwas_wf{
                 chr = chrs[index],
                 genesis_cpu = genesis_cpu,
                 genesis_mem_gb = genesis_mem_gb,
+                split_gds = split_gds,
                 chunk_size = chunk_size,
                 variant_id_field = variant_id_field,
                 split_by_variant_cpu = split_by_variant_cpu,
