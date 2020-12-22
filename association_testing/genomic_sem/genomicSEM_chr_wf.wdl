@@ -48,5 +48,8 @@ workflow genomic_sem_chr_wf{
             common_factor_gwas = common_factor_gwas,
     }
     
+    output {
+        File gsem_results = genomic_sem.gsem_out
+    }
 
 }
