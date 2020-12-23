@@ -64,19 +64,21 @@ workflow genesis_gwas_chr_wf{
             }
         }
 
-        # Collect chunked sumstats files into single zip folder
-        call COLLECT.collect_large_file_list_wf as collect_sumstats{
-            input:
-                input_files = split_genesis.sumstats_out,
-                output_dir_name = file_out_prefix + "_genesis_output"
-        }
+        if (defined(split_by_variant.split_lists)) {
+            # Collect chunked sumstats files into single zip folder
+            call COLLECT.collect_large_file_list_wf as collect_sumstats{
+                input:
+                    input_files = split_genesis.sumstats_out,
+                    output_dir_name = file_out_prefix + "_genesis_output"
+            }
 
-        # Concat all sumstats files into single sumstat file
-        call TSV.tsv_append as cat_sumstats{
-            input:
-                tsv_inputs_tarball = collect_sumstats.output_dir,
-                output_filename = file_out_prefix + ".tsv",
-                mem_gb = tsv_append_mem_gb
+            # Concat all sumstats files into single sumstat file
+            call TSV.tsv_append as cat_sumstats{
+                input:
+                    tsv_inputs_tarball = collect_sumstats.output_dir,
+                    output_filename = file_out_prefix + ".tsv",
+                    mem_gb = tsv_append_mem_gb
+            }
         }
     }
 
@@ -97,7 +99,7 @@ workflow genesis_gwas_chr_wf{
         }
     }
 
-    File output_file = select_first([cat_sumstats.tsv_output, genesis.sumstats_out])
+    File output_file = select_first([cat_sumstats.tsv_output, split_genesis.sumstats_out, genesis.sumstats_out])
 
     output {
         File summary_stats = output_file
