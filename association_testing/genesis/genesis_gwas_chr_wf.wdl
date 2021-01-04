@@ -6,7 +6,7 @@ import "biocloud_gwas_workflows/helper_workflows/collect_large_file_list_wf.wdl"
 workflow genesis_gwas_chr_wf{
     File file_in_geno
     File file_in_pheno
-    File file_in_variant_list
+    File file_in_variant_list = "no_file"
     Boolean use_variant_list = false
     String file_out_prefix
 
@@ -21,7 +21,7 @@ workflow genesis_gwas_chr_wf{
     Int genesis_mem_gb = 1
 
     # Split options
-    Boolean split_gds = true
+    Boolean split_gds = false
     Int chunk_size = 500000
     String variant_id_field = "snp.id"
     Int split_by_variant_cpu = 1
@@ -64,21 +64,19 @@ workflow genesis_gwas_chr_wf{
             }
         }
 
-        if (defined(split_by_variant.split_lists)) {
-            # Collect chunked sumstats files into single zip folder
-            call COLLECT.collect_large_file_list_wf as collect_sumstats{
-                input:
-                    input_files = split_genesis.sumstats_out,
-                    output_dir_name = file_out_prefix + "_genesis_output"
-            }
+        # Collect chunked sumstats files into single zip folder
+        call COLLECT.collect_large_file_list_wf as collect_sumstats{
+            input:
+                input_files = split_genesis.sumstats_out,
+                output_dir_name = file_out_prefix + "_genesis_output"
+        }
 
-            # Concat all sumstats files into single sumstat file
-            call TSV.tsv_append as cat_sumstats{
-                input:
-                    tsv_inputs_tarball = collect_sumstats.output_dir,
-                    output_filename = file_out_prefix + ".tsv",
-                    mem_gb = tsv_append_mem_gb
-            }
+        # Concat all sumstats files into single sumstat file
+        call TSV.tsv_append as cat_sumstats{
+            input:
+                tsv_inputs_tarball = collect_sumstats.output_dir,
+                output_filename = file_out_prefix + ".tsv",
+                mem_gb = tsv_append_mem_gb
         }
     }
 
@@ -99,7 +97,7 @@ workflow genesis_gwas_chr_wf{
         }
     }
 
-    File output_file = select_first([cat_sumstats.tsv_output, split_genesis.sumstats_out, genesis.sumstats_out])
+    File output_file = select_first([cat_sumstats.tsv_output, genesis.sumstats_out])
 
     output {
         File summary_stats = output_file
