@@ -23,18 +23,8 @@ workflow subset_merge_vcf_chr_wf{
                 maf_filter = maf_filter,
                 output_type = output_type
         }
-        #cat view.vcf_out >> merge_files
     }
 
-    # Do merging of vcf files from the subset
-    #call MERGE.merge as merge{
-    #    input:
-    #        file_in = merge_files,
-    #        output_filename = output_filename_merged,
-    #        output_type = output_type
-    #}
-    
- 
     output {
         Array[File] subset_vcf = view.vcf_out
     }
