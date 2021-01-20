@@ -11,7 +11,7 @@ workflow subset_merge_vcf_chr_wf{
 
 
     # Do subset workflow for each vcf file
-    scatter(index in range(length(file_vcfs_in))){
+    scatter(index in range(length(vcfs_in))){
         call SUBSET.view as view{
             input:
                 vcf_in = vcfs_in[index],
