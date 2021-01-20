@@ -9,9 +9,6 @@ workflow subset_merge_vcf_chr_wf{
     String output_type
     Float maf_filter
 
-    # BCFtools merge options
-    File merge_files
-    String output_filename_merged
 
     # Do subset workflow for each vcf file
     scatter(index in range(length(file_vcfs_in))){
