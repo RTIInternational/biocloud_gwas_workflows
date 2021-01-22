@@ -1,6 +1,5 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/bcftools/bcftools.wdl" as SUBSET
-import "biocloud_gwas_workflows/biocloud_wdl_tools/bcftools_merge/bcftools_merge.wdl" as MERGE
-import "biocloud_gwas_workflows/helper_workflows/collect_large_file_list_wf.wdl" as COLLECT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/merge_utils/merge_utils.wdl" as MERGE
 
 workflow subset_merge_vcf_chr_wf{
     # BCFtools view options
@@ -10,7 +9,7 @@ workflow subset_merge_vcf_chr_wf{
     String output_type
     Float maf_filter
 
-    String file_out_prefix
+    String merge_file_output_filename
 
     # Do subset workflow for each vcf file
     scatter(index in range(length(vcfs_in))){
@@ -24,15 +23,14 @@ workflow subset_merge_vcf_chr_wf{
         }
     }
 
-    # Collect chunked sumstats files into single zip folder
-    call COLLECT.collect_large_file_list_wf as collect_sumstats{
+    call MERGE.merge_vcfs as merge{
         input:
-            input_files = view.vcf_out,
-            output_dir_name = file_out_prefix + "_extract_output"
-    }
+            input_vcfs = view.vcf_out,
+            output_filename = merge_file_output_filename
+    } 
 
     output {
-        File subset_vcfs = collect_sumstats.output_dir
+        File merged_vcf = merge.merged_vcf
     }
 }
 
