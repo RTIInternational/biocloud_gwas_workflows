@@ -8,7 +8,8 @@ workflow subset_merge_wf{
     String maf_filter
     String output_type
     Array[String] merge_file_output_filenames
-    
+    Array[String] chrs    
+
     # Resources
     Int cpu = 4
     Int mem_gb = 8
@@ -24,6 +25,7 @@ workflow subset_merge_wf{
                 output_filenames = output_filenames[i],
                 maf_filter = maf_filter,
                 output_type = output_type,
+                chr = chrs[i],
                 merge_file_output_filename = merge_file_output_filenames[i]
         }
 
