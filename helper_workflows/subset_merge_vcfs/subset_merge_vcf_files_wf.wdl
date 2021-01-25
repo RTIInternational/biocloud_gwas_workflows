@@ -15,18 +15,18 @@ workflow subset_merge_wf{
     Int mem_gb = 8
 
     # Parallelize
-    scatter(i in range(length(input_files))){
+    scatter(index in range(length(input_files))){
         
         # Call per chr workflow
         call SUBSETMERGE.subset_merge_vcf_chr_wf{
             input:
-                vcfs_in = input_files[i],
+                vcfs_in = input_files[index],
                 samples_files = samples_files,
-                output_filenames = output_filenames[i],
+                output_filenames = output_filenames[index],
                 maf_filter = maf_filter,
                 output_type = output_type,
-                chr = chrs[i],
-                merge_file_output_filename = merge_file_output_filenames[i]
+                chr = chrs[index],
+                merge_file_output_filename = merge_file_output_filenames[index]
         }
 
     }
