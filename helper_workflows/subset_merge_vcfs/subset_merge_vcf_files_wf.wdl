@@ -5,7 +5,7 @@ workflow subset_merge_wf{
     Array[Array[File]] input_files
     Array[File] samples_files
     Array[Array[String]] output_filenames
-    Float maf_filter
+    String maf_filter
     String output_type
     Array[String] merge_file_output_filenames
     

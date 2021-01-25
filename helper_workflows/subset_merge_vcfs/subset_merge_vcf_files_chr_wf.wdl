@@ -7,7 +7,7 @@ workflow subset_merge_vcf_chr_wf{
     Array[File] samples_files
     Array[String] output_filenames
     String output_type
-    Float maf_filter
+    String maf_filter
 
     String merge_file_output_filename
 
