@@ -21,7 +21,7 @@ workflow subset_merge_wf{
             input:
                 vcfs_in = input_files[i],
                 samples_files = samples_files,
-                output_filenames = output_filenames[i]
+                output_filenames = output_filenames[i],
                 maf_filter = maf_filter,
                 output_type = output_type,
                 merge_file_output_filename = merge_file_output_filenames[i]
