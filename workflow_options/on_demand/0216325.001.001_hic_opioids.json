@@ -1,0 +1,5 @@
+{
+    "default_runtime_attributes": {
+      "queueArn": "arn:aws:batch:us-east-1:404545384114:job-queue/default-HiC-Opioids-0216325-001-001"
+    }
+}
