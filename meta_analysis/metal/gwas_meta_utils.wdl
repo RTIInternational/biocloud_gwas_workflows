@@ -144,7 +144,7 @@ task run_metal {
  }
   
   runtime {
-    docker: 'jessemarks/metal:2020.05.05_e961f8e'
+    docker: '404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/metal:v2020.05.05_1c7e830'
   }
 
   parameter_meta  {
