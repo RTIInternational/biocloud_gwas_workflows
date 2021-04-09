@@ -67,5 +67,4 @@ workflow metal_gwas_meta_analysis {
       metal_results = metal.metal_results,
       plot_basename = plot_basename
   }
-
 }
