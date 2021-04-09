@@ -1,4 +1,7 @@
 # GWAS meta-analysis workflow: METAL
+[METAL documentation](https://genome.sph.umich.edu/wiki/METAL_Documentation)<br><br>
+
+
 
 **To-do**
 - [ ] Add option to apply [genomic control (GC)](https://en.wikipedia.org/wiki/Genomic_control).
