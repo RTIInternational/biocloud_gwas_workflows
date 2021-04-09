@@ -5,6 +5,10 @@ task split_by_chromosome {
   Array[Int] chromosomes_to_keep
   Int chromosome_column
 
+  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+  Int cpu = 1
+  Int mem = 2
+
   command <<<
 
   # split results up by chromosome
@@ -39,7 +43,9 @@ task split_by_chromosome {
   }
   
   runtime {
-    docker: 'ubuntu:18.04'
+    docker: docker
+    cpu: cpu
+    memory: "${mem} GB"
   }
 
   parameter_meta  {
@@ -72,6 +78,10 @@ task keep_columns {
   Int chromosome
   String study_basename
   File infile
+
+  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+  Int cpu = 1
+  Int mem = 2
   
   command <<<
 
@@ -101,7 +111,9 @@ task keep_columns {
   }
   
   runtime {
-    docker: 'ubuntu:18.04'
+    docker: docker
+    cpu: cpu
+    memory: "${mem} GB"
   }
 
 
@@ -118,6 +130,10 @@ task run_metal {
   String ancestry 
   Int chromosome
   Array[File] gwas_files
+
+  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/metal:v2020.05.05_1c7e830"
+  Int cpu = 1
+  Int mem = 2
 
   command <<<
 
@@ -144,7 +160,9 @@ task run_metal {
  }
   
   runtime {
-    docker: '404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/metal:v2020.05.05_1c7e830'
+    docker: docker
+    cpu: cpu
+    memory: "${mem} GB"
   }
 
   parameter_meta  {
@@ -164,6 +182,10 @@ task run_metal {
 task exclude_singletons {
   Int chromosome
   File gwas_file
+
+  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+  Int cpu = 1
+  Int mem = 2
   
   command <<< 
 
@@ -196,7 +218,9 @@ task exclude_singletons {
   }
   
   runtime {
-    docker: 'ubuntu:18.04'
+    docker: docker
+    cpu: cpu
+    memory: "${mem} GB"
   }
   
   parameter_meta {
@@ -216,6 +240,10 @@ task exclude_singletons {
 task merge_results {
 
   Array[File] gwas_results
+
+  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/python:3.8"
+  Int cpu = 1
+  Int mem = 2
 
   command <<<
 
@@ -268,7 +296,9 @@ task merge_results {
   }
 
   runtime {
-    docker: "python:3.8" 
+    docker: docker
+    cpu: cpu
+    memory: "${mem} GB"
   }
 
   parameter_meta {
@@ -287,6 +317,10 @@ task merge_results {
 task final_results {
   File gwas_results
   Float pvalue
+
+  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+  Int cpu = 1
+  Int mem = 2
 
   command <<<
 
@@ -308,7 +342,9 @@ task final_results {
   }
 
   runtime {
-    docker: "ubuntu:18.04" 
+    docker: docker
+    cpu: cpu
+    memory: "${mem} GB"
   }
 
   parameter_meta {
