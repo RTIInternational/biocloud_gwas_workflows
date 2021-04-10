@@ -3,7 +3,7 @@ import "biocloud_gwas_workflows/meta_analysis/metal/gwas_meta_preprocessing.wdl"
 import "biocloud_gwas_workflows/meta_analysis/metal/gwas_meta_postprocessing.wdl" as POSTPROCESS 
 
 
-workflow metal_gwas_meta_analysis {
+workflow metal_gwas_meta_analysis_wf {
   Array[File] gwas_results
   Array[String] study_basename
   Array[Int] chromosomes_to_keep
