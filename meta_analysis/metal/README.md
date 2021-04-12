@@ -4,6 +4,7 @@
 
 
 **To-do**
+- [ ] Add 2df option
 - [ ] Add option to apply [genomic control (GC)](https://en.wikipedia.org/wiki/Genomic_control).
 - [ ] Add option to merge cohort specific GWAS results to the meta-analysis results.
 - [ ] Add options to filter SNPs by imputation quality (R²) and minor allele frequency (MAF).
