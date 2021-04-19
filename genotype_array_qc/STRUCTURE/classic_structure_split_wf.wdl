@@ -14,7 +14,7 @@ task get_structure_variants{
     Int num_snps = 10000
 
     # Runtime environment
-    String docker = "ubuntu:18.04"
+    String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
     Int cpu = 4
     Int mem_gb = 8
 
@@ -76,7 +76,7 @@ task get_ancestry_samples{
     String output_filename
 
     # Runtime environment
-    String docker = "ubuntu:18.04"
+    String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
     Int cpu = 1
     Int mem_gb = 2
 
