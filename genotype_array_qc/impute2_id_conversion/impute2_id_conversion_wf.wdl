@@ -19,7 +19,7 @@ task chr_sort_check{
     >>>
 
     runtime {
-        docker: "ubuntu:18.04"
+        docker: "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
         cpu: 1
         memory: "100 MB"
     }
@@ -35,7 +35,7 @@ task label_duplicate_variants{
     String output_basename
 
     # Runtime environment
-    String docker = "ubuntu:18.04"
+    String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
     Int cpu = 1
     Int mem_gb = 1
 
