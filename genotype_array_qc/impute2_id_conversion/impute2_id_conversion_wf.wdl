@@ -114,7 +114,7 @@ task get_variants_to_remove{
     String input_prefix = basename(sub(bed_in, "\\.gz$", ""), ".bed")
 
     # Runtime environment
-    String docker = "rtibiocloud/plink:v1.9_178bb91"
+    String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/plink:v1.9_178bb91"
     Int cpu = 4
     Int mem_gb = 8
 
