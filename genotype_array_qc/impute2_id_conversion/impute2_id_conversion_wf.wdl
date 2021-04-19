@@ -201,7 +201,7 @@ task fix_ids{
     String output_basename
 
     # Runtime environment
-    String docker = "ubuntu:18.04"
+    String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
     Int cpu = 1
     Int mem_gb = 1
 
