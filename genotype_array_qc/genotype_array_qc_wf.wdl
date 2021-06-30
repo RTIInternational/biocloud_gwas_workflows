@@ -11,6 +11,7 @@ workflow genotype_array_qc_wf{
     File bim
     File fam
     Array[String] chrs
+    Array[String]? hwe_chrs # intended to be used in cases where the cohort is all-male or nearly all male and to tell the hwe_wf to skip chrx
     Array[File] id_legend_files
     String output_basename
 
@@ -435,6 +436,7 @@ workflow genotype_array_qc_wf{
                 bed_in = qc_bed,
                 bim_in = qc_bim,
                 fam_in = qc_fam,
+                chrs = hwe_chrs,
                 hwe_filter_pvalue = hwe_filter_pvalue,
                 nonfounders = true,
                 related_samples = relatedness_wf.related_samples,
