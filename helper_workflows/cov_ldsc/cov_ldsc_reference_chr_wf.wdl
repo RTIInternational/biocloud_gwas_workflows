@@ -7,21 +7,20 @@ workflow cov_ldsc_chr_wf{
     Int ldsc_cpu
     Int ldsc_mem_gb
     
-    # Do cov-LDSC on the input file
+    # Run cov-LDSC on the input file
     call COVLDSC.cov_ldsc as cov_ldsc{
         input:
-            plink_format_prefix = plink_format_prefix,
-            cov_file = cov_file,
+            bfile = plink_format_prefix,
+            cov_eigenvec = cov_file,
             out_prefix = out_prefix
-            cpu = ldsc_cpu,
-            mem_gb = ldsc_mem_gb
+            mem = ldsc_mem_gb
     }
 
     output {
-        File ldsc_out1 = cov_ldsc.out1
-        File ldsc_out2 = cov_ldsc.out2
-        File ldsc_out3 = cov_ldsc.out3
-        File ldsc_log = cov_ldsc.log
+        File mFile = cov_ldsc.m_File
+        File m5_50_file = cov_ldsc.m_5_50_File
+        File ldscore_out = cov_ldsc.ldscore_out
+        File ldsc_log = cov_ldsc.logFile
     }
 }
 
