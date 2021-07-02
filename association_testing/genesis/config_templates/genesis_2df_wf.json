@@ -61,6 +61,7 @@
     "genesis_gwas_wf.gxe": "<GXE>",
     "genesis_gwas_wf.genesis_cpu": 1,
     "genesis_gwas_wf.genesis_mem_gb": 2,
+    "genesis_gwas_wf.split_gds": true,
     "genesis_gwas_wf.id_ref_files": [
         "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr1.tsv.gz",
         "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr2.tsv.gz",

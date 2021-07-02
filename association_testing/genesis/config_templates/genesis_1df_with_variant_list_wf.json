@@ -47,7 +47,7 @@
         "<VARIANT_LIST_PREFIX>chr21<VARIANT_LIST_SUFFIX>",
         "<VARIANT_LIST_PREFIX>chr22<VARIANT_LIST_SUFFIX>"
     ],
-    "genesis_gwas_wf.use_variant_lists": false,
+    "genesis_gwas_wf.use_variant_lists": true,
     "genesis_gwas_wf.output_file_prefixes": [
         "<OUTPUT_PREFIX>chr1<OUTPUT_SUFFIX>",
         "<OUTPUT_PREFIX>chr2<OUTPUT_SUFFIX>",
@@ -85,7 +85,7 @@
     "genesis_gwas_wf.family": "<FAMILY>",
     "genesis_gwas_wf.genesis_cpu": 1,
     "genesis_gwas_wf.genesis_mem_gb": 2,
-    "genesis_gwas_wf.split_gds": true,
+    "genesis_gwas_wf.split_gds": false,
     "genesis_gwas_wf.id_ref_files": [
         "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr1.tsv.gz",
         "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr2.tsv.gz",

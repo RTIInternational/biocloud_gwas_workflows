@@ -3,7 +3,7 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_variant_ids/convert_v
 
 workflow genesis_gwas_wf{
     Array[File] genotype_files
-    Array[File] variant_lists
+    Array[File] variant_lists = []
     Boolean use_variant_lists = false
     Array[File] output_file_prefixes
     Array[String] chrs
@@ -19,7 +19,7 @@ workflow genesis_gwas_wf{
     Int genesis_mem_gb = 1
 
     # Split options
-    Boolean split_gds = true
+    Boolean split_gds = false
     Int? chunk_size
     String? variant_id_field
     Int? split_by_variant_cpu
@@ -40,34 +40,60 @@ workflow genesis_gwas_wf{
     # Do genesis chr workflow on each chromosome in parallel
     scatter(index in range(length(genotype_files))){
 
-        call GENESIS_CHR.genesis_gwas_chr_wf as genesis{
-            input:
-                file_in_geno = genotype_files[index],
-                file_in_variant_list = variant_lists[index],
-                use_variant_list = use_variant_lists,
-                file_out_prefix = output_file_prefixes[index],
-                file_in_pheno = pheno_file,
-                geno_format = geno_format,
-                pheno = pheno_name,
-                covars = covars,
-                family = family,
-                gxe = gxe,
-                chr = chrs[index],
-                genesis_cpu = genesis_cpu,
-                genesis_mem_gb = genesis_mem_gb,
-                split_gds = split_gds,
-                chunk_size = chunk_size,
-                variant_id_field = variant_id_field,
-                split_by_variant_cpu = split_by_variant_cpu,
-                split_by_variant_mem_gb = split_by_variant_mem_gb,
-                tsv_append_mem_gb = tsv_append_mem_gb
+        if (!use_variant_lists) {
+            call GENESIS_CHR.genesis_gwas_chr_wf as genesis{
+                input:
+                    file_in_geno = genotype_files[index],
+                    file_out_prefix = output_file_prefixes[index],
+                    file_in_pheno = pheno_file,
+                    geno_format = geno_format,
+                    pheno = pheno_name,
+                    covars = covars,
+                    family = family,
+                    gxe = gxe,
+                    chr = chrs[index],
+                    genesis_cpu = genesis_cpu,
+                    genesis_mem_gb = genesis_mem_gb,
+                    split_gds = split_gds,
+                    chunk_size = chunk_size,
+                    variant_id_field = variant_id_field,
+                    split_by_variant_cpu = split_by_variant_cpu,
+                    split_by_variant_mem_gb = split_by_variant_mem_gb,
+                    tsv_append_mem_gb = tsv_append_mem_gb
+            }
+        }
+
+        if (use_variant_lists) {
+            call GENESIS_CHR.genesis_gwas_chr_wf as genesis_variant_list{
+                input:
+                    file_in_geno = genotype_files[index],
+                    file_in_variant_list = variant_lists[index],
+                    use_variant_list = use_variant_lists,
+                    file_out_prefix = output_file_prefixes[index],
+                    file_in_pheno = pheno_file,
+                    geno_format = geno_format,
+                    pheno = pheno_name,
+                    covars = covars,
+                    family = family,
+                    gxe = gxe,
+                    chr = chrs[index],
+                    genesis_cpu = genesis_cpu,
+                    genesis_mem_gb = genesis_mem_gb,
+                    split_gds = split_gds,
+                    chunk_size = chunk_size,
+                    variant_id_field = variant_id_field,
+                    split_by_variant_cpu = split_by_variant_cpu,
+                    split_by_variant_mem_gb = split_by_variant_mem_gb,
+                    tsv_append_mem_gb = tsv_append_mem_gb
+            }
         }
 
         # Convert ids in summary stats output to standard ids
+        File summary_stats = select_first([genesis.summary_stats, genesis_variant_list.summary_stats])
         call IDCONVERT.convert_variant_ids{
             input:
                 chr = chrs[index],
-                in_file = genesis.summary_stats,
+                in_file = summary_stats,
                 in_header = 1,
                 in_sep = "tab",
                 ref = id_ref_files[index],
@@ -79,7 +105,7 @@ workflow genesis_gwas_wf{
                 in_missing_allele = in_missing_allele,
                 in_deletion_allele = in_deletion_allele,
                 ref_deletion_allele = ref_deletion_allele,
-                output_filename = basename(genesis.summary_stats, ".tsv") + id_label + ".tsv.gz",
+                output_filename = basename(summary_stats, ".tsv") + id_label + ".tsv.gz",
                 output_compression = "gzip",
                 cpu = id_conversion_cpu,
                 mem_gb = id_conversion_mem_gb

@@ -1,0 +1,5 @@
+{
+    "default_runtime_attributes": {
+      "queueArn": "arn:aws:batch:us-east-1:404545384114:job-queue/default-Nicotine-0215457-000-001"
+    }
+}
