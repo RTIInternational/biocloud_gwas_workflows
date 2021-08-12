@@ -4,8 +4,6 @@ workflow cov_ldsc_chr_wf{
     String plink_format_prefix
     File cov_file
     String out_prefix
-    Int ldsc_cpu
-    Int ldsc_mem_gb
     
     # Run cov-LDSC on the input file
     call COVLDSC.cov_ldsc as cov_ldsc{
