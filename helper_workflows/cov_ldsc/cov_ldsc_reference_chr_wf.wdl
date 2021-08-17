@@ -4,14 +4,13 @@ workflow cov_ldsc_chr_wf{
     String plink_format_prefix
     File cov_file
     String out_prefix
-    
+
     # Run cov-LDSC on the input file
     call COVLDSC.cov_ldsc as cov_ldsc{
         input:
             bfile = plink_format_prefix,
             cov_eigenvec = cov_file,
             out_prefix = out_prefix
-            mem = ldsc_mem_gb
     }
 
     output {
