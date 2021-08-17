@@ -1,14 +1,18 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/cov_ldsc/cov_ldsc.wdl" as COVLDSC
 
 workflow cov_ldsc_chr_wf{
-    String plink_format_prefix
+    File bed_in
+    File bim_in
+    File fam_in
     File cov_file
     String out_prefix
 
     # Run cov-LDSC on the input file
     call COVLDSC.cov_ldsc as cov_ldsc{
         input:
-            bfile = plink_format_prefix,
+            bed_in = bed_in,
+            bim_in = bim_in,
+            fam_in = fam_in,
             cov_eigenvec = cov_file,
             out_prefix = out_prefix
     }
