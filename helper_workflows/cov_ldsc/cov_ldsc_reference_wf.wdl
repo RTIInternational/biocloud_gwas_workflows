@@ -5,9 +5,9 @@ workflow cov_ldsc_wf{
     Array[File] all_bims
     Array[File] all_fams
 
-    File = cov_file
-    Array[String] = chrs
-    Array[String] = output_file_prefixes
+    File cov_file
+    Array[String] chrs
+    Array[String] output_file_prefixes
 
     
     scatter(index in range(length(chrs))){
