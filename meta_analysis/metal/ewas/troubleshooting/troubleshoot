@@ -6,4 +6,11 @@
 "cg25189904",-0.0254276827563594,0.00466681189772106,5.56553387048333e-08,2583,"chr1",68299493
 
     
-20210830
+2021031
+    The following command works:
+    java -jar ~/bin/cromwell/cromwell-54.jar run explore_ewas_meta_utils.wdl
+    
+    This executes preprocessing up to (but not including) meta-analysis. 
+    Need to adapt it to the file structure I have for gwas, in particular 
+    preprocessing, metal, and post_processing wdl scripts, as well as the
+    full ewas_meta_analysis workflow. 
