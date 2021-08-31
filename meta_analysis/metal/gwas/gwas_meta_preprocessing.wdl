@@ -1,4 +1,4 @@
-import "biocloud_gwas_workflows/meta_analysis/metal/gwas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/meta_analysis/metal/gwas/gwas_meta_utils.wdl" as UTILS
 
 workflow preprocessing {
   File gwas_results

@@ -5,7 +5,7 @@ task split_by_chromosome {
   Array[Int] chromosomes_to_keep
   Int chromosome_column
 
-  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+  String docker = "ubuntu:18.04"
   Int cpu = 1
   Int mem = 2
 
@@ -79,7 +79,7 @@ task keep_columns {
   String study_basename
   File infile
 
-  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+  String docker = "ubuntu:18.04"
   Int cpu = 1
   Int mem = 2
   
@@ -131,7 +131,7 @@ task run_metal {
   Int chromosome
   Array[File] gwas_files
 
-  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/metal:v2020.05.05_1c7e830"
+  String docker = "rtibiocloud/metal:v2020.05.05_1c7e830"
   Int cpu = 1
   Int mem = 2
 
@@ -183,7 +183,7 @@ task exclude_singletons {
   Int chromosome
   File gwas_file
 
-  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+  String docker = "ubuntu:18.04"
   Int cpu = 1
   Int mem = 2
   
@@ -241,7 +241,7 @@ task merge_results {
 
   Array[File] gwas_results
 
-  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/python:3.8"
+  String docker = "python:3.8"
   Int cpu = 1
   Int mem = 2
 
@@ -318,7 +318,7 @@ task final_results {
   File gwas_results
   Float pvalue
 
-  String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+  String docker = "ubuntu:18.04"
   Int cpu = 1
   Int mem = 2
 
