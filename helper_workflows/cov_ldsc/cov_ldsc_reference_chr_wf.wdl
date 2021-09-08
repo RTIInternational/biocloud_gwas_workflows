@@ -18,7 +18,7 @@ workflow cov_ldsc_chr_wf{
             cov_eigenvec = cov_file,
             out_prefix = out_prefix,
             cpu = covldsc_cpu,
-            mem_gb = covldsc_mem_db
+            mem_gb = covldsc_mem_gb
     }
 
     output {
