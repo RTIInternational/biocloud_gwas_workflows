@@ -7,7 +7,7 @@ workflow cov_ldsc_chr_wf{
     File cov_file
     String out_prefix
     Int covldsc_cpu = 16
-    Int covldsc_mem_gb = 120
+    Int covldsc_mem_gb = 100
 
     # Run cov-LDSC on the input file
     call COVLDSC.cov_ldsc as cov_ldsc{
