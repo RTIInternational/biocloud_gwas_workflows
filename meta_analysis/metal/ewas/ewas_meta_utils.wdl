@@ -1,9 +1,28 @@
+task gunzip {
+  File in_file 
+  String out_filename = basename(in_file, ".gz")
+
+  command{
+      gunzip -c ${in_file} > ${out_filename}
+  }
+  output{
+      File output_file = "${out_filename}"
+  }
+    runtime{
+      docker: "ubuntu:18.04"
+      cpu: "1"
+      memory: "1 GB"
+    }
+}
+
+
 task split_by_chromosome {
 
-  String study_basename 
+  Boolean comma_separated
   File ewas_results 
-  Array[Int] chromosomes_to_keep
   Int chromosome_column
+  String study_basename 
+  Array[Int] chromosomes_to_keep
 
   String docker = "ubuntu:18.04"
   Int cpu = 1
@@ -11,30 +30,58 @@ task split_by_chromosome {
 
   command <<<
 
-#  # format file
+  # format file
+  # remove quotes and change to space separated
+  if [[ ${comma_separated} == true ]]; then
+    awk -F "," '
+    {
+      $1=$1
+      gsub(/"/, "", $0)
+    }1 
+    ' OFS=" " ${ewas_results} > ${study_basename}_no_quote.txt
+  else
+    awk '
+    {
+      $1=$1
+      gsub(/"/, "", $0)
+    }1 
+    ' OFS=" " ${ewas_results} > ${study_basename}_no_quote.txt
+
+  fi
+
+  # remove "chr" prefix if present in the chromosome entries
+  awk -v chr=${chromosome_column} '
+      NR==1{print $0; next}
+      NR>=2{
+           chrom_prefix=substr($chr, 1, 3)
+           chrom_suffix=substr($chr, 4)
+           if (chrom_prefix == "chr" )
+           {
+               $chr=chrom_suffix
+           }
+      }1
+       ' ${study_basename}_no_quote.txt > ${study_basename}_no_quote_no_chr_prefix.txt
 
   # split results up by chromosome
   awk -v study=${study_basename} -v chr=${chromosome_column} \
     'NR==1{h = $0} NR>1{ print (!a[$chr]++ ? h ORS $0: $0) > study"_chr"$chr".txt"}' \
-    <(zcat ${ewas_results})
-  
+    ${study_basename}_no_quote_no_chr_prefix.txt
+
   # change chrX to chr23 if present
   mv ${study_basename}_chr[x,X].txt ${study_basename}_chr23.txt
 
   # keep only chromosomes specified
   mkdir keep_files/
   keep_chroms="${sep = ' ' chromosomes_to_keep}"
-  
+
   for chr in $keep_chroms; do
     mv ${study_basename}_chr$chr.txt keep_files/
   done
 
-  rm ${study_basename}_chr*.txt # remove the chromosomes we don't want
-
-  # get order of file:chromosome
+  # get the order of file:chromosome
   cd keep_files/
   ls ${study_basename}*t | perl -pe 's/.+chr//' \
-    | perl -pe 's/.txt//' 
+    | perl -pe 's/.txt//'
 
   >>>
 
@@ -52,13 +99,13 @@ task split_by_chromosome {
 
   parameter_meta  {
     ewas_results: "The full path to the EWAS results going into the analysis."
-    study_basename: "The name of the study/cohort going into the analysis. (e.g. uhs)"
-    chromosome_column: "The 1-based chromosome column index. "
+    study_basename: "The name of the study/cohort going into the analysis. (e.g., uhs, gulf, or sister_study)"
+    chromosome_column: "The 1-based chromosome column index."
     chromosomes_to_keep: "Array of chromosomes that you want to analyze."
   }
 
   meta {
-    description: "Input EWAS results with all chromosomes merged into one file. This task will then split these EWAS results up by chromosome. It will then remove the chromosomes not specified to keep. It also keeps track of which file is associated with which chromosome because the METAL results do not contain the chromosome information. Since we keep track of this, we can then go back and add in the chromosome column to the METAL results afterwards. We want the chromosome information because it is necessary for the Manhattan plot, among other reasons."
+    description: "Input EWAS results with all chromosomes merged into one file. This task will then split these EWAS results up by chromosome. The first step is to remove any quotes from the file and change to space separated. It will then remove the chromosomes not specified to keep. It also keeps track of which file is associated with which chromosome because the METAL results do not contain the chromosome information. Since we keep track of this, we can then go back and add in the chromosome column to the METAL results afterwards. We want the chromosome information because it is necessary for the Manhattan plot, among other reasons."
     author: "Jesse Marks"
     email: "jmarks@rti.org"
   }
@@ -84,24 +131,21 @@ task keep_columns {
   command <<<
 
   # keep only specific columns
-  echo -e "PROBE_ID\tCHR\tBETA\tSE\tP" > head.txt
-
-    cat head.txt > ${study_basename}_chr${chromosome}_specific_columns.tsv
+  echo -e "PROBE_ID CHR BETA SE P" > ${study_basename}_chr${chromosome}_specific_columns.txt
 
     awk -v probe_id_column=${probe_id_column} \
         -v chromosome_column=${chromosome_column}  \
         -v effect_size_column=${effect_size_column} \
         -v pvalue_column=${pvalue_column} \
-        -v standard_error_column=${standard_error_column}
+        -v standard_error_column=${standard_error_column} \
     '
         {print $probe_id_column, $chromosome_column, $effect_size_column, $standard_error_column, $pvalue_column}
-    ' OFS="\t" <(tail -n +2 ${infile}) >> ${study_basename}_chr${chromosome}_specific_columns.tsv
+    ' OFS=" " <(tail -n +2 ${infile}) >> ${study_basename}_chr${chromosome}_specific_columns.txt
 
   >>>
 
-
   output {
-  File metal_input = "${study_basename}_chr${chromosome}_specific_columns.tsv"
+  File metal_input = "${study_basename}_chr${chromosome}_specific_columns.txt"
   }
   
   runtime {
@@ -109,7 +153,6 @@ task keep_columns {
     cpu: cpu
     memory: "${mem} GB"
   }
-
 
   meta {
     description: "Keep only the specific columns needed for the metal analysis."
@@ -119,13 +162,12 @@ task keep_columns {
 
 }
 
-
 task run_metal {
   String ancestry 
   Int chromosome
   Array[File] ewas_files
 
-  String docker = "ubuntu:18.04"
+  String docker = "rtibiocloud/metal:v2020.05.05_1c7e830"
   Int cpu = 1
   Int mem = 2
 
@@ -172,6 +214,7 @@ task run_metal {
 }
 
 
+# MarkerName      Allele1 Allele2 Effect  StdErr  P-value Direction       HetISq  HetChiSq        HetDf   HetPVal
 task exclude_singletons {
   Int chromosome
   File ewas_file
@@ -181,28 +224,30 @@ task exclude_singletons {
   Int mem = 2
   
   command <<< 
-
-    awk -v chrom=${chromosome} '
-      NR == 1 {
-        for (i = 1; i <= NF; i++) {
-          f[$i] = i
-        }
-        print "Chromosome", "Position", $0
-      }
-      NR > 1 {
-        {
-          $2 = toupper($2);
-          $3 = toupper($3);
-          num_missing = gsub(/[?]/, "?", $f["Direction"]);
-          num_cohorts = length($f["Direction"]);
-          split($f["MarkerName"], pos, ":");
+ 
+    # format data
+    # add chromosome column
+    awk -v chrom=${chromosome} -F "\t" '
+        # print the pruned header
+        NR == 1 {
+            for (i = 1; i <= NF; i++) {
+              f[$i] = i
+            }
+         print "Chromosome",$f["MarkerName"],$f["Effect"],$f["StdErr"],$f["P-value"],$f["Direction"]
         }
 
-        if ( num_cohorts == 1)
-            print chrom, pos[2], $0;
-        else if ( num_missing != (num_cohorts - 1) )
-            print chrom, pos[2], $0;
-      } ' OFS="\t" ${ewas_file} > chr${chromosome}_output_file.txt
+        # print pruned line if it is not a singleton
+        NR > 1 {
+            num_missing = gsub(/[?]/, "?", $f["Direction"])
+            num_cohorts = length($f["Direction"])
+            line = $f["MarkerName"]" "$f["Effect"]" "$f["StdErr"]" "$f["P-value"]" "$f["Direction"]
+
+            if(num_cohorts == 1)
+                print chrom, line
+            else if( num_cohorts - num_missing > 1)
+                print chrom, line
+        }
+    '  ${ewas_file} > chr${chromosome}_output_file.txt
 
   >>>
 
@@ -226,7 +271,6 @@ task exclude_singletons {
     email: "jmarks@rti.org"
 
   }
-
 }
 
 # make plot table
@@ -352,3 +396,4 @@ task final_results {
 
   }
 }        
+

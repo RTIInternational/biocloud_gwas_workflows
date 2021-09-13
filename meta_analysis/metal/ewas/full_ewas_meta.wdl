@@ -8,14 +8,13 @@ workflow metal_ewas_meta_analysis_wf {
   Array[String] study_basename
   Array[Int] chromosomes_to_keep
   String ancestry
-  String plot_basename
+  #String plot_basename
 
   Array[Int] probe_id_column
   Array[Int] chromosome_column
   Array[Int] effect_size_column
-  Array[Int] pvalue_column
   Array[Int] standard_error_column
-
+  Array[Int] pvalue_column
 
 
   # Prepare input files for meta-analysis
@@ -35,28 +34,23 @@ workflow metal_ewas_meta_analysis_wf {
     }
   }
 
-#  # transpose so we can group each set of chromosome files
-#  Array[Array[File]] metal_input = transpose(preprocessing.proc_output)
-#
-#  # Perform meta-analysis using METAL on each chromosome
-#  scatter (chrom_order in range(length(metal_input))){
-#
-#    #Int chr = sub(sub(metal_input[chrom_order][0], "^.+_chr", ""), "_specific_columns.tsv", "")
-#
-#    call UTILS.run_metal as metal {
-#      input:
-#        ewas_files = metal_input[chrom_order],
-#        #chromosome = chr,
-#        chromosome = preprocessing.chromosome_order[0][chrom_order],
-#        ancestry = ancestry
-#
-#    }
-#  }
-#
-#  # Create figures and tables. 
-#  call POSTPROCESS.postprocessing as postprocessing {
-#    input:
-#      metal_results = metal.metal_results,
-#      plot_basename = plot_basename
-#  }
+  # transpose so we can group each set of chromosome files
+  Array[Array[File]] metal_input = transpose(preprocessing.proc_output)
+
+  # Perform meta-analysis using METAL on each chromosome
+  scatter (chrom_order in range(length(metal_input))) {
+    call UTILS.run_metal as metal {
+      input:
+        ewas_files = metal_input[chrom_order],
+        chromosome = preprocessing.chromosome_order[0][chrom_order],
+        ancestry = ancestry
+    }
+  }
+
+  # Create figures and tables. 
+  call POSTPROCESS.postprocessing as postprocessing {
+    input:
+      #plot_basename = plot_basename,
+      metal_results = metal.metal_results
+  }
 }
