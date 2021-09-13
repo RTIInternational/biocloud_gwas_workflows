@@ -6,11 +6,13 @@ import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/ewas_met
 workflow metal_ewas_meta_analysis_wf {
   Array[File] ewas_results
   Array[String] study_basename
-  Array[Int] chromosomes_to_keep
+  Array[Int] chromosomes_to_keep = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22] # default to autosomes
   String ancestry
-  #String plot_basename
+  String plot_basename
+  Float pvalue_threshold
 
   Array[Int] probe_id_column
+  Array[Int] position_column
   Array[Int] chromosome_column
   Array[Int] effect_size_column
   Array[Int] standard_error_column
@@ -27,6 +29,7 @@ workflow metal_ewas_meta_analysis_wf {
         chromosomes_to_keep = chromosomes_to_keep,
 
         probe_id_column = probe_id_column[ewas_index],
+        pos_column = position_column[ewas_index],
         chromosome_column = chromosome_column[ewas_index],
         effect_size_column = effect_size_column[ewas_index],
         pvalue_column = pvalue_column[ewas_index],
@@ -50,7 +53,9 @@ workflow metal_ewas_meta_analysis_wf {
   # Create figures and tables. 
   call POSTPROCESS.postprocessing as postprocessing {
     input:
-      #plot_basename = plot_basename,
+
+      pvalue_threshold = pvalue_threshold,
+      plot_basename = plot_basename,
       metal_results = metal.metal_results
   }
 }

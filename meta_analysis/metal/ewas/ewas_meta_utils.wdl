@@ -116,6 +116,7 @@ task keep_columns {
 
   Int probe_id_column 
   Int chromosome_column
+  Int pos_column
   Int effect_size_column
   Int standard_error_column
   Int pvalue_column
@@ -131,15 +132,16 @@ task keep_columns {
   command <<<
 
   # keep only specific columns
-  echo -e "PROBE_ID CHR BETA SE P" > ${study_basename}_chr${chromosome}_specific_columns.txt
+  echo -e "CHROMOSOME POSITION PROBE_ID BETA SE P" > ${study_basename}_chr${chromosome}_specific_columns.txt
 
     awk -v probe_id_column=${probe_id_column} \
+        -v pos_column=${pos_column} \
         -v chromosome_column=${chromosome_column}  \
         -v effect_size_column=${effect_size_column} \
         -v pvalue_column=${pvalue_column} \
         -v standard_error_column=${standard_error_column} \
     '
-        {print $probe_id_column, $chromosome_column, $effect_size_column, $standard_error_column, $pvalue_column}
+        {print $chromosome_column, $pos_column, $probe_id_column, $effect_size_column, $standard_error_column, $pvalue_column}
     ' OFS=" " <(tail -n +2 ${infile}) >> ${study_basename}_chr${chromosome}_specific_columns.txt
 
   >>>
@@ -174,6 +176,7 @@ task run_metal {
   command <<<
 
     echo "
+    TRACKPOSITIONS ON
     SCHEME STDERR
     PVALUE P
     MARKER PROBE_ID
@@ -214,7 +217,6 @@ task run_metal {
 }
 
 
-# MarkerName      Allele1 Allele2 Effect  StdErr  P-value Direction       HetISq  HetChiSq        HetDf   HetPVal
 task exclude_singletons {
   Int chromosome
   File ewas_file
@@ -227,25 +229,25 @@ task exclude_singletons {
  
     # format data
     # add chromosome column
-    awk -v chrom=${chromosome} -F "\t" '
+    awk -F "\t" '
         # print the pruned header
         NR == 1 {
             for (i = 1; i <= NF; i++) {
               f[$i] = i
             }
-         print "Chromosome",$f["MarkerName"],$f["Effect"],$f["StdErr"],$f["P-value"],$f["Direction"]
+         print $f["Chromosome"],$f["Position"],$f["MarkerName"],$f["Effect"],$f["StdErr"],$f["P-value"],$f["Direction"]
         }
 
         # print pruned line if it is not a singleton
         NR > 1 {
             num_missing = gsub(/[?]/, "?", $f["Direction"])
             num_cohorts = length($f["Direction"])
-            line = $f["MarkerName"]" "$f["Effect"]" "$f["StdErr"]" "$f["P-value"]" "$f["Direction"]
+            line = $f["Chromosome"]" "$f["Position"]" "$f["MarkerName"]" "$f["Effect"]" "$f["StdErr"]" "$f["P-value"]" "$f["Direction"]
 
             if(num_cohorts == 1)
-                print chrom, line
+                print line
             else if( num_cohorts - num_missing > 1)
-                print chrom, line
+                print line
         }
     '  ${ewas_file} > chr${chromosome}_output_file.txt
 
@@ -266,7 +268,7 @@ task exclude_singletons {
     ewas_file: "Results file from METAL."
   }
   meta {
-    description: "Remove singletons (SNPs that were only present in one study/cohort)"
+    description: "Remove singletons (variants/SNPs that were only present in one study/cohort)"
     author: "Jesse Marks"
     email: "jmarks@rti.org"
 

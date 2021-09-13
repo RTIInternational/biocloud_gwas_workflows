@@ -17,3 +17,8 @@
 20210907
     The following command works:
         java -jar ~/bin/cromwell/cromwell-54.jar run full_ewas_meta.wdl --inputs inputs.json
+
+20210913 (multi-chr functionality through plotting)
+    The following command works:
+        java -jar ~/bin/cromwell/cromwell-54.jar run full_ewas_meta.wdl --inputs inputs.json
+

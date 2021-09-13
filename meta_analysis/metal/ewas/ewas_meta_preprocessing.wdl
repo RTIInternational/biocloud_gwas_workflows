@@ -6,6 +6,7 @@ workflow preprocessing {
   String study_basename
 
   Int probe_id_column
+  Int pos_column
   Int chromosome_column
   Int effect_size_column
   Int standard_error_column
@@ -49,6 +50,7 @@ workflow preprocessing {
         study_basename = split_ewas.ewas_name,
 
         probe_id_column = probe_id_column,
+        pos_column = pos_column,
         chromosome_column = chromosome_column,
         effect_size_column = effect_size_column,
         standard_error_column = standard_error_column,
