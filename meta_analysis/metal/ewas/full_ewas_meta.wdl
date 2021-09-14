@@ -1,6 +1,6 @@
-import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/ewas_meta_utils.wdl" as UTILS
-import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/ewas_meta_preprocessing.wdl" as PREPROCESS 
-import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/ewas_meta_postprocessing.wdl" as POSTPROCESS 
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_preprocessing.wdl" as PREPROCESS 
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_postprocessing.wdl" as POSTPROCESS 
 
 
 workflow metal_ewas_meta_analysis_wf {
@@ -53,9 +53,15 @@ workflow metal_ewas_meta_analysis_wf {
   # Create figures and tables. 
   call POSTPROCESS.postprocessing as postprocessing {
     input:
-
       pvalue_threshold = pvalue_threshold,
       plot_basename = plot_basename,
       metal_results = metal.metal_results
   }
+
+ output {
+   Array[File] meta_analysis_full_results = postprocessing.finalTable
+   File meta_analysis_top_hits = postprocessing.topHits
+   Array[File] meta_analysis_plots = postprocessing.plots
+  }
 }
+

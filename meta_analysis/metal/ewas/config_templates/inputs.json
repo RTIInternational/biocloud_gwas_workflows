@@ -1,21 +1,24 @@
 {
-  "metal_gwas_meta_analysis_wf.study_basename": ["<INPUT_FILE1_NAME>","<INPUT_FILE2_NAME>","<INPUT_FILE3_NAME>"],
-  "metal_gwas_meta_analysis_wf.ancestry": "<ANCESTRY>",
-  "metal_gwas_meta_analysis_wf.plot_basename": "<PLOT_NAME>",
-  "metal_gwas_meta_analysis_wf.gwas_results": [
-    "<INPUT_FILE1_COMBINED_SUMSTATS>",
-    "<INPUT_FILE2_COMBINED_SUMSTATS>",
-    "<INPUT_FILE3_COMBINED_SUMSTATS>"
+  "metal_ewas_meta_analysis_wf.plot_basename": "final_plot_name_here",
+  "metal_ewas_meta_analysis_wf.pvalue_threshold": 0.001,
+  "metal_ewas_meta_analysis_wf.ancestry": "ancestry_group",
+  "metal_ewas_meta_analysis_wf.chromosomes_to_keep": [,],
+  "metal_ewas_meta_analysis_wf.probe_id_column": [,],
+  "metal_ewas_meta_analysis_wf.chromosome_column": [,],
+  "metal_ewas_meta_analysis_wf.position_column": [,],
+  "metal_ewas_meta_analysis_wf.effect_size_column": [,],
+  "metal_ewas_meta_analysis_wf.standard_error_column": [,],
+  "metal_ewas_meta_analysis_wf.pvalue_column": [,],
+  "metal_ewas_meta_analysis_wf.study_basename": [
+  "study_number_one",
+  "study_number_two"
   ],
-
-  "metal_gwas_meta_analysis_wf.variant_id_column":[<FILE1_COLUMN_NUMBER>,<FILE2_COLUMN_NUMBER>,<FILE3_COLUMN_NUMBER>],
-  "metal_gwas_meta_analysis_wf.chromosome_column":[<FILE1_COLUMN_NUMBER>,<FILE2_COLUMN_NUMBER>,<FILE3_COLUMN_NUMBER>],
-  "metal_gwas_meta_analysis_wf.effect_size_column":[<FILE1_COLUMN_NUMBER>,<FILE2_COLUMN_NUMBER>,<FILE3_COLUMN_NUMBER>],
-  "metal_gwas_meta_analysis_wf.coded_allele_column":[<FILE1_COLUMN_NUMBER>,<FILE2_COLUMN_NUMBER>,<FILE3_COLUMN_NUMBER>],
-  "metal_gwas_meta_analysis_wf.noncoded_allele_column":[<FILE1_COLUMN_NUMBER>,<FILE2_COLUMN_NUMBER>,<FILE3_COLUMN_NUMBER>],
-  "metal_gwas_meta_analysis_wf.pvalue_column":[<FILE1_COLUMN_NUMBER>,<FILE2_COLUMN_NUMBER>,<FILE3_COLUMN_NUMBER>],
-  "metal_gwas_meta_analysis_wf.standard_error_column":[<FILE1_COLUMN_NUMBER>,<FILE2_COLUMN_NUMBER>,<FILE3_COLUMN_NUMBER>],
-  "metal_gwas_meta_analysis_wf.maf_column":[<FILE1_COLUMN_NUMBER>,<FILE2_COLUMN_NUMBER>,<FILE3_COLUMN_NUMBER>],
-  "metal_gwas_meta_analysis_wf.rsquared_column":[<FILE1_COLUMN_NUMBER>,<FILE2_COLUMN_NUMBER>,<FILE3_COLUMN_NUMBER>],
-  "metal_gwas_meta_analysis_wf.chromosomes_to_keep": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]
+  "metal_ewas_meta_analysis_wf.ewas_results": [
+  "s3://project-bucket/path/to/study/one/sumstats_study1.csv.gz",
+  "s3://project-bucket/path/to/study/two/sumstats_study2.csv"
+  ],
+  "metal_ewas_meta_analysis_wf.comma_separated": [
+      true,
+      false
+  ]
 }

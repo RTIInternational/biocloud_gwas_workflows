@@ -1,5 +1,5 @@
-import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/ewas_meta_utils.wdl" as UTILS
-import "/shared/jmarks/biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
 
 
 workflow postprocessing {
@@ -26,7 +26,7 @@ workflow postprocessing {
 
 
   # create a P-value filtered table
-  call UTILS.final_results as final_table {
+  call UTILS.top_results as top_results {
     input:
       ewas_results = merge.merged_results,
       pvalue = pvalue_threshold
@@ -46,8 +46,8 @@ workflow postprocessing {
   }
 
   output {
-   #Array[File] remove_singletons_temp_return = singletons.singletons_output
-   File finalTable = final_table.final_table
+   Array[File] finalTable = singletons.singletons_output
+   File topHits = top_results.final_results_pvalue_filtered
    Array[File] plots = ewas_plots.plots
   }
 }

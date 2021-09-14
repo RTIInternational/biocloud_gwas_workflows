@@ -353,7 +353,7 @@ task merge_results {
 
 # make pvalue filtered file we will put default at Pvalue<0.001 (user can specify though)
 # go ahead and order this too
-task final_results {
+task top_results {
   File ewas_results
   Float pvalue
 
@@ -377,7 +377,7 @@ task final_results {
   >>>
 
   output {
-    File final_table = "final_results_p_lte_${pvalue}.tsv"
+    File final_results_pvalue_filtered = "final_results_p_lte_${pvalue}.tsv"
   }
 
   runtime {
