@@ -1,5 +1,5 @@
-import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
-import "/shared/jmarks/biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
 
 
 workflow postprocessing {

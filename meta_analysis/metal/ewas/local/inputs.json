@@ -10,15 +10,15 @@
   "metal_ewas_meta_analysis_wf.standard_error_column": [3,3],
   "metal_ewas_meta_analysis_wf.pvalue_column": [4,4],
   "metal_ewas_meta_analysis_wf.study_basename": [
-  "gulf",
-  "sister"
+  "study_one",
+  "study_two"
   ],
   "metal_ewas_meta_analysis_wf.ewas_results": [
-  "data/gulf_chr1_and_chr2.csv",
-  "data/sister_chr1_and_chr2.csv"
+  "/shared/data/study_one.csv",
+  "/shared/data/study_two.txt.gz"
   ],
   "metal_ewas_meta_analysis_wf.comma_separated": [
       true,
-      true
+      false
   ]
 }
