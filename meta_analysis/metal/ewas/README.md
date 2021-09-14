@@ -1,5 +1,5 @@
 # EWAS meta-analysis workflow: METAL
-Documentation for running an EWAS meta-analysis using the [METAL](https://genome.sph.umich.edu/wiki/METAL_Documentation) software tool.
+This is documentation for running an EWAS meta-analysis using the [METAL](https://genome.sph.umich.edu/wiki/METAL_Documentation) software tool.
 
 ## Pre-requisites
 * Unix-based operating system (Linux or OSx. Sorry Windows folks.)
