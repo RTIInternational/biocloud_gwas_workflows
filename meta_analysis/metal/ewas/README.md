@@ -15,7 +15,7 @@ INPUT:
 A list, of any size, of EWAS summary statistics. THERE MUST BE ONLY ONE SUMMARY STATS FILE PER STUDY. So if your results are split up by chromosome, you must combine those files.
 
 OUTPUT: 
-* Meta-analysis results with singletons removed (probe IDs only present in one study).
+* Meta-analysis results with singletons removed (probe IDs only present in one study). Split by chromosome.
 * P-value filtered meta-analysis results.
 * Manhattan and QQ plots of meta-analysis results (no singletons).
 
