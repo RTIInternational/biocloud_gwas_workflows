@@ -21,7 +21,7 @@ OUTPUT:
 
 <br><br><br>
 
-## Running the analysis
+## Running the analysis on AWS Batch
 See [this cheat sheet](https://teams.microsoft.com/l/channel/19%3Af42632e48b7c4b9e9f362afa1e4e1957%40thread.tacv2/tab%3A%3A61aecad5-13fa-4bde-adce-ba3b16950439?groupId=9179c917-4161-4094-bec2-b13d4862274c&tenantId=2ffc2ede-4d44-4994-8082-487341fa43fb) on Microsoft Teams.
 
 1. Clone the parent repository biocloud_gwas_workflows to your local machine.
@@ -140,8 +140,95 @@ cd biocloud_gwas_workflows/meta_analysis/metal/ewas/
    s3://rti-cromwell-output/cromwell-execution/<job-id>/
    ```
    
+   <br><br><br>
+   
+   
+   
+   
+   ## Running the analysis locally
+   Sometimes AWS Batch and Cromwell don't play nice together. In that case you can also run the workflow locally. Here are those steps.
+   
+   ### Prerequisites
+   
+   * Java v1.8 or higher
+   * [Docker](https://docs.docker.com/get-docker/)
+   * [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+  
+1. Install [Cromwell](https://cromwell.readthedocs.io/en/stable/tutorials/FiveMinuteIntro/) if you haven't already. This is the engine to WDL.
+2. Configure the AWS CLI for use with the rti-code AWS account. (configure with the secret key)
+3. Clone the parent repository `biocloud_gwas_workflows` to your local machine.
+   
+```
+cd /shared/
+git clone https://github.com/RTIInternational/biocloud_gwas_workflows
+```
+   
+4. Navigate to the `biocloud_gwas_workflows/meta_analysis/metal/ewas/local/` folder and edit the input file. (For instructions on this, see step three in the above AWS Batch section) 
+* Note that all of your data/results must be local! So you will have to download your summary stats if they are on S3.
+5. IMPORTANT STEP. Because you are running the workflow locally, you will have to edit the WDL scripts slightly. At the top of each WDL file, the location of each of the corresponding files is specified. This will have to be modified to reflect your working environment. Let me illustrate with an example.
+   
+<details>
+<summary>full_ewas_meta.wdl details</summary>
+                   
+head of original file
+```
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_preprocessing.wdl" as PREPROCESS
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_postprocessing.wdl" as POSTPROCESS
+```            
 
-   # Authors
+head of edited file that will be ran locally
+```
+import "/shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "/shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_preprocessing.wdl" as PREPROCESS
+import "/shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_postprocessing.wdl" as POSTPROCESS
+```      
+Notice how I changed the paths to reflect where each file is in my local environment.
+         
+</details>
+   
+<details>
+<summary>ewas_meta_postprocessing.wdl details</summary>
+            
+head of original file
+```
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
+```
+            
+head of edited file that will be ran locally
+```
+import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "/shared/jmarks/biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
+```
+        
+Notice how I changed the paths to reflect where each file is in my local environment.
+</details>
+   
+<details>
+<summary>ewas_meta_preprocessing.wdl details</summary>
+         
+head of original file
+```
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS       
+```
+            
+head of edited file that will be ran locally
+```
+import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+```
+        
+Notice how I changed the paths to reflect where each file is in my local environment.
+</details>
+   
+7. Execute the workflow. Make you have all of the data downloaded paths are correct to your input file.
+   
+```
+cd /shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/
+java -jar ~/bin/cromwell/cromwell-54.jar run full_ewas_meta.wdl --inputs inputs.json
+```
+   
+# Authors
    For any questions, comments, concerns, or bugs, send me an email or slack and I'll be happy to help.
 
    Jesse Marks (jmarks@rti.org)
