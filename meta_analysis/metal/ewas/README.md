@@ -146,7 +146,7 @@ cd biocloud_gwas_workflows/meta_analysis/metal/ewas/
    
    
    ## Running the analysis locally
-   Sometimes AWS Batch and Cromwell don't play nice together. In that case you can also run the workflow locally. Here are those steps.
+   Sometimes AWS Batch and Cromwell don't play well together. In that case you can also run the workflow locally. Here are those steps.
    
    ### Prerequisites
    
