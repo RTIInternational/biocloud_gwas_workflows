@@ -216,6 +216,55 @@ task run_metal {
   }
 }
 
+task prune_results {
+  File ewas_file
+  Int chromosome
+
+  String docker = "ubuntu:18.04"
+  Int cpu = 1
+  Int mem = 2
+
+  command <<<
+
+    # format data
+    awk -F "\t" '
+        # print the pruned header
+        NR == 1 {
+            for (i = 1; i <= NF; i++) {
+              f[$i] = i
+            }
+        print $f["Chromosome"]" "$f["Position"]" "$f["MarkerName"]" "$f["Effect"]" "$f["StdErr"]" "$f["P-value"]" "$f["Direction"] 
+        }
+
+        # print the pruned results
+        NR > 1 {
+        print $f["Chromosome"]" "$f["Position"]" "$f["MarkerName"]" "$f["Effect"]" "$f["StdErr"]" "$f["P-value"]" "$f["Direction"]
+        }
+    '  ${ewas_file} > chr${chromosome}_output_file.txt
+
+  >>>
+
+  output {
+    File pruned_columns = "chr${chromosome}_output_file.txt"
+  }
+
+  runtime {
+    docker: docker
+    cpu: cpu
+    memory: "${mem} GB"
+  }
+  
+  parameter_meta {
+    ewas_file: "Results file from METAL."
+  }
+
+  meta {
+    description: "Prune the METAL results down to only the necessary columns. For example, there is no need for Allele1 or Allele2 because there are no alleles for an EWAS."
+    author: "Jesse Marks"
+    email: "jmarks@rti.org"
+
+  }
+}
 
 task exclude_singletons {
   Int chromosome
@@ -226,29 +275,28 @@ task exclude_singletons {
   Int mem = 2
   
   command <<< 
- 
+
     # format data
-    # add chromosome column
-    awk -F "\t" '
-        # print the pruned header
-        NR == 1 {
-            for (i = 1; i <= NF; i++) {
-              f[$i] = i
-            }
-         print $f["Chromosome"],$f["Position"],$f["MarkerName"],$f["Effect"],$f["StdErr"],$f["P-value"],$f["Direction"]
-        }
+    awk  '
+    # print the header
+    NR == 1 {
+      for (i = 1; i <= NF; i++) {
+        f[$i] = i
+      }
+      print $0
+    }
 
-        # print pruned line if it is not a singleton
-        NR > 1 {
-            num_missing = gsub(/[?]/, "?", $f["Direction"])
-            num_cohorts = length($f["Direction"])
-            line = $f["Chromosome"]" "$f["Position"]" "$f["MarkerName"]" "$f["Effect"]" "$f["StdErr"]" "$f["P-value"]" "$f["Direction"]
+    # print pruned line if it is not a singleton
+    NR > 1 {
+        num_missing = gsub(/[?]/, "?", $f["Direction"])
+        num_cohorts = length($f["Direction"])
+        line = $f["Chromosome"]" "$f["Position"]" "$f["MarkerName"]" "$f["Effect"]" "$f["StdErr"]" "$f["P-value"]" "$f["Direction"]
 
-            if(num_cohorts == 1)
-                print line
-            else if( num_cohorts - num_missing > 1)
-                print line
-        }
+        if(num_cohorts == 1)
+            print line
+        else if( num_cohorts - num_missing > 1)
+            print line
+    }
     '  ${ewas_file} > chr${chromosome}_output_file.txt
 
   >>>
@@ -264,8 +312,8 @@ task exclude_singletons {
   }
   
   parameter_meta {
-    chromosome: "Chromosome number."
-    ewas_file: "Results file from METAL."
+    ewas_file: "Results file from METAL that have been pruned."
+    chromosome: "The chromosome number (Int)."
   }
   meta {
     description: "Remove singletons (variants/SNPs that were only present in one study/cohort)"

@@ -1,0 +1,17 @@
+{
+  "metal_ewas_meta_analysis_wf.plot_basename": "final_plot",
+  "metal_ewas_meta_analysis_wf.pvalue_threshold": 0.001,
+  "metal_ewas_meta_analysis_wf.manhattan_significance_value": 6.9,
+  "metal_ewas_meta_analysis_wf.ancestry": "afr",
+  "metal_ewas_meta_analysis_wf.remove_singletons": false,
+  "metal_ewas_meta_analysis_wf.chromosomes_to_keep": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],
+  "metal_ewas_meta_analysis_wf.probe_id_column": [,],
+  "metal_ewas_meta_analysis_wf.chromosome_column": [, ],
+  "metal_ewas_meta_analysis_wf.position_column": [, ],
+  "metal_ewas_meta_analysis_wf.effect_size_column": [,],
+  "metal_ewas_meta_analysis_wf.standard_error_column": [,],
+  "metal_ewas_meta_analysis_wf.pvalue_column": [,],
+  "metal_ewas_meta_analysis_wf.study_basename": [ "", "" ],
+  "metal_ewas_meta_analysis_wf.ewas_results": [ "", "" ],
+  "metal_ewas_meta_analysis_wf.comma_separated": [false,true]
+}

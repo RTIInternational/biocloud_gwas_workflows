@@ -1,6 +1,6 @@
-import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
-import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_preprocessing.wdl" as PREPROCESS 
-import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_postprocessing.wdl" as POSTPROCESS 
+import "/home/ec2-user/wdl/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
+import "/home/ec2-user/wdl/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_preprocessing.wdl" as PREPROCESS 
+import "/home/ec2-user/wdl/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_postprocessing.wdl" as POSTPROCESS 
 
 
 workflow metal_ewas_meta_analysis_wf {
@@ -10,6 +10,8 @@ workflow metal_ewas_meta_analysis_wf {
   String ancestry
   String plot_basename
   Float pvalue_threshold
+  Boolean remove_singletons
+  Float manhattan_significance_value = 6.3 # for ewas (log 1.22*10^{-7})
 
   Array[Int] probe_id_column
   Array[Int] position_column
@@ -55,11 +57,13 @@ workflow metal_ewas_meta_analysis_wf {
     input:
       pvalue_threshold = pvalue_threshold,
       plot_basename = plot_basename,
-      metal_results = metal.metal_results
+      metal_results = metal.metal_results,
+      remove_singletons = remove_singletons,
+      manhattan_significance_value = manhattan_significance_value
   }
 
  output {
-   Array[File] meta_analysis_full_results = postprocessing.finalTable
+   File meta_analysis_full_results = postprocessing.finalTable
    File meta_analysis_top_hits = postprocessing.topHits
    Array[File] meta_analysis_plots = postprocessing.plots
   }
