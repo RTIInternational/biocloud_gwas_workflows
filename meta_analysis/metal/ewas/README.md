@@ -50,48 +50,53 @@ cd biocloud_gwas_workflows/meta_analysis/metal/ewas/
    ```
    "metal_ewas_meta_analysis_wf.pvalue_threshold": 0.001,
    ```
+   
+   3. Set value for genome-wide significance line in the manhattan plot. (log 1.22*10^{-7} ~= 6.9)
+   ```
+     "metal_ewas_meta_analysis_wf.manhattan_significance_value": 6.9,
+   ```
  
-   3. Specify the ancestry group (String).
+   4. Specify the ancestry group (String).
    ```
       "metal_ewas_meta_analysis_wf.ancestry": "afr",   
    ```
    
-   4. Specify which chromosomes to perform the meta-analysis on (Array[Int]).
+   5. Specify which chromosomes to perform the meta-analysis on (Array[Int]).
    ```
      "metal_ewas_meta_analysis_wf.chromosomes_to_keep": [1,2],   
    ```
    
-   5. Specify which column the probe ID is in for each study/cohort (Array[Int]).
+   6. Specify which column the probe ID is in for each study/cohort (Array[Int]).
    ```
      "metal_ewas_meta_analysis_wf.probe_id_column": [1,1],   
    ```
    
-   6. Specify which column the chromosome is in for each study/cohort (Array[Int]).
+   7. Specify which column the chromosome is in for each study/cohort (Array[Int]).
    ```
      "metal_ewas_meta_analysis_wf.chromosome_column": [6,6],   
    ```
    
-   7. Specify which column the position is in for each study/cohort (Array[Int]) 
+   8. Specify which column the position is in for each study/cohort (Array[Int]) 
    ```
      "metal_ewas_meta_analysis_wf.position_column": [7,7],   
    ```
    
-   8. Specify which column the effect is in for each study/cohort (Array[Int]).
+   9. Specify which column the effect is in for each study/cohort (Array[Int]).
    ```
      "metal_ewas_meta_analysis_wf.effect_size_column": [2,2],   
    ```
 
-   9. Specify which column the standard error is in for each study/cohort (Array[Int]).
+   10. Specify which column the standard error is in for each study/cohort (Array[Int]).
    ```
      "metal_ewas_meta_analysis_wf.standard_error_column": [3,3],   
    ```
    
-   10. Specify which column the pvalue is in for each study/cohort (Array[Int]).
+   11. Specify which column the pvalue is in for each study/cohort (Array[Int]).
    ```
      "metal_ewas_meta_analysis_wf.pvalue_column": [4,4],   
    ```
    
-   11. Specify a moniker for each study/cohort (Array[String]).
+   12. Specify a moniker for each study/cohort (Array[String]).
    ```
   "metal_ewas_meta_analysis_wf.study_basename": [
   "study_number_one",
@@ -99,19 +104,21 @@ cd biocloud_gwas_workflows/meta_analysis/metal/ewas/
   ],
    ```
    
-   12. Specify the AWS S3 locations of the summary statistics for each study/cohort (Array[String]).
+   13. Specify the AWS S3 locations of the summary statistics for each study/cohort (Array[String]).
 
   "metal_ewas_meta_analysis_wf.ewas_results": [
   "s3://main-bucket/the/location/of/study_number_one/summary_stats/study_number_one.csv.gz",
   "s3://main-bucket/the/location/of/study_number_two/summary_stats/study_number_two.csv",
   ],
    
-   13. Specify if the summary statistics are comma separated for each study/cohort (Array[true or false])
+   14. Specify if the summary statistics are comma separated for each study/cohort (Array[true or false])
   "metal_ewas_meta_analysis_wf.comma_separated": [
       true,
       false
   ]
  
+   <br><br><br>
+   ---
    </details><br>
    
    4. Make a zip file of the git repo you cloned so Cromwell can handle the local WDL imports.
@@ -126,7 +133,7 @@ cd biocloud_gwas_workflows/meta_analysis/metal/ewas/
    5. Submit via an API call to a Cromwell server on AWS. Change the paths for each parameter to reflect the correct file paths on your machine. Note to specify the appropriate batch environment so that the correct project gets charged. See the list of charge-code files [here](https://github.com/RTIInternational/bioinformatics/tree/master/config/aws_batch_queues). Contact Jesse Marks (jmarks@rti.org) if you need a new to create a new batch environment for your project.
    ```
    curl -X POST "http://localhost:8000/api/workflows/v1" -H "accept: application/json" \
-       -F "workflowSource=@/path/to/biocloud_gwas_workflows/meta_analysis/metal/ewas/full_ewas_meta.wdl" \
+       -F "workflowSource=@/path/to/biocloud_gwas_workflows/meta_analysis/metal/ewas/main.wdl" \
        -F "workflowInputs=@/path/to/biocloud_gwas_workflows/meta_analysis/metal/ewas/config_templates/inputs.json" \
        -F "workflowDependencies=@/path/to/biocloud_gwas_workflows/meta_analysis/metal/ewas/biocloud_gwas_workflows.zip"
        -F "workflowOptions=@/path/to/the/charge_code/json_file/project_with_money_charge_code.json"
@@ -168,20 +175,20 @@ git clone https://github.com/RTIInternational/biocloud_gwas_workflows
 5. IMPORTANT STEP. Because you are running the workflow locally, you will have to edit the WDL scripts slightly. At the top of each WDL file, the location of each of the corresponding files is specified. This will have to be modified to reflect your working environment. Let me illustrate with an example.
    
 <details>
-<summary>full_ewas_meta.wdl details</summary>
+<summary>main.wdl details</summary>
                    
 head of original file
 ```
-import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
-import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_preprocessing.wdl" as PREPROCESS
-import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_postprocessing.wdl" as POSTPROCESS
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_preprocessing.wdl" as PREPROCESS
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_postprocessing.wdl" as POSTPROCESS
 ```            
 
 head of edited file that will be ran locally
 ```
-import "/shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
-import "/shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_preprocessing.wdl" as PREPROCESS
-import "/shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_postprocessing.wdl" as POSTPROCESS
+import "/shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
+import "/shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_preprocessing.wdl" as PREPROCESS
+import "/shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_postprocessing.wdl" as POSTPROCESS
 ```      
 Notice how I changed the paths to reflect where each file is in my local environment.
          
@@ -192,13 +199,13 @@ Notice how I changed the paths to reflect where each file is in my local environ
             
 head of original file
 ```
-import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
 import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
 ```
             
 head of edited file that will be ran locally
 ```
-import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
 import "/shared/jmarks/biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
 ```
         
@@ -210,12 +217,12 @@ Notice how I changed the paths to reflect where each file is in my local environ
          
 head of original file
 ```
-import "biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS       
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS       
 ```
             
 head of edited file that will be ran locally
 ```
-import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/ewas_meta_utils.wdl" as UTILS
+import "/shared/jmarks/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
 ```
         
 Notice how I changed the paths to reflect where each file is in my local environment.
@@ -225,9 +232,18 @@ Notice how I changed the paths to reflect where each file is in my local environ
    
 ```
 cd /shared/biocloud_gwas_workflows/meta_analysis/metal/ewas/local/
-java -jar ~/bin/cromwell/cromwell-54.jar run full_ewas_meta.wdl --inputs inputs.json
+java -jar ~/bin/cromwell/cromwell-54.jar run main.wdl --inputs inputs.json
 ```
    
+   
+   <br><br><br>
+  
+   
+## Running workflow with [Amazon Genomics CLI](https://aws.github.io/amazon-genomics-cli/)
+TBD.
+   
+   
+   <br><br><br>
 # Authors
    For any questions, comments, concerns, or bugs, send me an email or slack and I'll be happy to help.
 
