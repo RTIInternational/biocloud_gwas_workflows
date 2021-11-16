@@ -1,4 +1,4 @@
-import "/home/ec2-user/wdl/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
 
 workflow preprocessing {
   Boolean comma_separated = true
