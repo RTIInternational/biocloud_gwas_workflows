@@ -1,5 +1,5 @@
-import "/home/ec2-user/wdl/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
-import "/home/ec2-user/wdl/biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
 
 
 workflow postprocessing {
