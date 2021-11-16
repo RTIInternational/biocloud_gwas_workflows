@@ -1,0 +1,9 @@
+{
+  "single_ewas.pheno_file": "pheno_mothers_combined_FOM_TF1_3_n946_ewas_final.txt",
+  "single_ewas.dnam_file": "alspac_dnameth_betas_chr21.rda",
+  "single_ewas.output_basename": "alspac_ewas_results",
+  "single_ewas.sample_name": "Sample_Name",
+  "single_ewas.ewas_rscript": "cannabis_alspac_ea_model1.R",
+  "single_ewas.docker": "ffang8/ewas:v041221"
+}
+
