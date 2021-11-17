@@ -1,9 +1,33 @@
 {
-  "single_ewas.pheno_file": "pheno_mothers_combined_FOM_TF1_3_n946_ewas_final.txt",
-  "single_ewas.dnam_file": "alspac_dnameth_betas_chr21.rda",
-  "single_ewas.output_basename": "alspac_ewas_results",
-  "single_ewas.sample_name": "Sample_Name",
-  "single_ewas.ewas_rscript": "cannabis_alspac_ea_model1.R",
-  "single_ewas.docker": "ffang8/ewas:v041221"
+  "ewas_all.output_basename": "alspac_ea_ewas_results",
+  "ewas_all.docker": "ffang8/ewas:v041221",
+  "ewas_all.pheno_file": "s3://rti-cannabis/shared_data/post_qc/alspac/phenotypes/pheno_mothers_combined_FOM_TF1_3_n946_ewas_final.txt",
+  "ewas_all.ewas_rscript": "s3://rti-cannabis/ewas/alspac/scripts/cannabis_alspac_ea_model1.R",
+  "ewas_all.sample_name": "Sample_Name",
+  "ewas_all.dnam_files": 
+  [ 
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr1.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr2.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr3.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr4.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr5.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr6.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr7.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr8.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr9.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr10.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr11.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr12.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr13.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr14.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr15.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr16.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr17.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr18.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr19.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr20.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr21.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chr22.rda",
+    "s3://rti-cannabis/shared_data/post_qc/alspac/dna_methylation/alspac_dnameth_betas_chrX.rda"
+  ]
 }
-
