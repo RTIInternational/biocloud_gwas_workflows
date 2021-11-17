@@ -1,6 +1,6 @@
-import "/home/ec2-user/wdl/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
-import "/home/ec2-user/wdl/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_preprocessing.wdl" as PREPROCESS 
-import "/home/ec2-user/wdl/biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_postprocessing.wdl" as POSTPROCESS 
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_preprocessing.wdl" as PREPROCESS 
+import "biocloud_gwas_workflows/meta_analysis/metal/ewas/submodules/ewas_meta_postprocessing.wdl" as POSTPROCESS 
 
 
 workflow metal_ewas_meta_analysis_wf {
