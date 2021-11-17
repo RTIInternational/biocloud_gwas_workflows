@@ -45,9 +45,6 @@ library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
 
 LMtest = function(meth_matrix, methcol, outcome, X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13) {
         mod = try(lm(meth_matrix[, methcol]~outcome+X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13))
-	#right_side <- paste("outcome", "X1","X2","X3","X4","X5","X6","X7","X8","X9","X10","X11","X12","X13", collapse="+")
-	#print(right_side)
-        #mod = try(lm(meth_matrix[, methcol]~right_side))
 
 	if(class(mod) == "try-error"){
 	print(paste("error thrown by column", methcol))
