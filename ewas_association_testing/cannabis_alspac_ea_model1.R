@@ -31,7 +31,6 @@ while (loop) {
         }
 } 
 
-
 # these libraries have already been installed on the EWAS docker image.
 library(parallel)  # to use multicore approach - part of base R – can be omitted if lapply() used instead of mclapply()
 library(MASS) # rlm function for robust linear regression
@@ -112,5 +111,5 @@ b<-as.data.frame(annEPIC)
 all.results.annot<-merge(a, b, by.x="probeID", by.y="Name")
 all.results.annot<-all.results.annot[order(all.results.annot$P_VAL),] #sort by P_VAL
 write.table(all.results.annot, 
-	    paste(output, "_",all.results.annot$chr[1],"_",Sys.Date(),".csv", sep = ""), #paste(out_dir,"Cannabis_ALSPAC_Model1_ANNOT_RESULTS_",all.results.annot$chr[1],"_",Sys.Date(),".csv", sep = ""),
+	    paste0(output, "_", all.results.annot$chr[1], "_", Sys.Date(), ".csv"), #paste(out_dir,"Cannabis_ALSPAC_Model1_ANNOT_RESULTS_",all.results.annot$chr[1],"_",Sys.Date(),".csv", sep = ""),
             na="NA",sep = ",",row.names=FALSE) #Export full results; these will be used later for plotting
