@@ -7,6 +7,8 @@ task run_ewas_rscript {
     String output_basename
 
     String docker
+    Int cpu = 1
+    Int mem = 2
 
     command 
     <<<
@@ -23,8 +25,8 @@ task run_ewas_rscript {
 
     runtime {
         docker: docker
-        cpu: "1"
-        memory: "1 GB"
+        cpu: cpu
+        memory: "${mem} GB"
     }
 
     parameter_meta  {
@@ -49,6 +51,8 @@ task plot_table {
     Float fdr
 
     String docker
+    Int cpu = 1
+    Int mem = 4
 
     command <<<
 
@@ -66,8 +70,8 @@ task plot_table {
 
     runtime {
         docker: docker
-        cpu: "1"
-        memory: "4 GB"
+        cpu: cpu
+        memory: "${mem} GB"
     }
 
     parameter_meta  {
@@ -91,7 +95,10 @@ task plot_ewas {
     String plot_basename
     Float bonferroni
     Float fdr
+
     String docker
+    Int cpu = 1
+    Int mem = 4
 
     command
     <<<
@@ -111,8 +118,8 @@ task plot_ewas {
 
     runtime {
         docker: docker
-        cpu: "1"
-        memory: "4 GB"
+        cpu: cpu
+        memory: "${mem} GB"
     }
 
     parameter_meta  {
