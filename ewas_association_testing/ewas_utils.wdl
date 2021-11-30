@@ -1,10 +1,10 @@
 task run_ewas_rscript {
 
-    File pheno_file #= "pheno_mothers_combined_FOM_TF1_3_n946_ewas_final.txt"
-    File dnam_file #= "alspac_dnameth_betas_chr21.rda"
-    File ewas_rscript #= "cannabis_alspac_ea_model1.R"
-    String sample_name #= "Sample_Name"
-    String output_basename #= "alspac_ewas_results" # e.g., alspac_ewas_results ==> alspac_ewas_results_chr21.csv
+    File pheno_file
+    File dnam_file
+    File ewas_rscript
+    String sample_name
+    String output_basename
 
     String docker
 
@@ -26,14 +26,29 @@ task run_ewas_rscript {
         cpu: "1"
         memory: "1 GB"
     }
+
+    parameter_meta  {
+        pheno_file: "Phenotype file that contains the outcome as well as the covariates."
+        dnam_file: "DNA methylation data post-QC. The sample names should match that given in the phenotype file."
+        sample_name: "Sample name given in the DNAm data as well as the phenotype file."
+        ewas_rscript: "Rscript that performs the EWAS."
+        output_basename: "A descriptive basename for the output file--e.g. alspac_ea_ewas_model_1"
+        docker: "Docker image to use for the EWAS. e.g. rtibiocloud/ewas:v0.0.1_fbfc0f1"
+    }
+
+    meta {
+        description: "Performs an epigenome wide analysis EWAS using DNAm data and a phenotype file."
+        author: "Jesse Marks"
+        email: "jmarks@rti.org"
+    }
 }
 
 task plot_table {
-    Array[File] ewas_results = ["data/alspac_ea_ewas_results_chr21_2021-11-17.csv", "data/alspac_ea_ewas_results_chr22_2021-11-17.csv"]
-    File prepare_table = "prepare_plot_table.R"
-    Float fdr = 0.05
+    Array[File] ewas_results
+    File prepare_table
+    Float fdr
 
-    String docker = "rtibiocloud/ewas:v0.0.1_fbfc0f1"
+    String docker
 
     command <<<
 
@@ -54,17 +69,29 @@ task plot_table {
         cpu: "1"
         memory: "4 GB"
     }
+
+    parameter_meta  {
+        ewas_results: "An array of chromosome level EWAS results."
+        prepare_table: "An Rscript that takes the chromosome level EWAS results and consolidates them into a single table for plotting."
+        fdr: "False discovery rate."
+        docker: "Docker image to use for the EWAS plotting table generation. e.g. rtibiocloud/ewas:v0.0.1_fbfc0f1"
+    }
+
+    meta {
+        description: "Prepares the results from the EWAS into a table to create Manhattan and QQ plots."
+        author: "Jesse Marks"
+        email: "jmarks@rti.org"
+    }
 }
 
 task plot_ewas {
-    File plot_table = "/home/ec2-user/rti-cannabis/ewas/alspac/scripts/cromwell-executions/ewas_test/061f9466-b6c7-45aa-a761-b05f941b1ae7/call-plot_table/execution/plotting_table.csv"
-    File plot_script = "make_plots.R"
-    Array[String] colors = ["red", "blue"]
-    String plot_basename = "jesseplot"
-    Float bonferroni =   0.00000459
-    Float fdr = 0.0000092
-    String docker = "rtibiocloud/ewas:v0.0.1_fbfc0f1"
-    
+    File plot_table
+    File plot_script
+    Array[String] colors
+    String plot_basename
+    Float bonferroni
+    Float fdr
+    String docker
 
     command
     <<<
@@ -86,5 +113,22 @@ task plot_ewas {
         docker: docker
         cpu: "1"
         memory: "4 GB"
+    }
+
+    parameter_meta  {
+
+        plot_table: "Table for plotting. Contains p-values."
+        plot_script: "Rscript that performs the Manhattan and QQ plotting."
+        colors: "An Array of two colors for the Manhattan plot."
+        plot_basename: "Basename for the Manhattan and QQ plots."
+        bonferroni: "Bonferroni adjusted genome-wide significance threshold."
+        fdr: "FDR adjusted genome-wide significance threshold (usually smaller than bonferroni). FDR of <some-specified threshold> is reach at this this value."
+        docker: "Docker image to use for the EWAS plotting. e.g. rtibiocloud/ewas:v0.0.1_fbfc0f1"
+    }
+
+    meta {
+        description: "Creates Manhattan and QQ plots."
+        author: "Jesse Marks"
+        email: "jmarks@rti.org"
     }
 }

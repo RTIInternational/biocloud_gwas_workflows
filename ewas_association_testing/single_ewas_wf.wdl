@@ -1,11 +1,11 @@
 import "biocloud_gwas_workflows/ewas_association_testing/ewas_utils.wdl" as UTILS
 
 workflow single_ewas {
-    File pheno_file = "data/pheno_mothers_combined_FOM_TF1_3_n946_ewas_final.txt"
-    File dnam_file = "data/alspac_dnameth_betas_chr21.rda"
-    File ewas_rscript = "cannabis_alspac_ea_model1.R"
-    String sample_name = "Sample_Name"
-    String output_basename = "alspac_ewas_results" # e.g., alspac_ewas_results ==> alspac_ewas_results_chr21.csv
+    File pheno_file
+    File dnam_file
+    File ewas_rscript
+    String sample_name
+    String output_basename
 
     String docker = "rtibiocloud/ewas:v0.0.1_fbfc0f1"
 
