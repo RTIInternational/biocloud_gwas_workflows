@@ -10,12 +10,6 @@ option_list = list(
               help="Basename Manhattan and QQ plots. [default %default]"),
   make_option(c("-c", "--colors"), type="character", default="red blue",
               help="Colors for the Manhattan plot. Enclose them with double quotes. [default %default]")
-  #make_option(c("-m", "--model-number"), type="character", default="1",
-  #            help="What the model number is [default %default]"),
-  #make_option(c("-s", "--sample-size"), type="character", default=" ",
-  #            help="Total sample size [default %default]"),
-  #make_option(c("--ncases"), type="character", default=" ",
-  #            help="Number of cases [default %default]")
 )
 
 opt = parse_args(OptionParser(option_list=option_list))

@@ -1,5 +1,5 @@
-import "single_ewas_wf.wdl" as EWAS
-import "ewas_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/ewas_association_testing/single_ewas_wf.wdl" as EWAS
+import "biocloud_gwas_workflows/ewas_association_testing/ewas_utils.wdl" as UTILS
 
 workflow ewas_full {
     File pheno_file #= "data/pheno_mothers_combined_FOM_TF1_3_n946_ewas_final.txt"
