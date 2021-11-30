@@ -29,29 +29,24 @@ task run_ewas_rscript {
 }
 
 task plot_table {
-    Array[File] ewas_results #= ["data/alspac_ea_ewas_results_chr21_2021-11-17.csv", "data/alspac_ea_ewas_results_chr22_2021-11-17.csv"]
-
-    File plot_script = "prepare_plots.R"
-    Float fdr_value = 0.05
-    Array[String] colors = ["red", "blue"]
-    String plot_basename = "jesseplot"
+    Array[File] ewas_results = ["data/alspac_ea_ewas_results_chr21_2021-11-17.csv", "data/alspac_ea_ewas_results_chr22_2021-11-17.csv"]
+    File prepare_table = "prepare_plot_table.R"
+    Float fdr = 0.05
 
     String docker = "rtibiocloud/ewas:v0.0.1_fbfc0f1"
 
     command <<<
 
-    # eventually split this up so that only the plot table is created
-    Rscript ${plot_script} \
+    Rscript ${prepare_table} \
         --input-files "${sep=" " ewas_results}" \
-        --fdr ${fdr_value} \
-        --colors "${sep=" " colors}" \
-        --output "${plot_basename}"
+        --fdr ${fdr}
 
     >>>
 
     output {
-        #File out_table = "plotting_table.txt"
-        Array[File] output_plots = glob("*png")
+        Float fdr_output = read_float("fdr_${fdr}_adjusted_gw_threshold.txt")
+        Float bonferroni = read_float("bonferroni_adjusted_gw_threshold.txt")
+        File plot_table = "plotting_table.csv"
     }
 
     runtime {
@@ -61,6 +56,35 @@ task plot_table {
     }
 }
 
-#task plot_ewas {
-#    
-#}
+task plot_ewas {
+    File plot_table = "/home/ec2-user/rti-cannabis/ewas/alspac/scripts/cromwell-executions/ewas_test/061f9466-b6c7-45aa-a761-b05f941b1ae7/call-plot_table/execution/plotting_table.csv"
+    File plot_script = "make_plots.R"
+    Array[String] colors = ["red", "blue"]
+    String plot_basename = "jesseplot"
+    Float bonferroni =   0.00000459
+    Float fdr = 0.0000092
+    String docker = "rtibiocloud/ewas:v0.0.1_fbfc0f1"
+    
+
+    command
+    <<<
+
+    Rscript ${plot_script} \
+        --table "${plot_table}" \
+        --fdr ${fdr} \
+        --bonferroni ${bonferroni} \
+        --colors "${sep=" " colors}" \
+        --output "${plot_basename}"
+
+    >>>
+
+    output {
+        Array[File] plots = glob("*png")
+    }
+
+    runtime {
+        docker: docker
+        cpu: "1"
+        memory: "4 GB"
+    }
+}
