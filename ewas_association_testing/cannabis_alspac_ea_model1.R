@@ -6,43 +6,32 @@ library(sandwich) #Huberís estimation of the standard error
 library(data.table)
 library(stats)
 library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19) 
+library(optparse)
 
-args <- commandArgs(TRUE)
+option_list = list(
+  make_option(c("-p", "--pheno"), action="store", type="character",
+              help="Phenotype file name and path."),
+  make_option(c("-s", "--sample_name"), type='character',
+              help="Column name given in the header of the phenotype file. This should match the DNAm file header too."),
+  make_option(c("-m", "--methRdata"), type='character',
+              help="DNA mehtylation data."),
+  make_option(c("-o", "--output"), default="ewas_results", type='character',
+              help="Basename for output results file. [default %default]")
+)
 
-loop = TRUE
-target_filenames <- list()
+opt = parse_args(OptionParser(option_list=option_list))
 
 # read in the phenotype file, DNAm data, and output directory.
-while (loop) {
-    
-        if (args[1] == "--pheno") {
-            pheno_file = args[2]
-        }
 
-        if (args[1] == "--sample_name") {
-            sample_name = args[2]
-        }
-
-        if (args[1] == "--methRdata") {
-            methRdata = args[2]
-        }
-
-        if (args[1] == "--output") {
-            output = args[2]
-        }
-
-        if (length(args)>1) {
-            args<-args[2:length(args)]
-        } else{
-              loop = FALSE
-        }
-} 
 
 
 ####################################################################################################
 
 LMtest = function(meth_matrix, methcol, outcome, X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13) {
         mod = try(lm(meth_matrix[, methcol]~outcome+X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13))
+	#right_side <- paste("outcome", "X1","X2","X3","X4","X5","X6","X7","X8","X9","X10","X11","X12","X13", collapse="+")
+	#print(right_side)
+        #mod = try(lm(meth_matrix[, methcol]~right_side))
 
 	if(class(mod) == "try-error"){
 	print(paste("error thrown by column", methcol))
@@ -52,9 +41,10 @@ LMtest = function(meth_matrix, methcol, outcome, X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,
 	cf[2, c("Estimate", "Std. Error", "Pr(>|t|)")] 
 	}
 
+
 # read in phenotype file
 cat("Reading phenotype data......\n")
-pheno <- read.csv(pheno_file, header=T, stringsAsFactors=F, sep=" ")
+pheno <- read.csv(opt$pheno, header=T, stringsAsFactors=F, sep=" ")
 # remove NA from phenotypes
 pheno[is.na(pheno$cannabisUse),]$cannabisUse <- 0
 
@@ -62,9 +52,9 @@ pheno4EWAS<- pheno
 cat("Phenotype data has ",dim(pheno)[1]," rows and ",dim(pheno)[2]," columns.\n\n")
 
 cat("Loading DNA methylation data......\n")
-    load(methRdata)
+    load(opt$methRdata)
     
-beta_matrix <- t(bVals_chr[,colnames(bVals_chr) %in% pheno4EWAS[, sample_name]])
+beta_matrix <- t(bVals_chr[,colnames(bVals_chr) %in% pheno4EWAS[, opt$sample_name]])
 
 cat("DNAm data has ",dim(beta_matrix)[1]," rows and ",dim(beta_matrix)[2]," columns.\n\n")
 
@@ -106,7 +96,6 @@ a<-as.data.frame(all.results)
 b<-as.data.frame(annEPIC)
 all.results.annot<-merge(a, b, by.x="probeID", by.y="Name")
 all.results.annot<-all.results.annot[order(all.results.annot$P_VAL),] #sort by P_VAL
-
 write.table(all.results.annot, 
-	    paste0(output, "_", all.results.annot$chr[1], "_", Sys.Date(), ".csv"),
-	    na="NA", sep = ",", row.names=FALSE) #Export full results; these will be used later for plotting
+	    paste0(opt$output, "_", all.results.annot$chr[1], "_", Sys.Date(), ".csv"), #paste(out_dir,"Cannabis_ALSPAC_Model1_ANNOT_RESULTS_",all.results.annot$chr[1],"_",Sys.Date(),".csv", sep = ""),
+            na="NA",sep = ",",row.names=FALSE) #Export full results; these will be used later for plotting
