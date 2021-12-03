@@ -53,7 +53,7 @@ cat("Loading DNA methylation data......\n")
     load(opt$dnam)
     
 beta_matrix <- t(bVals_chr[,colnames(bVals_chr) %in% pheno[, opt$s]])
-dim(beta_matrix)
+#dim(beta_matrix)
 
 cat("DNAm data has ",dim(beta_matrix)[1]," rows and ",dim(beta_matrix)[2]," columns.\n\n")
 
