@@ -1,9 +1,11 @@
 task run_ewas_rscript {
 
+    File ewas_rscript
     File pheno_file
     File dnam_file
-    File ewas_rscript
     String sample_name
+    String test_var
+    Array[String] covariates
     String output_basename
 
     String docker
@@ -12,10 +14,13 @@ task run_ewas_rscript {
 
     command 
     <<<
+
         Rscript ${ewas_rscript} \
-            --pheno ${pheno_file} \
-            --sample_name ${sample_name} \
-            --methRdata ${dnam_file} \
+            --phenotype-file ${pheno_file} \
+            --dnam ${dnam_file} \
+            --sample-name ${sample_name} \
+            --test-var ${test_var} \
+            --covariates "${sep=" " covariates}" \
             --output ${output_basename} 
     >>>
 

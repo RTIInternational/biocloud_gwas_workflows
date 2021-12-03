@@ -9,70 +9,70 @@ library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
 library(optparse)
 
 option_list = list(
-  make_option(c("-p", "--pheno"), action="store", type="character",
+  make_option(c("-p", "--phenotype-file"), action="store", type="character",
               help="Phenotype file name and path."),
-  make_option(c("-s", "--sample_name"), type='character',
+  make_option(c("-t", "--test-var"), type='character',
+              help="The name of the phenotype of interest that was measured as shown in the header of the phenotype file. The test variable."),
+  make_option(c("-s", "--sample-name"), type='character',
               help="Column name given in the header of the phenotype file. This should match the DNAm file header too."),
-  make_option(c("-m", "--methRdata"), type='character',
-              help="DNA mehtylation data."),
+  make_option(c("-m", "--dnam"), type='character',
+              help="DNA methylation data."),
+  make_option(c("-c", "--covariates"), type='character',
+              help="Space separated string of covariate names. e.g. 'cov1 cov2 cov3'."),
   make_option(c("-o", "--output"), default="ewas_results", type='character',
               help="Basename for output results file. [default %default]")
 )
 
-opt = parse_args(OptionParser(option_list=option_list))
-
-# read in the phenotype file, DNAm data, and output directory.
-
-
+opt <- parse_args(OptionParser(option_list=option_list))
+covariates <- strsplit(opt$covariates, " ")[[1]]
 
 ####################################################################################################
-
-LMtest = function(meth_matrix, methcol, outcome, X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13) {
-        mod = try(lm(meth_matrix[, methcol]~outcome+X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13))
-	#right_side <- paste("outcome", "X1","X2","X3","X4","X5","X6","X7","X8","X9","X10","X11","X12","X13", collapse="+")
-	#print(right_side)
-        #mod = try(lm(meth_matrix[, methcol]~right_side))
+lmtest <- function(model_data, probe_id, test_var, covariates) {
+    lm_model <- as.formula(
+        paste0( probe_id, "~", paste0(c(test_var, covariates), collapse=" + "))
+    )
+    mod <- try(lm(lm_model, data=model_data))
 
 	if(class(mod) == "try-error"){
-	print(paste("error thrown by column", methcol))
-	invisible(rep(NA, 3)) # doesn't print if not assigned. Use in place of return
+        print(paste("error thrown by column", probe_id))
+        invisible(rep(NA, 3)) # doesn't print if not assigned. Use in place of return
 
-	}else cf = coef(summary(mod))
-	cf[2, c("Estimate", "Std. Error", "Pr(>|t|)")] 
-	}
-
+	}else cf <- coef(summary(mod))
+        cf[test_var, c("Estimate", "Std. Error", "Pr(>|t|)")] 
+}
 
 # read in phenotype file
 cat("Reading phenotype data......\n")
-pheno <- read.csv(opt$pheno, header=T, stringsAsFactors=F, sep=" ")
-# remove NA from phenotypes
-pheno[is.na(pheno$cannabisUse),]$cannabisUse <- 0
+pheno <- read.csv(opt$p, header=T, stringsAsFactors=F, sep=" ")
 
-pheno4EWAS<- pheno
+pheno[is.na(pheno[, opt$t]),][, opt$t] <- 0 # remove NA from phenotypes
+
 cat("Phenotype data has ",dim(pheno)[1]," rows and ",dim(pheno)[2]," columns.\n\n")
 
 cat("Loading DNA methylation data......\n")
-    load(opt$methRdata)
+    load(opt$dnam)
     
-beta_matrix <- t(bVals_chr[,colnames(bVals_chr) %in% pheno4EWAS[, opt$sample_name]])
+beta_matrix <- t(bVals_chr[,colnames(bVals_chr) %in% pheno[, opt$s]])
+dim(beta_matrix)
 
 cat("DNAm data has ",dim(beta_matrix)[1]," rows and ",dim(beta_matrix)[2]," columns.\n\n")
 
-    #Run adjusted EWAS
-    ##modify with covariate names
-    #  Sample_Name cidB3176 ALN qlet age_at_DNAm cannabisUse smoking drinking BMI Bcell CD4T CD8T Gran Mono NK sv1 sv2 sv3 sv4 sv5 sv6
-    system.time(ind.res <- mclapply(setNames(seq_len(ncol(beta_matrix)), 
-                                         dimnames(beta_matrix)[[2]]), 
-                                LMtest, 
-                                meth_matrix=beta_matrix, 
-                                outcome=pheno4EWAS$cannabisUse, X1=pheno4EWAS$age_at_DNAm, 
-                                X2=pheno4EWAS$sv1, X3=pheno4EWAS$sv2, 
-                                X4=pheno4EWAS$sv3, X5=pheno4EWAS$sv4, 
-                                X6=pheno4EWAS$sv5, X7=pheno4EWAS$sv6,
-                                X8=pheno4EWAS$Bcell, X9=pheno4EWAS$CD4T, 
-                                X10=pheno4EWAS$CD8T, X11=pheno4EWAS$Mono, 
-                                X12=pheno4EWAS$Gran, X13=pheno4EWAS$NK)) 
+# combine the DNAm data and the phenotype data, which includes test-var and covars
+ewas_mat <- merge(beta_matrix, pheno, by.x="row.names", by.y = opt$s)
+#pheno_ordered <- pheno[match(row.names(beta_matrix), pheno$Sample_Name),] # (first) matches of its first argument in its second argument.
+#ewas_mat <- cbind(beta_matrix, pheno_ordered)
 
+#Run adjusted EWAS
+system.time(
+    ind.res <- mclapply(X=dimnames(unlist(beta_matrix))[[2]], 
+                        FUN=lmtest,
+                        model_data=ewas_mat,
+                        test_var=opt$t,
+                        covariates=covariates)
+
+# https://stackoverflow.com/questions/14427253/passing-several-arguments-to-fun-of-lapply-and-others-apply
+)
+names(ind.res) <- dimnames(beta_matrix)[[2]]
 
 setattr(ind.res, 'class', 'data.frame')
 setattr(ind.res, "row.names", c(NA_integer_,4))
@@ -97,5 +97,5 @@ b<-as.data.frame(annEPIC)
 all.results.annot<-merge(a, b, by.x="probeID", by.y="Name")
 all.results.annot<-all.results.annot[order(all.results.annot$P_VAL),] #sort by P_VAL
 write.table(all.results.annot, 
-	    paste0(opt$output, "_", all.results.annot$chr[1], "_", Sys.Date(), ".csv"), #paste(out_dir,"Cannabis_ALSPAC_Model1_ANNOT_RESULTS_",all.results.annot$chr[1],"_",Sys.Date(),".csv", sep = ""),
+	    paste0(opt$output, "_", all.results.annot$chr[1], "_", Sys.Date(), ".csv"), 
             na="NA",sep = ",",row.names=FALSE) #Export full results; these will be used later for plotting

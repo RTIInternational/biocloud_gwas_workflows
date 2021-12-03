@@ -34,12 +34,14 @@ resu_annot_sub$chr_new <- gsub("23", "X", resu_annot_sub$chr_new) #change chr23 
 resu_annot_sub$chr_ordered <- factor(resu_annot_sub$chr_new)
 
 ## find sigLin for FDR<1% in Manhattan plot
-find_fdr <- function(target=0.10, start_guess=1e-4, pval_vec) {
+find_fdr <- function(target=0.10, start_guess=1e-10, pval_vec) {
     difference <- 10
-    while (difference > 0.001) {
+    while (difference > target/100) {
         fdr_val <- p.adjust(c(start_guess, pval_vec), method="BH")[1]
+        print(fdr_val)
         difference <- abs(fdr_val - target)
-        start_guess <- start_guess - 1e-7
+        start_guess <- start_guess + 1e-8
+        print(start_guess)
     }
 
     return (signif(start_guess, 4) ) # FDR of <target> is reached at <start_guess>
