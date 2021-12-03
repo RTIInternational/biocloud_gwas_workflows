@@ -1,11 +1,8 @@
 {
-  "ewas_full.docker": "rtibiocloud/ewas:v0.0.1_fbfc0f1",
-  "ewas_full.ewas_rscript": "s3://rti-cannabis/ewas/alspac/scripts/ewas.R",
+  "ewas_full.docker": "rtibiocloud/ewas:v0.0.2",
   "ewas_full.output_basename": "alspac_ea_ewas_model_1_results",
   "ewas_full.fdr_value": 0.10,
   "ewas_full.plot_colors": ["red", "blue"],
-  "ewas_full.plot_script": "make_plots.R",
-  "ewas_full.prepare_table": "s3://rti-cannabis/ewas/alspac/scripts/prepare_plot_table.R",
   "ewas_full.sample_name": "Sample_Name",
   "ewas_full.test_var": "cannabisUse",
   "ewas_full.covariates": ["age_at_DNAm", "sv1", "sv2", "sv3", "sv4", "sv5", "sv6", "Bcell", "CD4T", "CD8T", "Mono", "Gran", "NK"],

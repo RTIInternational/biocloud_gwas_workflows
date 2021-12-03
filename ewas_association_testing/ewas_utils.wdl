@@ -1,6 +1,5 @@
 task run_ewas_rscript {
 
-    File ewas_rscript
     File pheno_file
     File dnam_file
     String sample_name
@@ -15,7 +14,7 @@ task run_ewas_rscript {
     command 
     <<<
 
-        Rscript ${ewas_rscript} \
+        Rscript /opt/ewas.R \
             --phenotype-file ${pheno_file} \
             --dnam ${dnam_file} \
             --sample-name ${sample_name} \
@@ -38,7 +37,6 @@ task run_ewas_rscript {
         pheno_file: "Phenotype file that contains the outcome as well as the covariates."
         dnam_file: "DNA methylation data post-QC. The sample names should match that given in the phenotype file."
         sample_name: "Sample name given in the DNAm data as well as the phenotype file."
-        ewas_rscript: "Rscript that performs the EWAS."
         output_basename: "A descriptive basename for the output file--e.g. alspac_ea_ewas_model_1"
         docker: "Docker image to use for the EWAS. e.g. rtibiocloud/ewas:v0.0.1_fbfc0f1"
     }
@@ -52,7 +50,6 @@ task run_ewas_rscript {
 
 task plot_table {
     Array[File] ewas_results
-    File prepare_table
     Float fdr
 
     String docker
@@ -61,7 +58,7 @@ task plot_table {
 
     command <<<
 
-    Rscript ${prepare_table} \
+    Rscript /opt/prepare_plot_table.R \
         --input-files "${sep=" " ewas_results}" \
         --fdr ${fdr}
 
@@ -81,7 +78,6 @@ task plot_table {
 
     parameter_meta  {
         ewas_results: "An array of chromosome level EWAS results."
-        prepare_table: "An Rscript that takes the chromosome level EWAS results and consolidates them into a single table for plotting."
         fdr: "False discovery rate."
         docker: "Docker image to use for the EWAS plotting table generation. e.g. rtibiocloud/ewas:v0.0.1_fbfc0f1"
     }
@@ -95,7 +91,6 @@ task plot_table {
 
 task plot_ewas {
     File plot_table
-    File plot_script
     Array[String] colors
     String plot_basename
     Float bonferroni
@@ -108,7 +103,7 @@ task plot_ewas {
     command
     <<<
 
-    Rscript ${plot_script} \
+    Rscript /opt/make_plots.R \
         --table "${plot_table}" \
         --fdr ${fdr} \
         --bonferroni ${bonferroni} \
@@ -130,7 +125,6 @@ task plot_ewas {
     parameter_meta  {
 
         plot_table: "Table for plotting. Contains p-values."
-        plot_script: "Rscript that performs the Manhattan and QQ plotting."
         colors: "An Array of two colors for the Manhattan plot."
         plot_basename: "Basename for the Manhattan and QQ plots."
         bonferroni: "Bonferroni adjusted genome-wide significance threshold."
