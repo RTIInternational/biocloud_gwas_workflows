@@ -1,49 +1,49 @@
+import "liftover_utils.wdl" as UTILS
+
+
 workflow genome_liftover {
     String chainfile =  "http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz"
+    File input_sumstats = "MetaScore_rsq_gt_0.8_sample_maf_gt_0.01.tsv.gz"
+    Int chromosome_col = 1 # zero-based column index
+    Int position_col = 2 # zero-based column index
+    String final_file = "final_file.txt"
 
-    String docker = "python:3.8" # python3.8 has wget tool
+    String docker = "rtibiocloud/liftover:v423_1471834"  
 
-    call download_chainfile {
+    call UTILS.download_chainfile as chain {
         input:
-            liftover_file = liftover_file,
+            chainfile = chainfile,
             docker = docker
     }
-}
 
-task download_chainfile {
-    String chainfile
-    String outfile = basename(chainfile, ".gz") 
-    #String remove_path = sub(liftover_file, ".+\\/", "") 
+    call UTILS.create_bedfile as bed {
+        input:
+            input_sumstats = input_sumstats,
+            chromosome_col = chromosome_col,
+            position_col = position_col,
+            docker = docker
 
-    String docker
-    Int cpu = 1
-    Int mem = 4
+    }
 
-    command {
-        wget ${chainfile}
-        gunzip ${outfile}".gz"
+    call UTILS.perform_liftover as lift {
+        input:
+            input_bedfile = bed.sumstats_bed,
+            chainfile = chain.unzipped_output,
+            docker = docker
+    }
+
+    call UTILS.final_sumstats  as final {
+        input:
+            original_sumstats = input_sumstats,
+            new_bed = lift.output_bed,
+            unmapped_bed = lift.unmapped_bed,
+            output_name = final_file,
+            position_col = position_col,
+            docker = docker
     }
 
     output {
-        File unzipped_output = "${outfile}"
-    }
-
-    runtime {
-        docker: docker
-        cpu: cpu
-        memory: "${mem} GB"
-    }
-
-    parameter_meta {
-        liftover_file: "Liftover file. Navigate to the webpage http://hgdownload.soe.ucsc.edu/downloads.html and from there click 'LiftOver files' under the  Human genome section. If my starting build is hg38, I would look under the Dec. 2013 (GRCh38/hg38) subsection. Clicking 'LiftOver files' will take you to a page that contains the UCSC Chain Files. Select the liftover file that converts to the build you desire."
-        docker: "Docker image."
-        cpu: "Number of CPUs for the image."
-        mem: "Amount of RAM in GB for the image."
-    }
-
-    meta {
-        description: "Download and decompress the liftover file."
-        author: "Jesse Marks"
-        email: "jmarks@rti.org"
+        File mapped_stats = final.output_sumstats
+        File unmapped_stats = final.unmapped_sumstats
     }
 }
