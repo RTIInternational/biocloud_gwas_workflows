@@ -1,0 +1,7 @@
+{
+  "genome_liftover.input_sumstats": "s3://rti-hiv/gwas/cfar_coga/results/acquisition/0003/eur/MetaScore_rsq_gt_0.8_sample_maf_gt_0.01.tsv.gz",
+  "genome_liftover.final_file": "final_file.txt",
+  "genome_liftover.chainfile": "http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz",
+  "genome_liftover.chromosome_col": "1",
+  "genome_liftover.position_col": "2"
+}
