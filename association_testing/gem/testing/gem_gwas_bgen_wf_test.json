@@ -1,0 +1,58 @@
+{
+
+    "gem_gwas_bgen_wf.chrs": [
+        "21",
+        "22"
+    ],
+
+    "gem_gwas_bgen_wf.pheno_file": "s3://rti-pulmonary/gwas/ukbiobank/data/fev1/0005/pheno.tsv",
+    "gem_gwas_bgen_wf.in_bgen_files": [
+        "s3://rti-shared/shared_data/post_qc/ukbiobank/genotype/array/imputed/v3/all/ukb_imp_chr21_v3.bgen",
+        "s3://rti-shared/shared_data/post_qc/ukbiobank/genotype/array/imputed/v3/all/ukb_imp_chr22_v3.bgen"
+    ],
+    "gem_gwas_bgen_wf.in_sample_files": [
+        "s3://rti-shared/shared_data/post_qc/ukbiobank/genotype/array/imputed/v3/all/ukb24603_imp_chr21_v3_s487297.sample",
+        "s3://rti-shared/shared_data/post_qc/ukbiobank/genotype/array/imputed/v3/all/ukb24603_imp_chr22_v3_s487297.sample"
+    ],
+    "gem_gwas_bgen_wf.out_file_prefix": "ukb_fev1_vitd",
+    "gem_gwas_bgen_wf.output_style": "meta",
+
+    "gem_gwas_bgen_wf.sampleid_name": "eid",
+    "gem_gwas_bgen_wf.pheno_name": "FEV1",
+    "gem_gwas_bgen_wf.exposure_names": "VITD",
+    "gem_gwas_bgen_wf.covar_names": "CURRENT_SMOKER FORMER_SMOKER AGE AGE2 SEX HEIGHT HEIGHT2 SEASON_1 SEASON_2 SEASON_3 ARRAY CENTER_11002 CENTER_11011 CENTER_11021 CENTER_11020 CENTER_11005 CENTER_11006 CENTER_11008 CENTER_11004 CENTER_11018 CENTER_11013 CENTER_11007 CENTER_11014 CENTER_11016 CENTER_11003 CENTER_11017 CENTER_11001 CENTER_11012 CENTER_11009 CENTER_11022 CENTER_11023 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10",
+    "gem_gwas_bgen_wf.robust": 1,
+    "gem_gwas_bgen_wf.missing_value": "NaN",
+
+    "gem_gwas_bgen_wf.gem_threads": 8,
+
+    "gem_gwas_bgen_wf.gem_cpu": 8,
+    "gem_gwas_bgen_wf.gem_mem_gb": 16,
+
+    "gem_gwas_bgen_wf.info_files": [
+      "s3://rti-shared/shared_data/post_qc/ukbiobank/genotype/array/imputed/v3/all/ukb_mfi_chr21_v3.tsv.gz",
+      "s3://rti-shared/shared_data/post_qc/ukbiobank/genotype/array/imputed/v3/all/ukb_mfi_chr22_v3.tsv.gz"
+    ],
+    "gem_gwas_bgen_wf.info_file_format": "mfi",
+
+    "gem_gwas_bgen_wf.id_ref_files": [
+      "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr21.tsv.gz",
+      "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr22.tsv.gz"
+    ],
+    "gem_gwas_bgen_wf.in_missing_allele": "0",
+    "gem_gwas_bgen_wf.in_deletion_allele": "-",
+    "gem_gwas_bgen_wf.id_label": "GRCh37_p13",
+
+    "gem_gwas_bgen_wf.filter_by_sample_maf": true,
+    "gem_gwas_bgen_wf.filter_by_pop_maf": false,
+    "gem_gwas_bgen_wf.maf_cutoffs": [0.01],
+
+    "gem_gwas_bgen_wf.filter_by_rsq": true,
+    "gem_gwas_bgen_wf.rsq_cutoffs": [0.3, 0.8],
+
+    "gem_gwas_bgen_wf.filter_by_pvalue": true,
+    "gem_gwas_bgen_wf.sig_alpha": 0.001,
+
+    "gem_gwas_bgen_wf.plot_mem_gb": 16
+
+}
