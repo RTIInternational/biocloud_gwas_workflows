@@ -60,3 +60,8 @@ The inputs JSON file is where the parameters are set.
   | VARIANT_ID | CHR | POS | REF | ALT |
 |------------|-----|-----|-----|-----|
   </details>
+
+
+
+# Step 3: Submit job
+See the Microsoft Teams Omics Group Computing Infrastructure [WDL/Cromwell Cheat Sheet](https://teams.microsoft.com/l/channel/19%3Af42632e48b7c4b9e9f362afa1e4e1957%40thread.tacv2/tab%3A%3A61aecad5-13fa-4bde-adce-ba3b16950439?groupId=9179c917-4161-4094-bec2-b13d4862274c&tenantId=2ffc2ede-4d44-4994-8082-487341fa43fb) for instructions.
