@@ -44,7 +44,10 @@ The inputs JSON file is where the parameters are set.
   <details>
   <summary>genome_liftover.chromosome_col</summary>
   
-   Zero-based
+   Zero-based array index. For example, chromosome_col = 1 with the sumstats header below.
+  
+  | VARIANT_ID | CHR | POS | REF | ALT |
+|------------|-----|-----|-----|-----|
   </details>
   
   
@@ -52,5 +55,8 @@ The inputs JSON file is where the parameters are set.
   <details>
   <summary>genome_liftover.position_col</summary>
   
-  Zero-based
+  Zero-based array index. For example, position_col = 2 with the sumstats header below.
+  
+  | VARIANT_ID | CHR | POS | REF | ALT |
+|------------|-----|-----|-----|-----|
   </details>
