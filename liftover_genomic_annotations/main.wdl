@@ -1,4 +1,4 @@
-import "liftover_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/liftover_genomic_annotations/liftover_utils.wdl" as UTILS
 
 
 workflow genome_liftover {
