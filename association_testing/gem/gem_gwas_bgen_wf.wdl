@@ -81,7 +81,7 @@ workflow gem_gwas_bgen_wf{
         call GEM_CHR.gem_gwas_chr_wf as GEM{
             input:
                 pheno_file = pheno_file,
-                out = out_file_prefix + '_chr' + chrs[index] + '.tsv',
+                out = out_file_prefix + '_chr' + chrs[index],
                 bgen = in_bgen_files[index],
                 sample = in_sample_files[index],
                 output_style = output_style,

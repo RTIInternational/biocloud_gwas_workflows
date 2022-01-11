@@ -5,7 +5,7 @@ workflow gem_gwas_chr_wf{
 
     # GEM Input/Output File Options:
     File pheno_file
-    String out
+    String out_prefix
     File? bgen
     File? sample
     File? pgen
@@ -51,7 +51,7 @@ workflow gem_gwas_chr_wf{
     call GEM.gem as gem {
         input:
             pheno_file = pheno_file,
-            out = out,
+            out = out_prefix + '.tsv',
             bgen = bgen,
             sample = sample,
             pgen = pgen,
@@ -89,7 +89,7 @@ workflow gem_gwas_chr_wf{
             file_in_summary_stats_format = "gem",
             file_in_info = info_file,
             file_in_info_format = info_file_format,
-            file_out_prefix = out + "_std"
+            file_out_prefix = out_prefix + "_std"
     }
 
     output{
