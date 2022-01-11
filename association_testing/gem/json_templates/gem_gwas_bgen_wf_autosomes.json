@@ -113,7 +113,7 @@
         "<INFO_PREFIX>chr21<INFO_SUFFIX>",
         "<INFO_PREFIX>chr22<INFO_SUFFIX>"
     ],
-    "gem_gwas_bgen_wf.info_file_format": "<INFO_FILE_FORMAT",
+    "gem_gwas_bgen_wf.info_file_format": "<INFO_FILE_FORMAT>",
 
     "gem_gwas_bgen_wf.id_ref_files": [
       "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr1.tsv.gz",
