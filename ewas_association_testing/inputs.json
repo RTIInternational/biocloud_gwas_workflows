@@ -1,5 +1,5 @@
 {
-  "ewas_full.docker": "rtibiocloud/ewas:v0.0.2",
+  "ewas_full.docker": "rtibiocloud/ewas:v0.0.2_99db04b",
   "ewas_full.output_basename": "alspac_ea_ewas_model_1_results",
   "ewas_full.fdr_value": 0.10,
   "ewas_full.plot_colors": ["red", "blue"],
