@@ -100,7 +100,13 @@ An Array of two colors for the Manhattan plot. e.g. ["red", "blue"]
   
   *String*<br>
   
-  Location of phenotype file.
+  Location of phenotype file. It should be space-delimited. Example:
+  ```
+  Sample_Name cidB3176 ALN qlet age_at_DNAm cannabisUse
+SLIDE1_R01C02 16631 33734 A 47 2
+SLIDE1_R03C01 18360 41525 A 53 2
+SLIDE1_R04C02 19357 51135 A 49 2
+  ```
   </details>
   
   
@@ -109,10 +115,23 @@ An Array of two colors for the Manhattan plot. e.g. ["red", "blue"]
   
   *Array[String]*<br>
   
-  List of locations to the DNA methylation files.
+  List of locations to the DNA methylation files. The sample names given in the phenotype file should be the headers of the DNAm data. Example:
+    
+```
+               SLIDE253_R05C02 SLIDE132_R01C01 SLIDE168_R03C01 SLIDE340_R04C02
+cg03966099       0.9485337       0.7996862       0.7683881       0.8846240
+cg17618987       0.7975673       0.7335370       0.6771216       0.7275796
+cg04105722       0.6174577       0.6240739       0.6247884       0.6478189
+```
   </details>
   
   </details>
+  
+  
+  
+  
+  <br>
+  
   
 
 ## Submitting the workflow
