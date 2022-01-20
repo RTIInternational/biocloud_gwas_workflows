@@ -8,8 +8,8 @@ task run_ewas_rscript {
     String output_basename
 
     String docker
-    Int cpu = 1
-    Int mem = 2
+    Int cpu = 4
+    Int mem = 8
 
     command 
     <<<
