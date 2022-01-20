@@ -1,3 +1,9 @@
+### To-do
+
+- [ ] Make phenotype file input be an rda object so that formatting is not an issue.
+
+<br><br>
+
 # EWAS
 This automated workflow performs an Epigenome-wide association study (EWAS). Supply a phenotype file and DNA methylation file(s). Output is a combined results table and Manhattan & QQ plots. Note that the Manhattan plot includes both a Bonferroni and an FDR adjusted significant threshold line. Both are automatically calculated by the workflow. We have worked out a few bugs for this algorithm, but it's possible some edge cases may cause this to crash. Notify the authors listed below if there are any issues running this workflow. 
 
