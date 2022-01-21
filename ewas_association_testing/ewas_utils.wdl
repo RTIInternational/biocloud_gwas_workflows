@@ -8,7 +8,7 @@ task run_ewas_rscript {
     String output_basename
 
     String docker
-    Int cpu = 4
+    Int cpu = 2
     Int mem = 8
 
     command 
@@ -50,22 +50,21 @@ task run_ewas_rscript {
 
 task plot_table {
     Array[File] ewas_results
-    Float fdr
+    #Float fdr
 
     String docker
     Int cpu = 1
-    Int mem = 4
+    Int mem = 8
 
     command <<<
 
     Rscript /opt/prepare_plot_table.R \
-        --input-files "${sep=" " ewas_results}" \
-        --fdr ${fdr}
+        --input-files "${sep=" " ewas_results}" 
 
     >>>
 
     output {
-        Float fdr_output = read_float("fdr_${fdr}_adjusted_gw_threshold.txt")
+        #Float fdr_output = read_float("fdr_${fdr}_adjusted_gw_threshold.txt")
         Float bonferroni = read_float("bonferroni_adjusted_gw_threshold.txt")
         File plot_table = "plotting_table.csv"
     }
@@ -94,18 +93,17 @@ task plot_ewas {
     Array[String] colors
     String plot_basename
     Float bonferroni
-    Float fdr
+    #Float fdr
 
     String docker
     Int cpu = 1
-    Int mem = 4
+    Int mem = 8
 
     command
     <<<
 
     Rscript /opt/make_plots.R \
         --table "${plot_table}" \
-        --fdr ${fdr} \
         --bonferroni ${bonferroni} \
         --colors "${sep=" " colors}" \
         --output "${plot_basename}"
