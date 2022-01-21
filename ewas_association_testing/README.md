@@ -22,15 +22,17 @@ View the `inputs.json` for examples of the DNAm files and the phenotype file. No
 
 *String*<br>
   
-Docker image containing the system dependencies and R packages necessary to run the workflow. Most up-to-date image as of 1-8-2021 is `ewas:v0.0.2_99db04b`. Visit rtibiocloud Docker Hub to get the latest version.
+Docker image containing the system dependencies and R packages necessary to run the workflow. Most up-to-date image as of 1-21-2021 is `rtibiocloud/ewas:v0.0.2_e671cf0`. Visit rtibiocloud Docker Hub to get the latest version.
 </details>
   
   
   
 <details>
-  <summary>fdr_value</summary>
+  <summary>fdr_value (DEPRECATED)</summary>
   
   *Float*<br>
+  
+  We decided to remove this calculation because the algorithm was too slow.
   
   False discovery rate.  
   </details>
