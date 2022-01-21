@@ -9,7 +9,7 @@ workflow ewas_full {
     Array[String] covariates
     String output_basename
     Array[String] plot_colors = ["red", "blue"] 
-    Float fdr_value = 0.05
+    #Float fdr_value = 0.05
 
     String docker = "rtibiocloud/ewas:v0.0.2"
 
@@ -29,7 +29,7 @@ workflow ewas_full {
     call UTILS.plot_table as table {
         input:
             ewas_results = one_ewas.ewas_output,
-            fdr = fdr_value,
+            #fdr = fdr_value,
             docker = docker
     }
 
@@ -38,7 +38,7 @@ workflow ewas_full {
             plot_table = table.plot_table,
             colors = plot_colors,
             plot_basename = output_basename,
-            fdr = table.fdr_output,
+            #fdr = table.fdr_output,
             bonferroni = table.bonferroni,
             docker = docker
     }
