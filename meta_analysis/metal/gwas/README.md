@@ -19,7 +19,15 @@ Now you're ready to get started running the workflow.
 More detailed running instructions for WDL/Cromwell workflows are found in the tutorial for the metaxcan pipeline [here](https://github.com/RTIInternational/metaxcan-pipeline).
 
 ## Workflow overview
-TBA
+User needs GWAS summary statitics with the following columns (headers can be named whatever):
+* rsID
+* chromosome
+* position
+* Beta (effect_size)
+* se_beta (standard error of beta coefficient)
+* A1 (coded allele)
+* A2 (noncoded allele)
+* P-value
 
 ## Running the analysis
 TBA
@@ -31,7 +39,3 @@ TBA
 ## To-do 
 - [ ] Add 2df option
 - [ ] Add option to apply [genomic control (GC)](https://en.wikipedia.org/wiki/Genomic_control).
-- [ ] Add option to merge cohort specific GWAS results to the meta-analysis results.
-- [ ] Add options to filter SNPs by imputation quality (R²) and minor allele frequency (MAF).
-- [ ] Add option to opt out of removing singletons—the default is currently to remove singletons. 
-- [ ] Create a tool to generate the input config file from an Excel file. 
