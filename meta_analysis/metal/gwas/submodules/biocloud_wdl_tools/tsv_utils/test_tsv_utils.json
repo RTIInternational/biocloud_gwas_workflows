@@ -1,0 +1,12 @@
+{
+  "test_tsv_utils.tsv_inputs_to_append": [
+    "s3://rti-biocloud-test-data/sumstats/20181108_ftnd_meta_analysis_wave3.eur.chr22.exclude_singletons.copy_1.1df",
+    "s3://rti-biocloud-test-data/sumstats/20181108_ftnd_meta_analysis_wave3.eur.chr22.exclude_singletons.copy_2.1df",
+    "s3://rti-biocloud-test-data/sumstats/20181108_ftnd_meta_analysis_wave3.eur.chr22.exclude_singletons.copy_3.1df"
+  ],
+  "test_tsv_utils.tsv_input": "s3://rti-biocloud-test-data/sumstats/20181108_ftnd_meta_analysis_wave3.eur.chr22.exclude_singletons.1df",
+  "test_tsv_utils.gzipped_tsv_input": "s3://rti-biocloud-test-data/sumstats/20181108_ftnd_meta_analysis_wave3.eur.chr22.exclude_singletons.1df.gz",
+  "test_tsv_utils.input_filter_tsv": "s3://rti-biocloud-test-data/sumstats/test.filter.txt",
+  "test_tsv_utils.gzipped_input_filter_tsv": "s3://rti-biocloud-test-data/sumstats/test.filter.txt.gz"
+}
+

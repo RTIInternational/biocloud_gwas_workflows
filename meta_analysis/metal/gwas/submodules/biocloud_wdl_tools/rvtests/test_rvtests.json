@@ -1,0 +1,6 @@
+{
+  "test_rvtests.rvtests.phenoFile": "s3://rti-biocloud-test-data/rvtests/pheno",
+  "test_rvtests.rvtests.output_basename": "test_rvtests",
+  "test_rvtests.rvtests.singleTestsMaybe": ["wald"],
+  "test_rvtests.rvtests.inVCF": "s3://rti-biocloud-test-data/rvtests/example.vcf"
+}

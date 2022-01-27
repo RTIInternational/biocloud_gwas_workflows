@@ -1,0 +1,13 @@
+{
+  "test_convert_variant_ids.bim": "s3://gwas-cromwell/cromwell-execution/genotype_array_qc_wf/ae9745aa-2f87-478d-a24c-c4fcef30f3ed/call-convert_impute2_ids/IDCONVERT.impute2_id_conversion_wf/3b00b8e1-610f-4db9-9497-3648ae999253/call-normalize_sex_chr_wf/NORM.normalize_sex_chr_wf/8928c5ff-2906-4204-a0bc-0f46d12d4622/call-split_x_chr/wihs2_qc.splitx.bim",
+  "test_convert_variant_ids.chrs": ["1", "2", "23", "25"],
+  "test_convert_variant_ids.refs": [
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr1.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr2.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr23.tsv.gz",
+    "s3://rti-biocloud-ref/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr23.tsv.gz"
+  ],
+  "test_convert_variant_ids.cpu": 1,
+  "test_convert_variant_ids.mem_gb": 3
+}
+

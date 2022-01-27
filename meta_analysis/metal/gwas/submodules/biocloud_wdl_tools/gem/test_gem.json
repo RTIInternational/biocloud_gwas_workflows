@@ -1,0 +1,14 @@
+{
+  "test_gem.pheno_file": "s3://rti-pulmonary/scratch/temp/example/example.pheno",
+  "test_gem.bed": "s3://rti-pulmonary/scratch/temp/example/example.bed",
+  "test_gem.bim": "s3://rti-pulmonary/scratch/temp/example/example.bim",
+  "test_gem.fam": "s3://rti-pulmonary/scratch/temp/example/example.fam",
+  "test_gem.out": "example.out",
+  "test_gem.output_style": "meta",
+  "test_gem.sampleid_name": "sampleid",
+  "test_gem.pheno_name": "pheno2",
+  "test_gem.covar_names": "cov2 cov3",
+  "test_gem.exposure_names": "cov1",
+  "test_gem.robust": 1,
+  "test_gem.missing_value": "NaN"
+}

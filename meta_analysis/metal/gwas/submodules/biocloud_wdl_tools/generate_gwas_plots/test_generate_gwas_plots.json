@@ -1,0 +1,4 @@
+{
+  "test_generate_gwas_plots.rvtests_sumstats_file": "s3://rti-biocloud-test-data/sumstats/gabc.metal.in",
+  "test_generate_gwas_plots.probabel_sumstats_file": "s3://rti-biocloud-test-data/sumstats/gabc_probabel.txt.txt"
+}
