@@ -69,6 +69,9 @@ task split_by_chromosome {
 
   # change chrX to chr23 if present
   mv ${study_basename}_chr[x,X].txt ${study_basename}_chr23.txt
+  
+  # change chrY to chr24 if present
+  mv ${study_basename}_chr[y,Y].txt ${study_basename}_chr24.txt
 
   # keep only chromosomes specified
   mkdir keep_files/
