@@ -1,6 +1,6 @@
-import "submodules/gwas_meta_utils.wdl" as UTILS
-import "submodules/gwas_meta_preprocessing.wdl" as PREPROCESS 
-import "submodules/gwas_meta_postprocessing.wdl" as POSTPROCESS 
+import "biocloud_gwas_workflows/meta_analysis/metal/gwas/submodules/gwas_meta_utils.wdl" as UTILS
+import "biocloud_gwas_workflows/meta_analysis/metal/gwas/submodules/gwas_meta_preprocessing.wdl" as PREPROCESS 
+import "biocloud_gwas_workflows/meta_analysis/metal/gwas/submodules/gwas_meta_postprocessing.wdl" as POSTPROCESS 
 
 
 workflow metal_gwas_meta_analysis_wf {
