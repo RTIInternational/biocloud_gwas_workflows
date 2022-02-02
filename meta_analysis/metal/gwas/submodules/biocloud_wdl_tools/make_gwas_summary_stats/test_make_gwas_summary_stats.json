@@ -1,7 +1,0 @@
-{
-  "test_make_gwas_summary_stats.rvtests_sumstats_file": "s3://rti-shared/scratch/wf_test_data/biocloud_wdl_tools/make_gwas_summary_stats/rvtests_chr22_sumstats.tsv.gz",
-  "test_make_gwas_summary_stats.info_file": "s3://rti-shared/scratch/wf_test_data/biocloud_wdl_tools/make_gwas_summary_stats/chr22.info.gz",
-  "test_make_gwas_summary_stats.gem_sumstats_file": "s3://rti-shared/scratch/wf_test_data/biocloud_wdl_tools/make_gwas_summary_stats/gem_chr22_sumstats.tsv",
-  "test_make_gwas_summary_stats.mfi_file": "s3://rti-shared/scratch/wf_test_data/biocloud_wdl_tools/make_gwas_summary_stats/mfi_chr22.tsv.gz",
-  "test_make_gwas_summary_stats.pop_maf_file": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/pop_mafs/eur/chr22.tsv.gz"
-}

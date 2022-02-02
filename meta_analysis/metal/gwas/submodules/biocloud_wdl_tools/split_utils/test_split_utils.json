@@ -1,5 +1,0 @@
-{
-  "test_split_utils.vcf_info": "s3://rti-biocloud-test-data/vcfs/chr22.info",
-  "test_split_utils.vcf_gz": "s3://rti-biocloud-test-data/vcfs/chr22.dose.vcf.gz",
-  "test_split_utils.vcf_info_gz": "s3://rti-biocloud-test-data/vcfs/chr22.info.gz"
-}
