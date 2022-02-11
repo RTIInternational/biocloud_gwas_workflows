@@ -94,6 +94,14 @@ curl -X POST "http://localhost:8000/api/workflows/v1" -H "accept: application/js
 # paste job id here and check status
 job=05f35e44-74cd-4a33-9659-d60ef58da3b9
 curl -X GET "http://localhost:8000/api/workflows/v1/${job}/status"
+  # {"status":"Succeeded","id":"05f35e44-74cd-4a33-9659-d60ef58da3b9"}
+
+# download
+aws s3 cp s3://rti-cromwell-output/cromwell-execution/genome_liftover/05f35e44-74cd-4a33-9659-d60ef58da3b9/call-final/hg38_dan_chr_all_assoc_dosage_meta_ngt_metadaner_beta_sebeta.txt .
+gzip hg38_dan_chr_all_assoc_dosage_meta_ngt_metadaner_beta_sebeta.txt
+
+# upload to s3
+aws s3 mv hg38_dan_chr_all_assoc_dosage_meta_ngt_metadaner_beta_sebeta.txt.gz s3://rti-hiv/gwas/mclaren/processed/hiv_acquisition/final_stats/hg38/
   ```
 
 </details>
