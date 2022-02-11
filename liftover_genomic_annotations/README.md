@@ -65,3 +65,35 @@ The inputs JSON file is where the parameters are set.
 
 # Step 3: Submit job
 See the Microsoft Teams Omics Group Computing Infrastructure [WDL/Cromwell Cheat Sheet](https://teams.microsoft.com/l/channel/19%3Af42632e48b7c4b9e9f362afa1e4e1957%40thread.tacv2/tab%3A%3A61aecad5-13fa-4bde-adce-ba3b16950439?groupId=9179c917-4161-4094-bec2-b13d4862274c&tenantId=2ffc2ede-4d44-4994-8082-487341fa43fb) for instructions.
+
+<details>
+  <summary>example code</summary>
+
+  ```bash
+  git clone --recursive https://github.com/RTIInternational/biocloud_gwas_workflows/
+cd biocloud_gwas_workflows/liftover_genomic_annotations/
+
+# edit input file
+
+cd ../../
+zip \
+    --exclude=*/var/* \
+    --exclude=*.git/* \
+    --exclude=*/test/* \
+    --exclude=*/.idea/* \
+    -r biocloud_gwas_workflows/liftover_genomic_annotations/biocloud_gwas_workflows.zip \
+    biocloud_gwas_workflows/liftover_genomic_annotations
+
+curl -X POST "http://localhost:8000/api/workflows/v1" -H "accept: application/json" \
+    -F "workflowSource=@/home/ec2-user/rti-hiv/gwas/mclaren/biocloud_gwas_workflows/liftover_genomic_annotations/main.wdl" \
+    -F "workflowInputs=@/home/ec2-user/rti-hiv/gwas/mclaren/biocloud_gwas_workflows/liftover_genomic_annotations/inputs.json" \
+    -F "workflowDependencies=@/home/ec2-user/rti-hiv/gwas/mclaren/biocloud_gwas_workflows/liftover_genomic_annotations/biocloud_gwas_workflows.zip" \
+    -F "workflowOptions=@/home/ec2-user/bin/cromwell/hiv_gnetii_charge_code.json" \
+    >> job_id.txt
+
+# paste job id here and check status
+job=05f35e44-74cd-4a33-9659-d60ef58da3b9
+curl -X GET "http://localhost:8000/api/workflows/v1/${job}/status"
+  ```
+
+</details>
