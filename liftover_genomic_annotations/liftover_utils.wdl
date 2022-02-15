@@ -52,7 +52,6 @@ task create_bedfile {
     <<<
 
         python - <<EOF
-
         import gzip
 
         infile = "${input_sumstats}"
@@ -163,6 +162,7 @@ task  final_sumstats {
     String output_name
     String unmapped_name = "unmapped_sumstats.txt"
     Int position_col
+    Int chr_col
 
     String docker
     Int cpu = 1
@@ -172,7 +172,7 @@ task  final_sumstats {
     <<<
 
     python - <<EOF
-    import gzip 
+    import gzip
 
     original_sumstats = "${original_sumstats}"
     new_bed = "${new_bed}"
@@ -180,6 +180,7 @@ task  final_sumstats {
     outfile = "${output_name}"
     out_unmapped = "${unmapped_name}"
     position_col = ${position_col}
+    chr_col = ${chr_col}
 
     with gzip.open(original_sumstats, "rt") as sumSTATS, \
         open(new_bed) as newBED, \
@@ -188,35 +189,41 @@ task  final_sumstats {
         open(outfile, "w") as outF:
 
         line = unMAPPED.readline()
-        print(line)
         unmapped_set = set() # keep track of all of the unmapped positions
-        while line: 
+        while line:
             if line[0] != "#":
                 sl = line.split()
-                unmapped_set.add(sl[1]) # add the original position that did not mapped to new genome build
+                chrom = sl[0][3:]
+                pos = sl[1]
+                chr_pos = "{}:{}".format(chrom, pos)
+                unmapped_set.add(chr_pos) # add the original chr and position that did not mapped to new genome build
 
             line = unMAPPED.readline()
         
         header = sumSTATS.readline().split()
+        print(header)
         outUNMAPPED.write(" ".join(header) + "\n")
-        header[position_col] = "MAPPED_POS"
+        header[position_col] = "GRCh{}_POS".format(new_build)
         header = " ".join(header) + "\n" # change to space separated
         outF.write(header)
-
+    
         stats_line = sumSTATS.readline()
         newbed_line = newBED.readline()
         while stats_line:
             sl = stats_line.split()
-            if sl[position_col] not in unmapped_set: # if it's not in the unmapped set, update the position and print the line
+            position = sl[position_col]
+            chromosome = sl[chr_col]
+            snp_id = "{}:{}".format(chromosome, position)
+            if snp_id not in unmapped_set: # if it's not in the unmapped set, update the position and print the line
                 newbed_split = newbed_line.split()
                 sl[position_col] = newbed_split[1]
                 outline = " ".join(sl) + "\n"
                 outF.write(outline)
                 newbed_line = newBED.readline()
-            else:
+            else: # else if it is in the unmapped set, add it to the unmapped output
                 unmapped_line = " ".join(sl) + "\n"
                 outUNMAPPED.write(unmapped_line)
-
+    
             stats_line = sumSTATS.readline()
     
     EOF
@@ -235,10 +242,11 @@ task  final_sumstats {
 
     parameter_meta {
         original_sumstats: "Original set of summary statistics."
-        new_bed: ""
-        unmapped_bed: ""
-        output_name: ""
-        position_col: ""
+        new_bed: "Variants mapped to new build: BED file."
+        unmapped_bed: "Variants not mapped to new build: BED file."
+        output_name: "Name of final sumstats file with build liftover."
+        position_col: "0-based column of position."
+        chr_col: "0-based column of chromosome."
         docker: "Docker image."
         cpu: "Number of CPUs for the image."
         mem: "Amount of RAM in GB for the image."
