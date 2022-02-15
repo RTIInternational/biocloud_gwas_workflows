@@ -157,6 +157,7 @@ task perform_liftover {
 task  final_sumstats {
 
     File original_sumstats
+    String new_build
     File new_bed
     File unmapped_bed
     String output_name
@@ -181,6 +182,7 @@ task  final_sumstats {
     out_unmapped = "${unmapped_name}"
     position_col = ${position_col}
     chr_col = ${chr_col}
+    new_build = ${new_build}
 
     with gzip.open(original_sumstats, "rt") as sumSTATS, \
         open(new_bed) as newBED, \
