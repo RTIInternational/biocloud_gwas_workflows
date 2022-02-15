@@ -1,11 +1,12 @@
 import "biocloud_gwas_workflows/liftover_genomic_annotations/liftover_utils.wdl" as UTILS
 
-
 workflow genome_liftover {
-    String chainfile =  "http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz"
+
+    String chainfile =  "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz"
+    String new_build # 37 or 38
     File input_sumstats
-    Int chromosome_col  # zero-based column index
-    Int position_col    # zero-based column index
+    Int chromosome_col   # zero-based column index
+    Int position_col     # zero-based column index
     String final_file
 
     String docker = "rtibiocloud/liftover:v423_1471834"  
@@ -32,7 +33,7 @@ workflow genome_liftover {
             docker = docker
     }
 
-    call UTILS.final_sumstats  as final {
+    call UTILS.final_sumstats as final {
         input:
             original_sumstats = input_sumstats,
             new_bed = lift.output_bed,
@@ -40,6 +41,7 @@ workflow genome_liftover {
             output_name = final_file,
             position_col = position_col,
             chr_col = chromosome_col,
+	        new_build = new_build,
             docker = docker
     }
 
