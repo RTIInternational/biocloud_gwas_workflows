@@ -3,5 +3,6 @@
   "genome_liftover.final_file": "final_file.txt",
   "genome_liftover.chainfile": "http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz",
   "genome_liftover.chromosome_col": "1",
-  "genome_liftover.position_col": "2"
+  "genome_liftover.position_col": "2",
+  "genome_liftover.new_build": "38"
 }
