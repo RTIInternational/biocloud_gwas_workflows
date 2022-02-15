@@ -41,7 +41,7 @@ workflow genome_liftover {
             output_name = final_file,
             position_col = position_col,
             chr_col = chromosome_col,
-	        new_build = new_build,
+	    new_build = new_build,
             docker = docker
     }
 
