@@ -297,7 +297,7 @@ task exclude_singletons {
 task merge_final_results {
 
   Array[File] gwas_results
-  String final_table = "final_results_table.txt"
+  String full_results_name = "final_results_table.txt"
 
   String docker = "python:3.8"
   Int cpu = 1
@@ -312,7 +312,7 @@ task merge_final_results {
     import re
 
     results_list = "$results_string"
-    outfile = "${final_table}"
+    outfile = "${full_results_name}"
 
     results_list = results_list.split()
 
@@ -345,12 +345,12 @@ task merge_final_results {
 
     EOF
 
-    gzip ${final_table}
+    gzip ${full_results_name}
 
   >>>
   
   output {
-    File merged_results = "${final_table}.gz"
+    File merged_results = "${full_results_name}.gz"
   }
 
   runtime {
