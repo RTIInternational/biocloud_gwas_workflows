@@ -10,6 +10,7 @@ workflow metal_gwas_meta_analysis_wf {
   Array[Int] chromosomes_to_keep
   String ancestry
   String plot_basename
+  String full_results_name
   String remove_singletons
 
   Array[Int] variant_id_column
