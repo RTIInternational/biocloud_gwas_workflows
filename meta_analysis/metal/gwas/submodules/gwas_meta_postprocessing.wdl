@@ -3,7 +3,6 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_
 
 
 workflow postprocessing {
-  String plot_basename
   String full_results_name
   Float pvalue_threshold = 0.001
   Array[File] metal_results
@@ -45,7 +44,7 @@ workflow postprocessing {
       col_chromosome = "Chromosome",
       col_position = "Position",
       col_p = "P-value",
-      output_basename = plot_basename
+      output_basename = full_results_name
   }
 
   output {
