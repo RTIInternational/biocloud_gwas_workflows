@@ -294,9 +294,10 @@ task exclude_singletons {
 }
 
 # make plot table
-task merge_results {
+task merge_final_results {
 
   Array[File] gwas_results
+  String final_table = "final_results_table.txt"
 
   String docker = "python:3.8"
   Int cpu = 1
@@ -311,7 +312,7 @@ task merge_results {
     import re
 
     results_list = "$results_string"
-    outfile = "combined_sorted_results.txt"
+    outfile = "${final_table}"
 
     results_list = results_list.split()
 
@@ -344,12 +345,12 @@ task merge_results {
 
     EOF
 
-    gzip combined_sorted_results.txt
+    gzip ${final_table}
 
   >>>
   
   output {
-    File merged_results = "combined_sorted_results.txt.gz"
+    File merged_results = "${final_table}.gz"
   }
 
   runtime {
