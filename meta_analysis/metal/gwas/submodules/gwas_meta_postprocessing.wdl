@@ -3,7 +3,8 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_
 
 
 workflow postprocessing {
-  String plot_basename 
+  String plot_basename
+  String full_results_name
   Float pvalue_threshold = 0.001
   Array[File] metal_results
   String remove_singletons
@@ -21,9 +22,10 @@ workflow postprocessing {
 
 
   # merge the chromosome-specific results files into one chromosome-sorted file
-  call UTILS.merge_results as merge {
+  call UTILS.merge_final_results as merge {
     input:
-      gwas_results = singletons.singletons_output
+      gwas_results = singletons.singletons_output,
+      full_results_name = full_results_name
   }
 
 
