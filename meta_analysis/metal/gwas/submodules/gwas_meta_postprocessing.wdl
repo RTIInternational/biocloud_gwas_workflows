@@ -5,7 +5,7 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_
 workflow postprocessing {
   String plot_basename 
   Float pvalue_threshold = 0.001
-  Array[File] metal_results = ["/home/ec2-user/rti-hiv/gwas_meta/hiv_acquisition/0034/biocloud_gwas_workflows/meta_analysis/metal/gwas/cromwell-executions/metal_gwas_meta_analysis_wf/ab6f27c9-4d2a-45fb-82dc-dfcc3939750d/call-metal/shard-0/execution/eur_meta_analysis_chr1_output1.metal", "/home/ec2-user/rti-hiv/gwas_meta/hiv_acquisition/0034/biocloud_gwas_workflows/meta_analysis/metal/gwas/cromwell-executions/metal_gwas_meta_analysis_wf/ab6f27c9-4d2a-45fb-82dc-dfcc3939750d/call-metal/shard-1/execution/eur_meta_analysis_chr2_output1.metal"]
+  Array[File] metal_results
   String remove_singletons
 
   # exclude singletons and capitalize alleles
