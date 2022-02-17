@@ -5,21 +5,21 @@ import "biocloud_gwas_workflows/meta_analysis/metal/gwas/submodules/gwas_meta_po
 
 workflow metal_gwas_meta_analysis_wf {
 
-  Array[File] gwas_results = ["/home/ec2-user/rti-hiv/gwas_meta/hiv_acquisition/0034/data/mclaren_ea_hiv_acquisition_hg39_all_chr_rsq0.30_maf_0.01_rsid_only.tsv.gz", "/home/ec2-user/rti-hiv/gwas_meta/hiv_acquisition/0034/data/uhs1_ea_hiv_acquisition_all_chr_stats_rsq0.30_maf0.01.txt.gz"]
-  Array[String] study_basename = ["mclaren", "uhs1"]
-  Array[Int] chromosomes_to_keep  = [1, 2]
-  String ancestry = "eur"
-  String plot_basename = "jess-test"
-  String remove_singletons = "true"
+  Array[File] gwas_results
+  Array[String] study_basename
+  Array[Int] chromosomes_to_keep
+  String ancestry
+  String plot_basename
+  String remove_singletons
 
-  Array[Int] variant_id_column = [1, 3]
-  Array[Int] chromosome_column = [2, 1]
-  Array[Int] pos_column = [3, 2]
-  Array[Int] effect_size_column = [9, 12]
-  Array[Int] coded_allele_column = [4, 4]
-  Array[Int] noncoded_allele_column = [5, 5]
-  Array[Int] pvalue_column = [11, 16]
-  Array[Int] standard_error_column = [10, 13]
+  Array[Int] variant_id_column
+  Array[Int] chromosome_column
+  Array[Int] pos_column
+  Array[Int] effect_size_column
+  Array[Int] coded_allele_column
+  Array[Int] noncoded_allele_column
+  Array[Int] pvalue_column
+  Array[Int] standard_error_column
 #  Array[Int] maf_column
 #  Array[Int] rsquared_column
 
