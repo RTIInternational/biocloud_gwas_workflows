@@ -9,7 +9,6 @@ workflow metal_gwas_meta_analysis_wf {
   Array[String] study_basename
   Array[Int] chromosomes_to_keep
   String ancestry
-  String plot_basename
   String full_results_name
   String remove_singletons
 
@@ -65,7 +64,7 @@ workflow metal_gwas_meta_analysis_wf {
   call POSTPROCESS.postprocessing as postprocessing {
     input:
       metal_results = metal.metal_results,
-      plot_basename = plot_basename,
+      full_results_name = full_results_name,
       remove_singletons = remove_singletons
 
   }
