@@ -2,6 +2,7 @@
   "metal_gwas_meta_analysis_wf.study_basename": ["uhs1","mclaren"],
   "metal_gwas_meta_analysis_wf.ancestry": "eur",
   "metal_gwas_meta_analysis_wf.plot_basename": "uhs1_mclaren_eur_gwas_meta_analysis",
+  "metal_gwas_meta_analysis_wf.full_results_name": "uhs1_mclaren_eur_gwas_meta_analysis.txt",
   "metal_gwas_meta_analysis_wf.remove_singletons": "false",
   "metal_gwas_meta_analysis_wf.gwas_results": [
 "s3://rti-hiv/gwas/uhs1/results/acquisition/005/eur/merge_chromosomes/uhs1_ea_hiv_acquisition_all_chr_stats_rsq0.30_maf0.01.txt.gz", "s3://rti-hiv/gwas/mclaren/processed/hiv_acquisition/final_stats/hg19/dan_chr_all_assoc_dosage_meta_ngt_metadaner_hg19_beta_sebeta_maf0.01_rsq0.30.txt.gz"
