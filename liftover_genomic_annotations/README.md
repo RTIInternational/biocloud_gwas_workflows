@@ -14,7 +14,7 @@ The inputs JSON file is where the parameters are set.
 <details>
   <summary>genome_liftover.input_sumstats</summary>
   
-  S3 Path to GWAS summary statistics.
+  S3 Path to GWAS summary statistics. MUST BE GZIP.
   * The results must be merged into one input file. If your results are split by chromosome, you will need to merge them before performing a genome-wide liftover. Though, the workflow will still work if you only want to perform the liftover on one set of chromosome results. 
   * Make sure the results in the S3 Standard storage tier and not archived. They must be restored if they are 
   </details>
