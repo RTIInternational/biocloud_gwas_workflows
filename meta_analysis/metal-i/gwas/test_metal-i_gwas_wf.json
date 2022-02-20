@@ -1,0 +1,18 @@
+{
+  "metal_i_gwas_wf.sum_stats_files": [
+    "s3://rti-pulmonary/gwas/ukbiobank/results/fev1/0005/afr/ukb_fev1_vitd_2df_afr_rsq_0.3_sampleMAF_0.01.tsv.gz",
+    "s3://rti-pulmonary/gwas/ukbiobank/results/fev1/0005/eas/ukb_fev1_vitd_2df_eas_rsq_0.3_sampleMAF_0.01.tsv.gz",
+    "s3://rti-pulmonary/gwas/ukbiobank/results/fev1/0005/eur/ukb_fev1_vitd_2df_eur_rsq_0.3_sampleMAF_0.01.tsv.gz",
+    "s3://rti-pulmonary/gwas/ukbiobank/results/fev1/0005/sas/ukb_fev1_vitd_2df_sas_rsq_0.3_sampleMAF_0.01.tsv.gz"
+  ],
+  "metal_i_gwas_wf.effect_col_names": "Beta_G",
+  "metal_i_gwas_wf.std_err_col_names": "SE_Beta_G",
+  "metal_i_gwas_wf.int_effect_col_names": "Beta_G-VITD",
+  "metal_i_gwas_wf.int_std_err_col_names": "SE_Beta_G-VITD",
+  "metal_i_gwas_wf.int_cov_col_names": "Cov_Beta_G_G-VITD",
+  "metal_i_gwas_wf.metal_out_prefix": "ukb_fev1_vitd_2df_afr_eas_eur_sas_rsq_0.3_sampleMAF_0.01",
+  "metal_i_gwas_wf.scheme": "INTERACTION",
+  "metal_i_gwas_wf.analyze": "HETEROGENEITY",
+  "metal_i_gwas_wf.genomic_control": "OFF",
+  "metal_i_gwas_wf.metal_mem_gb": 8
+}
