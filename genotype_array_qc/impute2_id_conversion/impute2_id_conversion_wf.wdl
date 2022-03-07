@@ -254,6 +254,7 @@ workflow impute2_id_conversion_wf{
     String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
     String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
     #String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
+    String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
     
    
     # Make sure chromsomes are provided in numerical sort order and error out if they aren't
@@ -316,7 +317,8 @@ workflow impute2_id_conversion_wf{
                 tsv_input = norm_bim,
                 output_filename = "${output_basename}.chr.${chr}.bim",
                 header = false,
-                filter_string = "--eq 1:${chr}"
+                filter_string = "--eq 1:${chr}",
+                docker = docker_tsv
         }
 
         # Convert IDs to Impute2 format
