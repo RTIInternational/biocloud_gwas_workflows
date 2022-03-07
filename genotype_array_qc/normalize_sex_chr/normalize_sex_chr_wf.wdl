@@ -18,12 +18,15 @@ workflow normalize_sex_chr_wf{
 
     Int plink_cpu
     Int plink_mem_gb
+    
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
 
     # Check if we're expecting a chr23 in bim
     call UTILS.array_contains as expect_sex_chr{
         input:
             input_array = expected_chrs,
-            query = "23"
+            query = "23",
+            docker = docker_ubuntu
 
     }
 
@@ -31,7 +34,9 @@ workflow normalize_sex_chr_wf{
     call UTILS.array_contains as expect_split_sex_chr{
         input:
             input_array = expected_chrs,
-            query = "25"
+            query = "25",
+            docker = docker_ubuntu
+
     }
 
     # Check to see whether current bim sex chr is split into PAR/NONPAR
