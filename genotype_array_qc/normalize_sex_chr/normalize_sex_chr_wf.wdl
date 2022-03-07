@@ -20,6 +20,7 @@ workflow normalize_sex_chr_wf{
     Int plink_mem_gb
     
     String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
 
     # Check if we're expecting a chr23 in bim
     call UTILS.array_contains as expect_sex_chr{
@@ -63,7 +64,8 @@ workflow normalize_sex_chr_wf{
                 build_code = build_code,
                 split_no_fail = no_fail,
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                docker = docker_plink1_9
         }
     }
 
@@ -80,7 +82,8 @@ workflow normalize_sex_chr_wf{
                 merge_x = true,
                 merge_no_fail = no_fail,
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                docker = docker_plink1_9
         }
     }
 
