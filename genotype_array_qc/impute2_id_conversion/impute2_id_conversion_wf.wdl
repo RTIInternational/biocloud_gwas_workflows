@@ -250,19 +250,23 @@ workflow impute2_id_conversion_wf{
 
     Int duplicate_id_cpu = 2
     Int duplicate_id_mem_gb = 6
+    
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
 
     # Make sure chromsomes are provided in numerical sort order and error out if they aren't
     # This is to ensure that the id_legend_files, chrs, and bim file all have same sort order
     # Necessary because we can then operate directly on the bim file without having to make chr-level that need to be merged at the end (costly, slow)
     call chr_sort_check as check_id_legend_chr_sort{
         input:
-            chrs = chrs
+            chrs = chrs,
+            docker = docker_ubuntu
     }
 
     if(check_id_legend_chr_sort.failed){
         call UTILS.raise_error{
             input:
-                msg = "Input chromosomes MUST be provided in numerical sort order!"
+                msg = "Input chromosomes MUST be provided in numerical sort order!",
+                docker = docker_ubuntu
         }
     }
 
