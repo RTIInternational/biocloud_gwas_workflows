@@ -105,7 +105,7 @@ task get_duplicate_variant_ids{
     }
 }
 
-task get_variants_to_remove{
+task get_variants_to_remove {
     File bed_in
     File bim_in
     File fam_in
@@ -253,7 +253,7 @@ workflow impute2_id_conversion_wf{
     
     String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
     String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
-    #String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
+    String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
     String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
     String docker_convert_ids = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/convert_variant_ids:v1_9a23978"
     
@@ -352,7 +352,8 @@ workflow impute2_id_conversion_wf{
                     bim_in = impute2_id_bim.output_file,
                     output_basename = "${output_basename}.chr.${chr}.impute2.mrkdup",
                     cpu = duplicate_id_cpu,
-                    mem_gb = duplicate_id_mem_gb
+                    mem_gb = duplicate_id_mem_gb,
+                    docker = docker_ubuntu
             }
         }
         File chr_bim = select_first([label_duplicate_variants.bim_out, impute2_id_bim.output_file])
@@ -362,7 +363,8 @@ workflow impute2_id_conversion_wf{
     call UTILS.cat as cat_chr_bim{
         input:
             input_files = chr_bim,
-            output_filename = "${output_basename}.impute2.bim"
+            output_filename = "${output_basename}.impute2.bim",
+            docker = docker_ubuntu
     }
 
     # Remove duplicates if desired
@@ -372,7 +374,9 @@ workflow impute2_id_conversion_wf{
         call get_duplicate_variant_ids{
             input:
                 bim_in = cat_chr_bim.output_file,
-                output_filename = "${output_basename}.dup_ids.txt"
+                output_filename = "${output_basename}.dup_ids.txt",
+                docker = docker_ubuntu
+                
         }
 
         # If duplicates, select variant with highest call rate from each group
@@ -386,7 +390,8 @@ workflow impute2_id_conversion_wf{
                     duplicate_snp_ids = get_duplicate_variant_ids.duplicate_ids,
                     output_basename = output_basename,
                     cpu = plink_cpu,
-                    mem_gb = plink_mem_gb
+                    mem_gb = plink_mem_gb,
+                    docker = docker_plink1_9
             }
 
             # Remove duplicates from dataset
@@ -398,14 +403,16 @@ workflow impute2_id_conversion_wf{
                     exclude = get_variants_to_remove.dups_to_remove,
                     output_basename = "${output_basename}.impute2_id.unique",
                     cpu = plink_cpu,
-                    mem_gb = plink_mem_gb
+                    mem_gb = plink_mem_gb,
+                    docker = docker_plink2_0
             }
 
             # Remove numbers from duplicate variant IDs
             call fix_ids{
                 input:
                     bim_in = remove_dups.bim_out,
-                    output_basename = "${output_basename}.impute2_id.unique.fixed"
+                    output_basename = "${output_basename}.impute2_id.unique.fixed",
+                    docker = docker_ubuntu
             }
         }
     }
