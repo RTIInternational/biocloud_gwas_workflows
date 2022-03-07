@@ -252,7 +252,10 @@ workflow impute2_id_conversion_wf{
     Int duplicate_id_mem_gb = 6
     
     String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
-
+    String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
+    String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
+    
+   
     # Make sure chromsomes are provided in numerical sort order and error out if they aren't
     # This is to ensure that the id_legend_files, chrs, and bim file all have same sort order
     # Necessary because we can then operate directly on the bim file without having to make chr-level that need to be merged at the end (costly, slow)
