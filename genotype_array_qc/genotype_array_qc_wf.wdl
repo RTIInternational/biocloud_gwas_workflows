@@ -68,6 +68,7 @@ workflow genotype_array_qc_wf{
     Int min_ancestry_samples_to_postprocess = 50
 
     # Sex-check filter parameters
+    Boolean perform_sexcheck = true # false if you don't have chrX
     Boolean filter_discrepant_sex = true
     Float max_female_f = 0.2
     Float min_male_f = 0.8
@@ -118,7 +119,7 @@ workflow genotype_array_qc_wf{
     Int id_convert_cpu = 1
     Int id_convert_mem_gb = 3
 
-    # Speicific tasks where resource limits may need to be adjusted for larger/smaller inputs
+    # Specific tasks where resource limits may need to be adjusted for larger/smaller inputs
     Int structure_cpu = 1
     Int structure_mem_gb = 4
     Int sex_check_cpu = 4
@@ -128,12 +129,20 @@ workflow genotype_array_qc_wf{
     Int pca_cpu = 4
     Int pca_mem_gb = 8
 
+    # set default docker images
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
+    String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
+    String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
+    String docker_convert_ids = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/convert_variant_ids:v1_9a23978"
+
     # Check some common errors to save time because otherwise it would take like 2 hours to catch these
     # Quit if ancestry definitions and ancestries aren't same length
     if(length(ancestries_to_include) != length(ancestry_definitions)){
         call UTILS.raise_error as ancestry_definition_fail{
             input:
-                msg = "Workflow input error: ancestries_to_incude must be same length as ancestry_definitions!"
+                msg = "Workflow input error: ancestries_to_incude must be same length as ancestry_definitions!",
+                docker = docker_ubuntu
         }
     }
 
@@ -141,7 +150,8 @@ workflow genotype_array_qc_wf{
     if(ancestry_pop_type != "SUPERPOP" && ancestry_pop_type != "POP"){
         call UTILS.raise_error as ancestry_pop_type_fail{
             input:
-                msg = "Workflow input error: ancestry_type MUST be either POP or SUPERPOP!"
+                msg = "Workflow input error: ancestry_type MUST be either POP or SUPERPOP!",
+                docker = docker_ubuntu
         }
     }
 
@@ -149,26 +159,33 @@ workflow genotype_array_qc_wf{
     call PLINK.remove_fam_phenotype{
         input:
             fam_in = fam,
-            output_basename = "${output_basename}.no_pheno"
+            output_basename = "${output_basename}.no_pheno",
+            docker = docker_ubuntu
+
     }
 
     # Fix founder information in pedigree to make sure mother and father ids actually exist in dataset
     call PLINK.make_founders{
         input:
             fam_in = remove_fam_phenotype.fam_out,
-            output_basename = "${output_basename}.no_pheno.make_founders"
+            output_basename = "${output_basename}.no_pheno.make_founders",
+            docker_plink1_9
+
+
     }
 
     # Count initial number of samples and sites
     call UTILS.wc as init_snp_count{
         input:
-            input_file = bim
+            input_file = bim,
+            docker = docker_ubuntu
     }
 
     # Count initial number of samples and sites
     call UTILS.wc as init_sample_count{
         input:
-            input_file = fam
+            input_file = fam,
+            docker = docker_ubuntu
     }
 
     # Convert variant IDs to impute2 format and remove duplicate variants
@@ -189,13 +206,19 @@ workflow genotype_array_qc_wf{
             id_convert_cpu = id_convert_cpu,
             id_convert_mem_gb = id_convert_mem_gb,
             plink_cpu = plink_filter_cpu,
-            plink_mem_gb = plink_filter_mem_gb
+            plink_mem_gb = plink_filter_mem_gb,
+            docker_ubuntu = docker_ubuntu,
+            docker_plink1_9 = docker_plink1_9,
+            docker_plink2_0 = docker_plink2_0,
+            docker_tsv = docker_tsv,
+            docker_convert_ids = docker_convert_ids
     }
 
     # Count sites after removing dups
     call UTILS.wc as impute2_snp_count{
         input:
-            input_file = convert_impute2_ids.bim_out
+            input_file = convert_impute2_ids.bim_out,
+            docker = docker_ubuntu
     }
 
     # Remove failed subjects with >99% missing data so they don't throw off anything downstream
@@ -207,13 +230,15 @@ workflow genotype_array_qc_wf{
             output_basename = "${output_basename}.filter_failed_samples",
             mind = 0.99,
             cpu = plink_filter_cpu,
-            mem_gb = plink_filter_mem_gb
+            mem_gb = plink_filter_mem_gb,
+            docker = docker_plink2_0
     }
 
     # Count samples after removing failed samples
     call UTILS.wc as failed_sample_count{
         input:
-            input_file = filter_failed_samples.fam_out
+            input_file = filter_failed_samples.fam_out,
+            docker = docker_ubuntu
     }
 
     # STRUCTURE WF to partition by ancestry
@@ -454,43 +479,49 @@ workflow genotype_array_qc_wf{
         }
         Int hwe_failed_snp_count = subset_ancestry_snp_count.num_lines - hwe_snp_count.num_lines
 
-        # Sex check to see if sex matches phenotype file
-        call SEX.sex_check_wf{
-            input:
-                bed_in = qc_bed,
-                bim_in = qc_bim,
-                fam_in = qc_fam,
-                phenotype_file = sex_check_phenotype_file,
-                female_max_f = max_female_f,
-                male_min_f = min_male_f,
-                output_basename = "${output_basename}.${ancestry}",
-                header_rows = phenotype_header_rows,
-                fid_col = phenotype_fid_col,
-                iid_col = phenotype_iid_col,
-                sex_col = phenotype_sex_col,
-                delimiter = phenotype_delimiter,
-                ld_exclude_regions = ld_exclude_regions,
-                ld_type = ld_type,
-                window_size = ld_window_size,
-                step_size = ld_step_size,
-                r2_threshold = ld_r2_threshold,
-                min_ld_maf = ld_maf_cutoff,
-                build_code = build_code,
-                no_fail = true,
-                ld_cpu = plink_chr_cpu,
-                ld_mem_gb = plink_chr_mem_gb,
-                sex_check_cpu = sex_check_cpu,
-                sex_check_mem_gb = sex_check_mem_gb,
-                plink_cpu = plink_filter_cpu,
-                plink_mem_gb = plink_filter_mem_gb
+        # Optional sex check to see if sex matches phenotype file
+        # If your genotype data doesn't have chrX don't run because it will fail.
+        if (perform_sexcheck) {
+            call SEX.sex_check_wf{
+                input:
+                    bed_in = qc_bed,
+                    bim_in = qc_bim,
+                    fam_in = qc_fam,
+                    phenotype_file = sex_check_phenotype_file,
+                    female_max_f = max_female_f,
+                    male_min_f = min_male_f,
+                    output_basename = "${output_basename}.${ancestry}",
+                    header_rows = phenotype_header_rows,
+                    fid_col = phenotype_fid_col,
+                    iid_col = phenotype_iid_col,
+                    sex_col = phenotype_sex_col,
+                    delimiter = phenotype_delimiter,
+                    ld_exclude_regions = ld_exclude_regions,
+                    ld_type = ld_type,
+                    window_size = ld_window_size,
+                    step_size = ld_step_size,
+                    r2_threshold = ld_r2_threshold,
+                    min_ld_maf = ld_maf_cutoff,
+                    build_code = build_code,
+                    no_fail = true,
+                    ld_cpu = plink_chr_cpu,
+                    ld_mem_gb = plink_chr_mem_gb,
+                    sex_check_cpu = sex_check_cpu,
+                    sex_check_mem_gb = sex_check_mem_gb,
+                    plink_cpu = plink_filter_cpu,
+                    plink_mem_gb = plink_filter_mem_gb
+            }
+            # Count number of sex-discrepant samples
+            call UTILS.wc as count_sex_check_failed_samples{
+                input:
+                    input_file = sex_check_wf.samples_to_remove
+            }
+            Int sex_check_failed = count_sex_check_failed_samples.num_lines
         }
 
-        # Count number of sex-discrepant samples
-        call UTILS.wc as count_sex_check_failed_samples{
-            input:
-                input_file = sex_check_wf.samples_to_remove
-        }
-        Int sex_check_failed_samples = count_sex_check_failed_samples.num_lines
+        Int sex_check_failed_samples = select_first([sex_check_failed, 0])
+
+
 
         File hwe_qc_bed = hwe_filter_wf.bed_out
         File hwe_qc_bim = hwe_filter_wf.bim_out
@@ -519,7 +550,7 @@ workflow genotype_array_qc_wf{
 
         # Set sex file if doing only sex removal
         if(filter_discrepant_sex && !filter_related_samples){
-            File sex_remove = sex_check_wf.samples_to_remove
+            File? sex_remove = sex_check_wf.samples_to_remove
             String sex_suffix = "sex_check"
         }
 
@@ -654,7 +685,7 @@ workflow genotype_array_qc_wf{
         Array[File] kinship_id_map =  relatedness_wf.kinship_id_map
 
         # Sex discrepancy outputs for each ancestry
-        Array[File] sex_check_report = sex_check_wf.plink_sex_check_output
-        Array[File] sex_check_failed_samples = sex_check_wf.samples_to_remove
+        Array[File?] sex_check_report = sex_check_wf.plink_sex_check_output
+        Array[File?] sex_check_failed_samples = sex_check_wf.samples_to_remove
     }
 }
