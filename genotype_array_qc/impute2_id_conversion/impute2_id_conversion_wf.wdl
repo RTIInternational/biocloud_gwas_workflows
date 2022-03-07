@@ -253,7 +253,7 @@ workflow impute2_id_conversion_wf{
     
     String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
     String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
-    String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
+    #String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
     
    
     # Make sure chromsomes are provided in numerical sort order and error out if they aren't
@@ -284,7 +284,8 @@ workflow impute2_id_conversion_wf{
             no_fail = no_fail,
             output_basename = output_basename,
             plink_cpu = plink_cpu,
-            plink_mem_gb = plink_mem_gb
+            plink_mem_gb = plink_mem_gb,
+            docker_plink1_9 = docker_plink1_9
     }
 
     # Need to subset to make sure only chrs are included in bed file so we can work with the bim by itself
@@ -297,7 +298,8 @@ workflow impute2_id_conversion_wf{
             chrs = chrs,
             output_basename = "${output_basename}.extract_chrs",
             cpu = plink_cpu,
-            mem_gb = plink_mem_gb
+            mem_gb = plink_mem_gb,
+            docker = docker_plink1_9
     }
 
     File norm_bed = extract_chrs.bed_out
