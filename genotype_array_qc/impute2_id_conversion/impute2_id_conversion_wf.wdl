@@ -255,6 +255,7 @@ workflow impute2_id_conversion_wf{
     String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
     #String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
     String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
+    String docker_convert_ids = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/convert_variant_ids:v1_9a23978"
     
    
     # Make sure chromsomes are provided in numerical sort order and error out if they aren't
@@ -340,7 +341,8 @@ workflow impute2_id_conversion_wf{
                 output_filename = "${output_basename}.chr.${chr}.impute2",
                 cpu = id_convert_cpu,
                 mem_gb = id_convert_mem_gb,
-                rescue_rsids = rescue_rsids
+                rescue_rsids = rescue_rsids,
+                docker = docker_convert_ids
         }
 
         # Mark variants with duplicate IDS if required
