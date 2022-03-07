@@ -43,7 +43,9 @@ workflow normalize_sex_chr_wf{
     call PLINK.contains_chr as bim_split_sex_chr{
         input:
             bim_in = bim_in,
-            chr = "25"
+            chr = "25",
+            docker = docker_ubuntu
+
     }
 
     # Split sex chr if it needs splitting
