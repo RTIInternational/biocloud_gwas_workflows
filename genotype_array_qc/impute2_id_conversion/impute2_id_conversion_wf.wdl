@@ -7,6 +7,7 @@ import "biocloud_gwas_workflows/genotype_array_qc/normalize_sex_chr/normalize_se
 task chr_sort_check{
     # Return whether input chrs are in numerical sort order
     Array[String] chrs
+    String docker = "ubuntu:18.04"
 
     command<<<
         sort -n ${write_lines(chrs)} > sorted.txt
@@ -19,7 +20,7 @@ task chr_sort_check{
     >>>
 
     runtime {
-        docker: "ubuntu:18.04"
+        docker: docker
         cpu: 1
         memory: "100 MB"
     }
