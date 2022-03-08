@@ -21,10 +21,14 @@ workflow ld_prune_wf{
     Int cpu
     Int mem_gb
 
+    String docker_ubuntu
+    String docker_plink2_0
+
     # Count number of samples (if <50 set --bad-ld option or plink2 will error out
     call UTILS.wc as get_num_samples{
         input:
-            input_file = fam_in
+            input_file = fam_in,
+            docker = docker_ubuntu
     }
 
     # Get LD pruning set
@@ -46,7 +50,8 @@ workflow ld_prune_wf{
             maf = maf,
             chr = chr,
             bad_ld = (get_num_samples.num_lines <= 50),
-            exclude_regions = exclude_regions
+            exclude_regions = exclude_regions,
+            docker = docker_plink2_0
     }
 
     # Filter to include only the LD-pruned markers returned from previous step
@@ -57,7 +62,8 @@ workflow ld_prune_wf{
             fam_in = fam_in,
             output_basename = output_basename,
             chr = chr,
-            extract = prune_ld_markers.include_markers
+            extract = prune_ld_markers.include_markers,
+            docker = docker_plink2_0
     }
 
     output{
