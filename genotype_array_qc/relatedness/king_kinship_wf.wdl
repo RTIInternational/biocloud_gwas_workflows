@@ -22,6 +22,8 @@ workflow king_kinship_wf{
 
     Int king_split_cpu = 2
     Int king_split_mem_gb = 4
+    
+    String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
 
     # Split plink sample file into however many chunks
     call SPLIT.split_file as split_fam{
@@ -29,7 +31,8 @@ workflow king_kinship_wf{
             input_file = fam_in,
             output_basename = basename(fam_in, ".fam"),
             output_extension = ".fam",
-            num_splits = num_splits
+            num_splits = num_splits,
+            docker = docker_pigz
     }
 
     # Create split plink files
