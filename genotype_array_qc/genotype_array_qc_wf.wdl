@@ -503,13 +503,17 @@ workflow genotype_array_qc_wf{
                 plink_filter_cpu = plink_filter_cpu,
                 plink_filter_mem_gb = plink_filter_mem_gb,
                 plink_chr_cpu = plink_chr_cpu,
-                plink_chr_mem_gb = plink_chr_mem_gb
+                plink_chr_mem_gb = plink_chr_mem_gb,
+                docker_ubuntu = docker_ubuntu,
+                docker_plink1_9 = docker_plink1_9,
+                docker_plink2_0 = docker_plink2_0
         }
 
         # Count number of snps not in hwe
         call UTILS.wc as hwe_snp_count{
             input:
-                input_file = hwe_filter_wf.bim_out
+                input_file = hwe_filter_wf.bim_out,
+                docker = docker_ubuntu
         }
         Int hwe_failed_snp_count = subset_ancestry_snp_count.num_lines - hwe_snp_count.num_lines
 
