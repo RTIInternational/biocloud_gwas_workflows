@@ -547,12 +547,16 @@ workflow genotype_array_qc_wf{
                     sex_check_cpu = sex_check_cpu,
                     sex_check_mem_gb = sex_check_mem_gb,
                     plink_cpu = plink_filter_cpu,
-                    plink_mem_gb = plink_filter_mem_gb
+                    plink_mem_gb = plink_filter_mem_gb,
+                    docker_ubuntu = docker_ubuntu,
+                    docker_plink1_9 = docker_plink1_9,
+                    docker_plink2_0 = docker_plink2_0
             }
             # Count number of sex-discrepant samples
             call UTILS.wc as count_sex_check_failed_samples{
                 input:
-                    input_file = sex_check_wf.samples_to_remove
+                    input_file = sex_check_wf.samples_to_remove,
+                    docker = docker_ubuntu
             }
             Int sex_check_failed = count_sex_check_failed_samples.num_lines
         }
@@ -572,14 +576,16 @@ workflow genotype_array_qc_wf{
             call UTILS.get_file_union{
                 input:
                     input_files = [sex_check_wf.samples_to_remove, relatedness_wf.related_samples],
-                    output_filename = "${output_basename}.sex.kin.remove"
+                    output_filename = "${output_basename}.sex.kin.remove",
+                    docker = docker_ubuntu
             }
             String combined_suffix = "sex_check.unrelated"
 
             # Count length of samples in union
             call UTILS.wc as get_sex_kin_filter_count{
                 input:
-                    input_file = get_file_union.output_file
+                    input_file = get_file_union.output_file,
+                    docker = docker_ubuntu
             }
 
             # Number of related samples that also failed sex check
@@ -617,7 +623,8 @@ workflow genotype_array_qc_wf{
                         remove_samples = final_filter,
                         output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss.sample_miss.het.${final_suffix}",
                         cpu = plink_filter_cpu,
-                        mem_gb = plink_filter_mem_gb
+                        mem_gb = plink_filter_mem_gb,
+                        docker = docker_plink2_0
                 }
             }
         }
@@ -643,19 +650,22 @@ workflow genotype_array_qc_wf{
                 merge_x = true,
                 merge_no_fail = true,
                 cpu = plink_filter_cpu,
-                mem_gb = plink_filter_mem_gb
+                mem_gb = plink_filter_mem_gb,
+                docker = docker_plink2_0
         }
 
         # Final snp count
         call UTILS.wc as final_snp_count{
             input:
-                input_file = split_final_bim
+                input_file = split_final_bim,
+                docker = docker_ubuntu
         }
 
         # Final sample count
         call UTILS.wc as final_sample_count{
             input:
-                input_file = split_final_fam
+                input_file = split_final_fam,
+                docker = docker_ubuntu
         }
 
         # Check that number of samples removed makes sense
