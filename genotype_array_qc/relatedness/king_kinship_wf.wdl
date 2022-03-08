@@ -27,6 +27,8 @@ workflow king_kinship_wf{
     String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
     String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
     String docker_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/king:v2.24_9b4c1b9"
+    String docker_process_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/process_king_kinship:v1_a9134f7"
+    String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
 
     # Split plink sample file into however many chunks
     call SPLIT.split_file as split_fam{
@@ -117,14 +119,16 @@ workflow king_kinship_wf{
         call COLLECT.collect_large_file_list_wf as collect_kinships{
             input:
                 input_files = flatten_string_array.flat_array,
-                output_dir_name = "${output_basename}_kinships"
+                output_dir_name = "${output_basename}_kinships",
+                docker = docker_ubuntu
         }
 
         # Concat all kinship files (preserving header) into single kinship file
         call TSV.tsv_append as cat_kinships{
             input:
                 tsv_inputs_tarball = collect_kinships.output_dir,
-                output_filename = "${output_basename}.merged.kinship.kin0"
+                output_filename = "${output_basename}.merged.kinship.kin0",
+                docker = docker_tsv
         }
     }
 
@@ -134,7 +138,9 @@ workflow king_kinship_wf{
         input:
             kinship_in = king_kinship,
             output_basename = "${output_basename}.pruned",
-            mem_gb = ceil(size(king_kinship, "GB")) + 1
+            mem_gb = ceil(size(king_kinship, "GB")) + 1,
+            docker = docker_process_king
+            
     }
 
     output{
