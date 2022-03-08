@@ -177,9 +177,7 @@ workflow genotype_array_qc_wf{
         input:
             fam_in = remove_fam_phenotype.fam_out,
             output_basename = "${output_basename}.no_pheno.make_founders",
-            docker_plink1_9
-
-
+            docker =  docker_plink1_9
     }
 
     # Count initial number of samples and sites
