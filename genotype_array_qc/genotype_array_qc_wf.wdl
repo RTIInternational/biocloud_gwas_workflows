@@ -135,6 +135,10 @@ workflow genotype_array_qc_wf{
     String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
     String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
     String docker_convert_ids = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/convert_variant_ids:v1_9a23978"
+    String docker_structure = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/structure:v2.3.4_f2d7e82"
+    String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
+    String docker_ped2structure = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/ped2structure:v1.0-c3278c6"
+    String docker_structurepp = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/structure_postprocessing:v1_05e9879"
 
     # Check some common errors to save time because otherwise it would take like 2 hours to catch these
     # Quit if ancestry definitions and ancestries aren't same length
@@ -276,7 +280,14 @@ workflow genotype_array_qc_wf{
             structure_cpu = structure_cpu,
             structure_mem_gb = structure_mem_gb,
             plink_cpu = plink_filter_cpu,
-            plink_mem_gb = plink_filter_mem_gb
+            plink_mem_gb = plink_filter_mem_gb,
+            docker_ubuntu = docker_ubuntu,
+            docker_plink1_9 = docker_plink1_9,
+            docker_plink2_0 = docker_plink2_0,
+            docker_structure = docker_structure,
+            docker_pigz = docker_pigz,
+            docker_ped2structure = docker_ped2structure,
+            docker_structurepp = docker_structurepp
     }
 
     # Filter out any ancestries with less than a minimum cutoff of samples
