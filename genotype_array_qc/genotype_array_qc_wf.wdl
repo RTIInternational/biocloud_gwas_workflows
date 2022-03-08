@@ -130,15 +130,19 @@ workflow genotype_array_qc_wf{
     Int pca_mem_gb = 8
 
     # set default docker images
-    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String docker_convert_ids = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/convert_variant_ids:v1_9a23978"
+    String docker_flashpca = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/flashpca:v2.0_462a765"
+    String docker_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/king:v2.24_9b4c1b9"
+    String docker_ped2structure = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/ped2structure:v1.0-c3278c6"
+    String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
     String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
     String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
-    String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
-    String docker_convert_ids = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/convert_variant_ids:v1_9a23978"
+    String docker_process_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/process_king_kinship:v1_a9134f7"
     String docker_structure = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/structure:v2.3.4_f2d7e82"
-    String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
-    String docker_ped2structure = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/ped2structure:v1.0-c3278c6"
     String docker_structurepp = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/structure_postprocessing:v1_05e9879"
+    String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+
 
     # Check some common errors to save time because otherwise it would take like 2 hours to catch these
     # Quit if ancestry definitions and ancestries aren't same length
@@ -295,7 +299,8 @@ workflow genotype_array_qc_wf{
         # Count number of samples in each ancestry
         call UTILS.wc as count_structure_samples{
             input:
-                input_file = structure_wf.samples_by_ancestry[ancestry_index]
+                input_file = structure_wf.samples_by_ancestry[ancestry_index],
+                docker = docker_ubuntu
         }
 
         # Only include ancestries exceeding minimum number of samples
@@ -327,13 +332,15 @@ workflow genotype_array_qc_wf{
                 keep_samples = ancestry_samples,
                 geno = max_missing_site_rate,
                 cpu = plink_filter_cpu,
-                mem_gb = plink_filter_mem_gb
+                mem_gb = plink_filter_mem_gb,
+                docker = docker_plink2_0
         }
 
         # Count number of SNPs that didn't pass call rate filter
         call UTILS.wc as subset_ancestry_snp_count{
             input:
-                input_file = subset_ancestry.bim_out
+                input_file = subset_ancestry.bim_out,
+                docker = docker_ubuntu
         }
         Int low_call_snp_count = impute2_snp_count.num_lines - subset_ancestry_snp_count.num_lines
 
@@ -346,7 +353,8 @@ workflow genotype_array_qc_wf{
                 set_hh_missing = true,
                 output_basename = "${output_basename}.${ancestry}.snp_miss.het_hap_auto",
                 cpu = plink_filter_cpu,
-                mem_gb = plink_filter_mem_gb
+                mem_gb = plink_filter_mem_gb,
+                docker = docker_plink2_0
         }
 
         # Get samples to filter based on call rate (autosomes)
@@ -359,13 +367,15 @@ workflow genotype_array_qc_wf{
                 mind = max_sample_missing_rate,
                 output_basename = "${output_basename}.${ancestry}.snp_miss.het_hap_miss",
                 cpu = plink_filter_cpu,
-                mem_gb = plink_filter_mem_gb
+                mem_gb = plink_filter_mem_gb,
+                docker = docker_plink2_0
         }
 
         # Count samples removed due to low call rates
         call UTILS.wc as count_sample_call_filter{
             input:
-                input_file = get_low_called_samples.fam_out
+                input_file = get_low_called_samples.fam_out,
+                docker = docker_ubuntu
         }
         Int low_call_sample_count = init_ancestry_sample_count - count_sample_call_filter.num_lines
 
@@ -378,7 +388,8 @@ workflow genotype_array_qc_wf{
                 keep_samples = get_low_called_samples.fam_out,
                 output_basename = "${output_basename}.${ancestry}.snp_miss.het_hap_miss.sample_miss",
                 cpu = plink_filter_cpu,
-                mem_gb = plink_filter_mem_gb
+                mem_gb = plink_filter_mem_gb,
+                docker = docker_plink2_0
         }
 
         # Get list of samples with excess homozygosity
@@ -391,13 +402,15 @@ workflow genotype_array_qc_wf{
                 min_he = min_sample_he,
                 max_he = max_sample_he,
                 cpu = plink_filter_cpu,
-                mem_gb = plink_filter_mem_gb
+                mem_gb = plink_filter_mem_gb,
+                docker = docker_plink1_9
         }
 
         # Count number of samples removed due to excess homo
         call UTILS.wc as excess_homo_count{
             input:
-                input_file = get_excess_homo_samples.excess_homos
+                input_file = get_excess_homo_samples.excess_homos,
+                docker = docker_ubuntu
         }
         Int excess_homo_sample_count = excess_homo_count.num_lines
 
@@ -411,7 +424,8 @@ workflow genotype_array_qc_wf{
                     remove_samples = get_excess_homo_samples.excess_homos,
                     output_basename = "${output_basename}.${ancestry}.snp_miss.hwe.het_hap_miss.sample_miss.het",
                     cpu = plink_filter_cpu,
-                    mem_gb = plink_filter_mem_gb
+                    mem_gb = plink_filter_mem_gb,
+                    docker = docker_plink2_0
             }
         }
 
@@ -452,12 +466,21 @@ workflow genotype_array_qc_wf{
                 ld_mem_gb = plink_chr_mem_gb,
                 merge_bed_cpu = merge_bed_cpu,
                 merge_bed_mem_gb = merge_bed_mem_gb,
+                docker_plink1_9 = docker_plink1_9,
+                docker_plink2_0 = docker_plink2_0,
+                docker_king = docker_king,
+                docker_process_king = docker_process_king,
+                docker_pigz = docker_pigz,
+                docker_tsv = docker_tsv,
+                docker_ubuntu = docker_ubuntu,
+                docker_flashpca = docker_flashpca
         }
 
         # Count number of related samples that need to be removed
         call UTILS.wc as count_related_samples{
             input:
-                input_file = relatedness_wf.related_samples
+                input_file = relatedness_wf.related_samples,
+                docker = docker_ubuntu
         }
         Int related_sample_removal_candidate_count = count_related_samples.num_lines
 
