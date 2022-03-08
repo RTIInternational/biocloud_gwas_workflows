@@ -30,6 +30,10 @@ workflow hwe_filter_wf{
     # Default to merging sex chr (23 expected by norm_sex_wf)
     Array[String] expected_chrs = select_first([chrs, ["23"]])
 
+    String docker_ubuntu
+    String docker_plink1_9
+    String docker_plink2_0
+
     # Split PAR/NONPAR if not already split
     call NORM.normalize_sex_chr_wf{
         input:
@@ -41,7 +45,9 @@ workflow hwe_filter_wf{
             build_code = "dummy",
             no_fail = true,
             plink_cpu = plink_filter_cpu,
-            plink_mem_gb = plink_filter_mem_gb
+            plink_mem_gb = plink_filter_mem_gb,
+            docker_ubuntu = docker_ubuntu,
+            docker_plink1_9 = docker_plink1_9
     }
 
     File norm_bed = normalize_sex_chr_wf.bed_out
@@ -52,7 +58,8 @@ workflow hwe_filter_wf{
     if(!defined(chrs)){
         call PLINK.get_bim_chrs{
             input:
-                bim_in = norm_bim
+                bim_in = norm_bim,
+                docker = docker_ubuntu
         }
     }
 
@@ -74,7 +81,8 @@ workflow hwe_filter_wf{
                 remove_samples = related_samples,
                 output_basename = "${output_basename}.chr.${chr}",
                 cpu = plink_chr_cpu,
-                mem_gb = plink_chr_mem_gb
+                mem_gb = plink_chr_mem_gb,
+                docker = docker_plink2_0
         }
     }
 
@@ -82,7 +90,8 @@ workflow hwe_filter_wf{
     call UTILS.cat as cat_remove{
         input:
             input_files = hwe.remove,
-            output_filename = "${output_basename}.hwe.remove"
+            output_filename = "${output_basename}.hwe.remove",
+            docker = docker_ubuntu
     }
 
     # Remove failed HWE SNPs from full dataset
@@ -95,7 +104,8 @@ workflow hwe_filter_wf{
             chrs = scatter_chrs,
             output_basename = "${output_basename}.hwe",
             cpu = plink_filter_cpu,
-            mem_gb = plink_filter_mem_gb
+            mem_gb = plink_filter_mem_gb,
+            docker = docker_plink2_0
     }
 
     output{
