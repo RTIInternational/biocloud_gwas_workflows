@@ -23,7 +23,9 @@ workflow king_kinship_wf{
     Int king_split_cpu = 2
     Int king_split_mem_gb = 4
     
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
     String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
+    String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
 
     # Split plink sample file into however many chunks
     call SPLIT.split_file as split_fam{
@@ -43,7 +45,8 @@ workflow king_kinship_wf{
             input:
                 input_file = split_fam.output_files[split_index],
                 output_filename = "${output_basename}.split.${split_index}.keep",
-                args = "-f 1,2"
+                args = "-f 1,2",
+                docker = docker_ubuntu
         }
 
         # Subset plink dataset using keep file
@@ -55,7 +58,8 @@ workflow king_kinship_wf{
                 keep_samples = cut.output_file,
                 output_basename = "${output_basename}.split.${split_index}",
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                docker = docker_plink2_0
         }
 
         # Do kinship within each subset
