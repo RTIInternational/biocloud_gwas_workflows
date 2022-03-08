@@ -26,6 +26,7 @@ workflow king_kinship_wf{
     String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
     String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
     String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
+    String docker_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/king:v2.24_9b4c1b9"
 
     # Split plink sample file into however many chunks
     call SPLIT.split_file as split_fam{
@@ -71,7 +72,8 @@ workflow king_kinship_wf{
                 output_basename = "${output_basename}.split.${split_index}",
                 degree = degree,
                 cpu = king_split_cpu,
-                mem_gb = king_split_mem_gb
+                mem_gb = king_split_mem_gb,
+                docker = docker_king
         }
     }
 
@@ -98,7 +100,8 @@ workflow king_kinship_wf{
                         degree = degree,
                         output_basename = "${output_basename}.splitcombo.${split_1}.${split_2}",
                         cpu = king_split_cpu,
-                        mem_gb = king_split_mem_gb
+                        mem_gb = king_split_mem_gb,
+                        docker = docker_king
                 }
             }
         }
@@ -106,7 +109,8 @@ workflow king_kinship_wf{
         # Flatten to get all files in a 1-D array
         call UTILS.flatten_string_array{
             input:
-                array=[select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output]
+                array=[select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output],
+                docker = docker_ubuntu
         }
 
         # Zip into single tarball for tsv-concat
