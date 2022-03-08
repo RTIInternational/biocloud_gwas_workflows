@@ -14,7 +14,7 @@ task format_phenotype_file{
     Int tail_n = header_rows + 1
 
     # Runtime environment
-    String docker = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String docker 
     Int cpu = 1
     Int mem_gb = 1
 
@@ -88,6 +88,10 @@ workflow sex_check_wf{
     Int sex_check_cpu = 8
     Int sex_check_mem_gb = 16
 
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String docker_plink1_9
+    String docker_plink2_0
+
     # Reformat phenotype file
     call format_phenotype_file{
         input:
@@ -97,7 +101,8 @@ workflow sex_check_wf{
             fid_col = fid_col,
             iid_col = iid_col,
             sex_col = sex_col,
-            delimiter = delimiter
+            delimiter = delimiter,
+            docker = docker_ubuntu
     }
 
     # Make sure PAR/NONPAR regions are split
@@ -111,7 +116,9 @@ workflow sex_check_wf{
             no_fail = no_fail,
             output_basename = output_basename,
             plink_cpu = plink_cpu,
-            plink_mem_gb = plink_mem_gb
+            plink_mem_gb = plink_mem_gb,
+            docker_ubuntu = docker_ubuntu,
+            docker_plink1_9 = docker_plink1_9
     }
 
     # Get LD pruning set
@@ -131,7 +138,9 @@ workflow sex_check_wf{
             cpu = ld_cpu,
             mem_gb = ld_mem_gb,
             maf = min_ld_maf,
-            exclude_regions = ld_exclude_regions
+            exclude_regions = ld_exclude_regions,
+            docker_ubuntu = docker_ubuntu,
+            docker_plink2_0 = docker_plink2_0
     }
 
     # Do Sex Check
@@ -145,7 +154,8 @@ workflow sex_check_wf{
             output_basename = "${output_basename}.sexcheck",
             update_sex = format_phenotype_file.phenotype_out,
             cpu = sex_check_cpu,
-            mem_gb = sex_check_mem_gb
+            mem_gb = sex_check_mem_gb,
+            docker = docker_plink1_9
     }
 
     # Output sex check output and list of samples with sex mismatches between phenotype file and sex check
