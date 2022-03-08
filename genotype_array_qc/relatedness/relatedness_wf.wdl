@@ -99,11 +99,21 @@ workflow relatedness_wf{
     Float ancestral_pca_loading_step_size = 0.001
     Float max_ancestral_pca_loading_cutoff = 0.01
 
+    String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
+    String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
+    String docker_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/king:v2.24_9b4c1b9"
+    String docker_process_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/process_king_kinship:v1_a9134f7"
+    String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
+    String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String docker_flashpca = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/flashpca:v2.0_462a765"
+
     # Remove pedigree info from fam file
     call PLINK.remove_fam_pedigree{
         input:
             fam_in = fam_in,
-            output_basename = "${output_basename}.noped"
+            output_basename = "${output_basename}.noped",
+            docker = docker_ubuntu
     }
 
     # Do HWE/Call Rate/Filtering
@@ -117,7 +127,8 @@ workflow relatedness_wf{
             hwe_pvalue = hwe_pvalue,
             hwe_mode = hwe_mode,
             cpu = qc_cpu,
-            mem_gb = qc_mem_gb
+            mem_gb = qc_mem_gb,
+            docker = docker_plink2_0
     }
 
     # Do LD-prune of autosomes
@@ -138,7 +149,9 @@ workflow relatedness_wf{
                 mem_gb = ld_mem_gb,
                 maf = min_ld_maf,
                 chr = chr,
-                exclude_regions = ld_exclude_regions
+                exclude_regions = ld_exclude_regions,
+                docker_ubuntu = docker_ubuntu,
+                docker_plink2_0 = docker_plink2_0
         }
     }
 
@@ -150,7 +163,8 @@ workflow relatedness_wf{
             fam_in = ld_prune.fam_out,
             output_basename = "${output_basename}.ldprune",
             cpu = merge_bed_cpu,
-            mem_gb = merge_bed_mem_gb
+            mem_gb = merge_bed_mem_gb,
+            docker = docker_plink1_9
     }
 
     # Call king to get related individuals to remove
@@ -165,8 +179,13 @@ workflow relatedness_wf{
             king_split_cpu = king_cpu_per_split,
             king_split_mem_gb = king_mem_gb_per_split,
             plink_cpu = qc_cpu,
-            plink_mem_gb = qc_mem_gb
-
+            plink_mem_gb = qc_mem_gb,
+            docker_ubuntu = docker_ubuntu,
+            docker_pigz = docker_pigz,
+            docker_plink2_0 = docker_plink2_0,
+            docker_king = docker_king,
+            docker_process_king = docker_process_king,
+            docker_tsv = docker_tsv
     }
 
     if(size(round1_get_relateds.related_samples) > 0){
@@ -185,7 +204,8 @@ workflow relatedness_wf{
                 hwe_pvalue = hwe_pvalue,
                 hwe_mode = hwe_mode,
                 cpu = qc_cpu,
-                cpu = qc_mem_gb
+                cpu = qc_mem_gb,
+                docker = docker_plink2_0
         }
 
         # Re-do quality filter on unrelated samples
@@ -199,7 +219,8 @@ workflow relatedness_wf{
                 hwe_pvalue = hwe_pvalue,
                 hwe_mode = hwe_mode,
                 cpu = qc_cpu,
-                cpu = qc_mem_gb
+                cpu = qc_mem_gb,
+                docker = docker_plink2_0
         }
 
         # Do LD-prune of autosomes
@@ -220,7 +241,9 @@ workflow relatedness_wf{
                     mem_gb = ld_mem_gb,
                     maf = min_ld_maf,
                     chr = chr_unrelated,
-                    exclude_regions = ld_exclude_regions
+                    exclude_regions = ld_exclude_regions,
+                    docker_ubuntu = docker_ubuntu,
+                    docker_plink2_0 = docker_plink2_0
             }
         }
 
@@ -232,7 +255,8 @@ workflow relatedness_wf{
                 fam_in = ld_prune_unrelated.fam_out,
                 output_basename = "${output_basename}.round1.unrelated.qc.ldprune",
                 cpu = merge_bed_cpu,
-                mem_gb = merge_bed_mem_gb
+                mem_gb = merge_bed_mem_gb,
+                docker = docker_plink1_9
         }
     }
 
@@ -246,7 +270,8 @@ workflow relatedness_wf{
             standx = pca_standx,
             seed = pca_seed,
             cpu = pca_cpu,
-            mem_gb = pca_mem_gb
+            mem_gb = pca_mem_gb,
+            docker = docker_flashpca
     }
 
     # Get list of non-ancestry informative SNPs from PC loadings
@@ -258,7 +283,8 @@ workflow relatedness_wf{
             max_snps = max_kinship_snps,
             min_snps = min_kinship_snps,
             cutoff_step_size = ancestral_pca_loading_step_size,
-            max_cutoff = max_ancestral_pca_loading_cutoff
+            max_cutoff = max_ancestral_pca_loading_cutoff,
+            docker = docker_tsv
     }
 
     # Remove ancestry-informative SNPs from original QC dataset
@@ -270,7 +296,8 @@ workflow relatedness_wf{
             output_basename = "${output_basename}.qc.nonancestral_snps",
             cpu = qc_cpu,
             mem_gb = qc_mem_gb,
-            extract = get_non_ancestry_informative_snps.snps_to_keep
+            extract = get_non_ancestry_informative_snps.snps_to_keep,
+            docker = docker_plink2_0
         }
 
     # Call king to get related individuals to remove
@@ -285,7 +312,13 @@ workflow relatedness_wf{
             king_split_cpu = king_cpu_per_split,
             king_split_mem_gb = king_mem_gb_per_split,
             plink_cpu = qc_cpu,
-            plink_mem_gb = qc_mem_gb
+            plink_mem_gb = qc_mem_gb,
+            docker_ubuntu = docker_ubuntu,
+            docker_pigz = docker_pigz,
+            docker_plink2_0 = docker_plink2_0,
+            docker_king = docker_king,
+            docker_process_king = docker_process_king,
+            docker_tsv = docker_tsv
 
     }
 
@@ -294,7 +327,8 @@ workflow relatedness_wf{
         input:
             id_list_in = final_get_relateds.related_samples,
             id_map = remove_fam_pedigree.id_map_out,
-            output_filename = "${output_basename}.final.related_samples.remove"
+            output_filename = "${output_basename}.final.related_samples.remove",
+            docker = docker_tsv
     }
 
     output{
