@@ -129,7 +129,7 @@ workflow genotype_array_qc_wf{
     Int pca_cpu = 4
     Int pca_mem_gb = 8
 
-    # set default docker images
+    # Set default docker images to AWS ECR. Change accordingly if you want Docker Hub images.
     String docker_convert_ids = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/convert_variant_ids:v1_9a23978"
     String docker_flashpca = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/flashpca:v2.0_462a765"
     String docker_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/king:v2.24_9b4c1b9"
