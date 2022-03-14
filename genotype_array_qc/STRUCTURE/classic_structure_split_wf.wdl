@@ -171,6 +171,14 @@ workflow structure_wf{
     # Controls whether structure uses ref pop assignments, which it pretty much always should
     Boolean use_pop_info = true
 
+    String docker_ubuntu
+    String docker_plink2_0
+    String docker_plink1_9
+    String docker_structure = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/structure:v2.3.4_f2d7e82"
+    String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
+    String docker_ped2structure = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/ped2structure:v1.0-c3278c6"
+    String docker_structurepp = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/structure_postprocessing:v1_05e9879"
+
     # Optionally reduce to set of SNPs in LD
     if(do_ld_prune){
         # Do LD-prune of autosomes
@@ -191,7 +199,9 @@ workflow structure_wf{
                     mem_gb = ld_mem_gb,
                     maf = min_ld_maf,
                     chr = chr,
-                    exclude_regions = ld_exclude_regions
+                    exclude_regions = ld_exclude_regions,
+                    docker_ubuntu = docker_ubuntu,
+                    docker_plink2_0 = docker_plink2_0
             }
         }
 
@@ -203,7 +213,8 @@ workflow structure_wf{
                 fam_in = ld_prune.fam_out,
                 output_basename = "${output_basename}.ldprune",
                 cpu = merge_bed_cpu,
-                mem_gb = merge_bed_mem_gb
+                mem_gb = merge_bed_mem_gb,
+                docker = docker_plink1_9
         }
     }
 
@@ -222,7 +233,8 @@ workflow structure_wf{
             burnin = burnin,
             numreps = numreps,
             randomize = 0,
-            pfrompopflagonly = 1
+            pfrompopflagonly = 1,
+            docker = docker_structure
     }
 
     # Get list of SNPs to include
@@ -231,7 +243,8 @@ workflow structure_wf{
             ref_bim = ref_bim,
             data_bim = sample_bim,
             output_filename = "structure.variants",
-            num_snps = max_snps_to_analyze
+            num_snps = max_snps_to_analyze,
+            docker = docker_ubuntu
     }
 
     # Get sample ids to extract from 1000G ref for each ancestry of interest
@@ -244,7 +257,8 @@ workflow structure_wf{
                 ancestry_psam = ancestry_psam,
                 ancestry = ancestry,
                 sample_id_col = 1,
-                output_filename = "${output_basename}.${ancestry}.samples"
+                output_filename = "${output_basename}.${ancestry}.samples",
+                docker = docker_ubuntu
         }
 
         # Assign a numerical pop id to these samples that will later be used by STRUCTURE
@@ -252,7 +266,8 @@ workflow structure_wf{
             input:
                 input_file = get_ancestry_samples.sample_ids,
                 value = ancestry_index + 1,
-                output_filename = "${output_basename}.${ancestry}.samples.pop_id"
+                output_filename = "${output_basename}.${ancestry}.samples.pop_id",
+                docker = docker_ubuntu
         }
     }
 
@@ -260,7 +275,8 @@ workflow structure_wf{
     call UTILS.cat as cat_ancestry_ids{
         input:
             input_files = add_pop_ids.output_file,
-            output_filename = "${output_basename}.ancestry.samples"
+            output_filename = "${output_basename}.ancestry.samples",
+            docker = docker_ubuntu
     }
 
     # Subset SNPs and samples from ref dataset to get overlapping SNPs from desired ancestries
@@ -275,7 +291,8 @@ workflow structure_wf{
             snps_only_type = 'just-acgt',
             output_basename = "${output_basename}.1000g.ref.structure_snps",
             cpu = plink_cpu,
-            mem_gb = plink_mem_gb
+            mem_gb = plink_mem_gb,
+            docker = docker_plink2_0
     }
 
     # Split fam file into subsets of samples
@@ -285,6 +302,7 @@ workflow structure_wf{
             output_basename = basename(sample_fam, ".fam"),
             output_extension = ".fam",
             lines_per_split = max_samples_per_split,
+            docker = docker_pigz
     }
 
     # Do rest of structure WF in parallel for each batch of samples
@@ -305,7 +323,8 @@ workflow structure_wf{
                 snps_only_type = "just-acgt",
                 output_basename = "${output_basename}.split.${split_index}.data",
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                docker = docker_plink2_0
             }
 
         # Check to see if there are any merge conflicts that require strand-flipping
@@ -321,8 +340,8 @@ workflow structure_wf{
                 ignore_errors = true,
                 output_basename = "${output_basename}.split.${split_index}.merge_conflicts",
                 cpu = merge_bed_cpu,
-                mem_gb = merge_bed_mem_gb
-
+                mem_gb = merge_bed_mem_gb,
+                docker = docker_plink1_9
         }
 
         # Flip ref SNPs if there are merge conflicts
@@ -337,7 +356,8 @@ workflow structure_wf{
                     output_basename = "${output_basename}.split.${split_index}.ref",
                     flip = get_merge_conflicts.missnp_out,
                     cpu = plink_cpu,
-                    mem_gb = plink_mem_gb
+                    mem_gb = plink_mem_gb,
+                    docker = docker_plink1_9
             }
         }
 
@@ -353,7 +373,8 @@ workflow structure_wf{
                 ignore_errors = false,
                 output_basename = "${output_basename}.split.${split_index}.combined",
                 cpu = merge_bed_cpu,
-                mem_gb = merge_bed_mem_gb
+                mem_gb = merge_bed_mem_gb,
+                docker = docker_plink1_9
         }
 
         ##### Convert to STRUCTURE input file
@@ -365,13 +386,15 @@ workflow structure_wf{
                 fam_in = combine_ref_and_data.fam_out,
                 output_basename = "${output_basename}.split.${split_index}.combined",
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                docker = docker_plink1_9
         }
 
         # Get actual number of snps to pass to structure
         call UTILS.wc as count_structure_snps{
             input:
-                input_file = recode_to_ped.map_out
+                input_file = recode_to_ped.map_out,
+                docker = docker_ubuntu
         }
 
         # Convert ped file to STRUCTURE dataset with pop information included for ref samples
@@ -381,7 +404,8 @@ workflow structure_wf{
                 ref_samples = cat_ancestry_ids.output_file,
                 ref_pop_col = 2,
                 ref_delim = "space",
-                output_filename = "${output_basename}.split.${split_index}.structure.input"
+                output_filename = "${output_basename}.split.${split_index}.structure.input",
+                docker = docker_ped2structure
         }
 
         # Cluster dataset using STRUCTURE
@@ -395,14 +419,16 @@ workflow structure_wf{
                 k = length(ancestries_to_include),
                 seed = seed,
                 cpu = structure_cpu,
-                mem_gb = structure_mem_gb
+                mem_gb = structure_mem_gb,
+                docker = docker_structure
         }
 
         # Extract just admixture proportions and corresponding sample ids
         call STRUCT.parse_structure_output{
             input:
                 structure_output = structure.structure_out,
-                output_filename = "${output_basename}.split.${split_index}.structure.results.txt"
+                output_filename = "${output_basename}.split.${split_index}.structure.results.txt",
+                docker = docker_ubuntu
         }
     }
 
@@ -410,14 +436,16 @@ workflow structure_wf{
     call UTILS.cat as merge_fam_files{
         input:
             input_files = combine_ref_and_data.fam_out,
-            output_filename = "${output_basename}.structure.merged.fam"
+            output_filename = "${output_basename}.structure.merged.fam",
+            docker = docker_ubuntu
     }
 
     # Combine structure ancestry proportions into single file
     call UTILS.cat as merge_structure_output{
         input:
             input_files = parse_structure_output.structure_out,
-            output_filename = "${output_basename}.structure.results.merged.txt"
+            output_filename = "${output_basename}.structure.results.merged.txt",
+            docker = docker_ubuntu
     }
 
 
@@ -429,20 +457,23 @@ workflow structure_wf{
             psam = ancestry_psam,
             ref_pop_type = ancestry_pop_type,
             ancestry_definitions = ancestry_definitions,
-            output_basename = output_basename
+            output_basename = output_basename,
+            docker = docker_structurepp
     }
 
     # Order keep files to be same order as input ancestry groups
     call STRUCT_PP.order_by_ancestry{
         input:
             ancestry_files_in = structure_postprocess.ancestry_samples,
-            ancestries = select_first([ancestry_aliases, ancestries_to_include])
+            ancestries = select_first([ancestry_aliases, ancestries_to_include]),
+            docker = docker_ubuntu
     }
 
     # Count number of samples that weren't classified as anything by structure
     call UTILS.wc as count_unclassified_samples{
         input:
-            input_file = structure_postprocess.unclassified_samples
+            input_file = structure_postprocess.unclassified_samples,
+            docker = docker_ubuntu
     }
 
     output{

@@ -22,6 +22,13 @@ workflow king_kinship_wf{
 
     Int king_split_cpu = 2
     Int king_split_mem_gb = 4
+    
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String docker_pigz = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/pigz:v2.4_b243f9"
+    String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
+    String docker_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/king:v2.24_9b4c1b9"
+    String docker_process_king = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/process_king_kinship:v1_a9134f7"
+    String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
 
     # Split plink sample file into however many chunks
     call SPLIT.split_file as split_fam{
@@ -29,7 +36,8 @@ workflow king_kinship_wf{
             input_file = fam_in,
             output_basename = basename(fam_in, ".fam"),
             output_extension = ".fam",
-            num_splits = num_splits
+            num_splits = num_splits,
+            docker = docker_pigz
     }
 
     # Create split plink files
@@ -40,7 +48,8 @@ workflow king_kinship_wf{
             input:
                 input_file = split_fam.output_files[split_index],
                 output_filename = "${output_basename}.split.${split_index}.keep",
-                args = "-f 1,2"
+                args = "-f 1,2",
+                docker = docker_ubuntu
         }
 
         # Subset plink dataset using keep file
@@ -52,7 +61,8 @@ workflow king_kinship_wf{
                 keep_samples = cut.output_file,
                 output_basename = "${output_basename}.split.${split_index}",
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                docker = docker_plink2_0
         }
 
         # Do kinship within each subset
@@ -64,7 +74,8 @@ workflow king_kinship_wf{
                 output_basename = "${output_basename}.split.${split_index}",
                 degree = degree,
                 cpu = king_split_cpu,
-                mem_gb = king_split_mem_gb
+                mem_gb = king_split_mem_gb,
+                docker = docker_king
         }
     }
 
@@ -91,7 +102,8 @@ workflow king_kinship_wf{
                         degree = degree,
                         output_basename = "${output_basename}.splitcombo.${split_1}.${split_2}",
                         cpu = king_split_cpu,
-                        mem_gb = king_split_mem_gb
+                        mem_gb = king_split_mem_gb,
+                        docker = docker_king
                 }
             }
         }
@@ -99,21 +111,24 @@ workflow king_kinship_wf{
         # Flatten to get all files in a 1-D array
         call UTILS.flatten_string_array{
             input:
-                array=[select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output]
+                array=[select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output],
+                docker = docker_ubuntu
         }
 
         # Zip into single tarball for tsv-concat
         call COLLECT.collect_large_file_list_wf as collect_kinships{
             input:
                 input_files = flatten_string_array.flat_array,
-                output_dir_name = "${output_basename}_kinships"
+                output_dir_name = "${output_basename}_kinships",
+                docker = docker_ubuntu
         }
 
         # Concat all kinship files (preserving header) into single kinship file
         call TSV.tsv_append as cat_kinships{
             input:
                 tsv_inputs_tarball = collect_kinships.output_dir,
-                output_filename = "${output_basename}.merged.kinship.kin0"
+                output_filename = "${output_basename}.merged.kinship.kin0",
+                docker = docker_tsv
         }
     }
 
@@ -123,7 +138,9 @@ workflow king_kinship_wf{
         input:
             kinship_in = king_kinship,
             output_basename = "${output_basename}.pruned",
-            mem_gb = ceil(size(king_kinship, "GB")) + 1
+            mem_gb = ceil(size(king_kinship, "GB")) + 1,
+            docker = docker_process_king
+            
     }
 
     output{

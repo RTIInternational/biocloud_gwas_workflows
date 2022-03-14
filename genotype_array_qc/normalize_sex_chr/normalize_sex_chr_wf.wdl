@@ -18,12 +18,16 @@ workflow normalize_sex_chr_wf{
 
     Int plink_cpu
     Int plink_mem_gb
+    
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
 
     # Check if we're expecting a chr23 in bim
     call UTILS.array_contains as expect_sex_chr{
         input:
             input_array = expected_chrs,
-            query = "23"
+            query = "23",
+            docker = docker_ubuntu
 
     }
 
@@ -31,14 +35,18 @@ workflow normalize_sex_chr_wf{
     call UTILS.array_contains as expect_split_sex_chr{
         input:
             input_array = expected_chrs,
-            query = "25"
+            query = "25",
+            docker = docker_ubuntu
+
     }
 
     # Check to see whether current bim sex chr is split into PAR/NONPAR
     call PLINK.contains_chr as bim_split_sex_chr{
         input:
             bim_in = bim_in,
-            chr = "25"
+            chr = "25",
+            docker = docker_ubuntu
+
     }
 
     # Split sex chr if it needs splitting
@@ -56,7 +64,8 @@ workflow normalize_sex_chr_wf{
                 build_code = build_code,
                 split_no_fail = no_fail,
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                docker = docker_plink1_9
         }
     }
 
@@ -73,7 +82,8 @@ workflow normalize_sex_chr_wf{
                 merge_x = true,
                 merge_no_fail = no_fail,
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                docker = docker_plink1_9
         }
     }
 

@@ -7,6 +7,7 @@ import "biocloud_gwas_workflows/genotype_array_qc/normalize_sex_chr/normalize_se
 task chr_sort_check{
     # Return whether input chrs are in numerical sort order
     Array[String] chrs
+    String docker = "ubuntu:18.04"
 
     command<<<
         sort -n ${write_lines(chrs)} > sorted.txt
@@ -19,7 +20,7 @@ task chr_sort_check{
     >>>
 
     runtime {
-        docker: "ubuntu:18.04"
+        docker: docker
         cpu: 1
         memory: "100 MB"
     }
@@ -104,7 +105,7 @@ task get_duplicate_variant_ids{
     }
 }
 
-task get_variants_to_remove{
+task get_variants_to_remove {
     File bed_in
     File bim_in
     File fam_in
@@ -249,19 +250,28 @@ workflow impute2_id_conversion_wf{
 
     Int duplicate_id_cpu = 2
     Int duplicate_id_mem_gb = 6
-
+    
+    String docker_ubuntu = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String docker_plink1_9 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
+    String docker_plink2_0 = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v2.0_4d3bad3"
+    String docker_tsv = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
+    String docker_convert_ids = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/convert_variant_ids:v1_9a23978"
+    
+   
     # Make sure chromsomes are provided in numerical sort order and error out if they aren't
     # This is to ensure that the id_legend_files, chrs, and bim file all have same sort order
     # Necessary because we can then operate directly on the bim file without having to make chr-level that need to be merged at the end (costly, slow)
     call chr_sort_check as check_id_legend_chr_sort{
         input:
-            chrs = chrs
+            chrs = chrs,
+            docker = docker_ubuntu
     }
 
     if(check_id_legend_chr_sort.failed){
         call UTILS.raise_error{
             input:
-                msg = "Input chromosomes MUST be provided in numerical sort order!"
+                msg = "Input chromosomes MUST be provided in numerical sort order!",
+                docker = docker_ubuntu
         }
     }
 
@@ -276,7 +286,8 @@ workflow impute2_id_conversion_wf{
             no_fail = no_fail,
             output_basename = output_basename,
             plink_cpu = plink_cpu,
-            plink_mem_gb = plink_mem_gb
+            plink_mem_gb = plink_mem_gb,
+            docker_plink1_9 = docker_plink1_9
     }
 
     # Need to subset to make sure only chrs are included in bed file so we can work with the bim by itself
@@ -289,7 +300,8 @@ workflow impute2_id_conversion_wf{
             chrs = chrs,
             output_basename = "${output_basename}.extract_chrs",
             cpu = plink_cpu,
-            mem_gb = plink_mem_gb
+            mem_gb = plink_mem_gb,
+            docker = docker_plink1_9
     }
 
     File norm_bed = extract_chrs.bed_out
@@ -306,7 +318,8 @@ workflow impute2_id_conversion_wf{
                 tsv_input = norm_bim,
                 output_filename = "${output_basename}.chr.${chr}.bim",
                 header = false,
-                filter_string = "--eq 1:${chr}"
+                filter_string = "--eq 1:${chr}",
+                docker = docker_tsv
         }
 
         # Convert IDs to Impute2 format
@@ -328,7 +341,8 @@ workflow impute2_id_conversion_wf{
                 output_filename = "${output_basename}.chr.${chr}.impute2",
                 cpu = id_convert_cpu,
                 mem_gb = id_convert_mem_gb,
-                rescue_rsids = rescue_rsids
+                rescue_rsids = rescue_rsids,
+                docker = docker_convert_ids
         }
 
         # Mark variants with duplicate IDS if required
@@ -338,7 +352,8 @@ workflow impute2_id_conversion_wf{
                     bim_in = impute2_id_bim.output_file,
                     output_basename = "${output_basename}.chr.${chr}.impute2.mrkdup",
                     cpu = duplicate_id_cpu,
-                    mem_gb = duplicate_id_mem_gb
+                    mem_gb = duplicate_id_mem_gb,
+                    docker = docker_ubuntu
             }
         }
         File chr_bim = select_first([label_duplicate_variants.bim_out, impute2_id_bim.output_file])
@@ -348,7 +363,8 @@ workflow impute2_id_conversion_wf{
     call UTILS.cat as cat_chr_bim{
         input:
             input_files = chr_bim,
-            output_filename = "${output_basename}.impute2.bim"
+            output_filename = "${output_basename}.impute2.bim",
+            docker = docker_ubuntu
     }
 
     # Remove duplicates if desired
@@ -358,7 +374,9 @@ workflow impute2_id_conversion_wf{
         call get_duplicate_variant_ids{
             input:
                 bim_in = cat_chr_bim.output_file,
-                output_filename = "${output_basename}.dup_ids.txt"
+                output_filename = "${output_basename}.dup_ids.txt",
+                docker = docker_ubuntu
+                
         }
 
         # If duplicates, select variant with highest call rate from each group
@@ -372,7 +390,8 @@ workflow impute2_id_conversion_wf{
                     duplicate_snp_ids = get_duplicate_variant_ids.duplicate_ids,
                     output_basename = output_basename,
                     cpu = plink_cpu,
-                    mem_gb = plink_mem_gb
+                    mem_gb = plink_mem_gb,
+                    docker = docker_plink1_9
             }
 
             # Remove duplicates from dataset
@@ -384,14 +403,16 @@ workflow impute2_id_conversion_wf{
                     exclude = get_variants_to_remove.dups_to_remove,
                     output_basename = "${output_basename}.impute2_id.unique",
                     cpu = plink_cpu,
-                    mem_gb = plink_mem_gb
+                    mem_gb = plink_mem_gb,
+                    docker = docker_plink2_0
             }
 
             # Remove numbers from duplicate variant IDs
             call fix_ids{
                 input:
                     bim_in = remove_dups.bim_out,
-                    output_basename = "${output_basename}.impute2_id.unique.fixed"
+                    output_basename = "${output_basename}.impute2_id.unique.fixed",
+                    docker = docker_ubuntu
             }
         }
     }

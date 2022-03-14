@@ -45,6 +45,8 @@ workflow collect_large_file_list_wf{
     Int num_chunks = ceil(length(input_files)/(chunk_size*1.0))
     Int collect_chunk_cpus = 2
     Int collect_chunk_mem_gb = 4
+    
+    String docker
 
     # Create list of file
     scatter(chunk in range(num_chunks)){
@@ -55,14 +57,16 @@ workflow collect_large_file_list_wf{
             input:
                 inputs = input_files,
                 start_pos = start_pos,
-                end_pos = start_pos + chunk_size
+                end_pos = start_pos + chunk_size,
+                docker = docker
         }
 
         # zip the sliced files into a tarball
         call UTILS.collect_files as collect_one_chunk{
             input:
                 output_dir_name = output_dir_name,
-                input_files = slice.outputs
+                input_files = slice.outputs,
+                docker = docker
         }
     }
 
@@ -72,7 +76,8 @@ workflow collect_large_file_list_wf{
             input_files = collect_one_chunk.output_dir,
             output_dir_name = output_dir_name,
             cpu = collect_chunk_cpus,
-            mem_gb = collect_chunk_mem_gb
+            mem_gb = collect_chunk_mem_gb,
+            docker = docker
     }
 
     output{
