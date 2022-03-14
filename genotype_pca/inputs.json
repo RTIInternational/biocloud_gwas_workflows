@@ -1,0 +1,11 @@
+{
+  "eigenstrat_smartpca.study_name": "whi_garnet_c1c2",
+  "eigenstrat_smartpca.ancestry": "eur",
+  "eigenstrat_smartpca.bedfile": "/home/ec2-user/bin/docker/whi_garnet_c1c2_eur.bed",
+  "eigenstrat_smartpca.bimfile": "/home/ec2-user/bin/docker/whi_garnet_c1c2_eur.bim",
+  "eigenstrat_smartpca.famfile": "/home/ec2-user/bin/docker/whi_garnet_c1c2_eur.fam",
+  "eigenstrat_smartpca.docker_eigensoft": "rtibiocloud/eigensoft:v6.1.4_2d0f99b",
+  "eigenstrat_smartpca.docker_plink1_9": "rtibiocloud/plink:v1.9_178bb91",
+  "eigenstrat_smartpca.docker_ubuntu": "ubuntu:18.04"
+}
+
