@@ -100,6 +100,11 @@ workflow eigenstrat_smartpca{
             cpu = cpu,
             mem = mem
     }
+
+
+    output {
+        File final_file = create_final_file.final_file
+    }
 }
 
 
