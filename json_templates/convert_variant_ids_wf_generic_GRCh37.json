@@ -106,6 +106,7 @@
     "convert_variant_ids_wf.in_missing_allele": "0",
     "convert_variant_ids_wf.in_deletion_allele": "-",
     "convert_variant_ids_wf.ref_deletion_allele": ".",
+    "convert_variant_ids_wf.rescue_rsids": true,
     "convert_variant_ids_wf.output_compression": "gzip",
     "convert_variant_ids_wf.cpu": 1,
     "convert_variant_ids_wf.mem_gb": 1,
