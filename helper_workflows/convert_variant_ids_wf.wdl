@@ -1,4 +1,5 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/convert_variant_ids/convert_variant_ids.wdl" as IDCONVERT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/rti-tsv-utils/rti-tsv-utils.wdl" as SORT
 
 workflow convert_variant_ids_wf{
     Array[File] input_files
@@ -21,18 +22,43 @@ workflow convert_variant_ids_wf{
     Boolean? rescue_rsids
     String? output_compression
 
-    # Resources
+    Boolean sort = false
+    String sort_col = "pos"
+
+    # Convert resources
     Int cpu = 1
     Int mem_gb = 4
     String docker = "rtibiocloud/convert_variant_ids:v1_9a23978"
 
+    # Sort resources
+    Int sort_cpu = 1
+    Int sort_mem_gb = 4
+    String? sort_docker
+   
     # Parallelize
     scatter(i in range(length(input_files))){
+
+        # Sort
+        if(sort){
+            call SORT.tsv_sort as tsv_sort{
+                input:
+                    in_file = input_files[i],
+                    cols = sort_col,
+                    out_prefix = "sort_chr${chrs[i]}",
+                    in_file_sep = in_sep,
+                    cpu = sort_cpu,
+                    mem_gb = sort_mem_gb,
+                    docker = sort_docker
+            }
+        }
+
+        File in_file = select_first([tsv_sort.out_tsv, input_files[i]])
+
         # Convert IDs
         call IDCONVERT.convert_variant_ids{
             input:
                 chr = chrs[i],
-                in_file = input_files[i],
+                in_file = in_file,
                 in_header = in_header,
                 in_sep = in_sep,
                 in_id_col = in_id_col,

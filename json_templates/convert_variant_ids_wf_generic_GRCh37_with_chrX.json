@@ -111,6 +111,8 @@
     "convert_variant_ids_wf.ref_deletion_allele": ".",
     "convert_variant_ids_wf.output_compression": "gzip",
     "convert_variant_ids_wf.rescue_rsids": false,
+    "convert_variant_ids_wf.sort": false,
+    "convert_variant_ids_wf.sort_col": "pos",
     "convert_variant_ids_wf.cpu": 1,
     "convert_variant_ids_wf.mem_gb": 1,
     "convert_variant_ids_wf.in_chunk_size": 50000,
