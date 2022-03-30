@@ -40,6 +40,7 @@ workflow convert_variant_ids_wf{
 
         # Sort
         if(sort){
+            String new_sep = "tab"
             call SORT.tsv_sort as tsv_sort{
                 input:
                     in_file = input_files[i],
@@ -53,6 +54,7 @@ workflow convert_variant_ids_wf{
         }
 
         File in_file = select_first([tsv_sort.out_tsv, input_files[i]])
+        String sep = select_first([new_sep, in_sep])
 
         # Convert IDs
         call IDCONVERT.convert_variant_ids{
@@ -60,7 +62,7 @@ workflow convert_variant_ids_wf{
                 chr = chrs[i],
                 in_file = in_file,
                 in_header = in_header,
-                in_sep = in_sep,
+                in_sep = sep,
                 in_id_col = in_id_col,
                 in_chr_col = in_chr_col,
                 in_pos_col = in_pos_col,
