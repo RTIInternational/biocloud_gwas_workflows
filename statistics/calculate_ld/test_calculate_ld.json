@@ -1,0 +1,24 @@
+{
+    "calculate_ld.bed_files": [
+        "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch37_dbsnp_b153.bed"
+    ],
+    "calculate_ld.bim_files": [
+        "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch37_dbsnp_b153.bim"
+    ],
+    "calculate_ld.fam_files": [
+        "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch37_dbsnp_b153.fam"
+    ],
+    "calculate_ld.vcf_files": [
+        "s3://rti-common/workflows/dummy_file.txt"
+    ],
+    "calculate_ld.chrs": [
+        "22"
+    ],
+    "calculate_ld.output_basename": "1000g_ld",
+    "calculate_ld.correlation_stat": "r2",
+    "calculate_ld.ld_window_kb": 5000,
+    "calculate_ld.ld_snp_list": "s3://rti-pulmonary/scratch/temp/snp_list.txt",
+    "calculate_ld.cpu": 1,
+    "calculate_ld.mem_gb": 2
+}
+
