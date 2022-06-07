@@ -6,6 +6,13 @@ workflow convert_bgen_to_vcf_wf{
     Array[File] output_basenames
     String ref_alt_mode
     String vcf_dosage = "DS"
+    File? keep
+    File? remove
+    File? extract
+    File? exclude
+    Boolean rm_dup = false
+    String? rm_dup_mode
+
     Int cpu
     Int mem_gb
 
@@ -19,9 +26,20 @@ workflow convert_bgen_to_vcf_wf{
                 output_basename = output_basenames[i],
                 ref_alt_mode = ref_alt_mode,
                 vcf_dosage = vcf_dosage,
+                keep = keep,
+                remove = remove,
+                extract = extract,
+                exclude = exclude,
+                rm_dup = rm_dup,
+                rm_dup_mode = rm_dup_mode,
                 cpu = cpu,
                 mem_gb = mem_gb
         }
 
+    }
+
+    output{
+        Array[File] vcf_files = convert_bgen_to_vcf.vcf_out
+        Array[File] log_files = convert_bgen_to_vcf.log_file
     }
 }
