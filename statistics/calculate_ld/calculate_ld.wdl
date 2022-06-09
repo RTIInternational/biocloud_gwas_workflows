@@ -12,6 +12,7 @@ workflow calculate_ld{
     Array[File] vcf_files
     Array[File] bgen_files
     Array[File] sample_files
+    Boolean? allow_extra_chr
 
     # Output file parameters
     String output_basename
@@ -56,6 +57,7 @@ workflow calculate_ld{
                 vcf = vcf_files[chr_index],
                 bgen = bgen_files[chr_index],
                 sample = sample_files[chr_index],
+                allow_extra_chr = allow_extra_chr,
                 output_basename = "${output_basename}_chr${chr}",
                 output_format = output_format,
                 with_freqs = with_freqs,
