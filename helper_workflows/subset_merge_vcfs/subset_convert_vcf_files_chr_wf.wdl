@@ -76,10 +76,10 @@ workflow subset_convert_vcf_chr_wf{
     }
     
     output {
-        File convert.bed = convert.bed_out
-        File convert.bim = convert.bim_out
-        File convert.fam = convert.fam_out
-        File convert.log = convert.plink_log
+        File bed = convert_vcf_to_plink.bed_out
+        File bim = convert_vcf_to_plink.bim_out
+        File fam = convert_vcf_to_plink.fam_out
+        File log = convert_vcf_to_plink.plink_log
     }
 }
 
