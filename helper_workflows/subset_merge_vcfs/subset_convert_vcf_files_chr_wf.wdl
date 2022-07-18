@@ -6,11 +6,10 @@ task convert_vcf_to_bed{
     File vcf_in
     String output_basename
     String input_prefix = basename(sub(vcf_in, "\\.gz$", ""), ".vcf")
-    Int mem_gb
 
     String docker = "rtibiocloud/plink:v2.0_888cf13"
     Int cpu = 1
-    Int mem_gb = mem_gb
+    Int mem_gb = 3
     Int max_retries = 3
 
     command <<<
@@ -74,7 +73,6 @@ workflow subset_convert_vcf_chr_wf{
         input:
             vcf_in = view.vcf_out,
             output_basename = output_basename
-            mem_gb = 3
     }
     
     output {
