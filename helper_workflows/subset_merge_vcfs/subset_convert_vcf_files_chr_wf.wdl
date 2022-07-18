@@ -69,7 +69,7 @@ workflow subset_convert_vcf_chr_wf{
             output_type = output_type
     }
 
-    call convert_vcf_to_plink as convert{
+    call convert_vcf_to_plink{
         input:
             vcf_in = view.vcf_out,
             output_basename = output_basename
