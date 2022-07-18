@@ -1,0 +1,9 @@
+{
+  "subset_convert_vcf_chr_wf.vcf_in": "s3://rti-shared/shared_data/raw/topmed/genotype/sequencing/TOPMed_ARIC_phs001211/GenotypeFiles/Freeze8/ARIC_phs001211_TOPMed_WGS_freeze.8.chr22.hg38.c1.vcf.gz",
+  "subset_convert_vcf_chr_wf.samples_file": "s3://rti-shared/shared_data/pre_qc/topmed_reference/ARIC/ARIC.AA.geneticSampleIDs.txt",
+  "subset_convert_vcf_chr_wf.output_filename": "ARIC_phs001211_TOPMed_WGS_freeze.8.chr22.hg38.c1.biallelicOnly.PASSOnly.vcf.gz",
+  "subset_convert_vcf_chr_wf.output_basename": "ARIC_phs001211_TOPMed_WGS_freeze.8.chr22.hg38.c1.biallelicOnly.PASSOnly.AA",
+  "subset_convert_vcf_chr_wf.maf_filter": 0.0,
+  "subset_convert_vcf_chr_wf.output_type": "z"
+}
+

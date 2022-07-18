@@ -57,17 +57,15 @@ workflow subset_convert_vcf_chr_wf{
     File samples_file
     String output_filename
     String output_type
-    Float maf_filter
 
     String output_basename
 
-    # Do subset workflow for each vcf file
+    # Do subset workflow
     call SUBSET.view as view{
         input:
             vcf_in = vcf_in,
             samples_file = samples_file,
             output_filename = output_filename,
-            maf_filter = maf_filter,
             output_type = output_type
     }
 
