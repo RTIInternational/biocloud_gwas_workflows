@@ -23,7 +23,7 @@
         "s3://rti-shared/shared_data/raw/topmed/genotype/sequencing/TOPMed_ARIC_phs001211/GenotypeFiles/Freeze8/ARIC_phs001211_TOPMed_WGS_freeze.8.chr21.hg38.c1.vcf.gz",
         "s3://rti-shared/shared_data/raw/topmed/genotype/sequencing/TOPMed_ARIC_phs001211/GenotypeFiles/Freeze8/ARIC_phs001211_TOPMed_WGS_freeze.8.chr22.hg38.c1.vcf.gz"
     ],
-    "subset_convert_vcf_wf.output_filename": [
+    "subset_convert_vcf_wf.output_filenames": [
         "ARIC_phs001211_TOPMed_WGS_freeze.8.chr1.hg38.c1.biallelicOnly.PASSOnly.vcf.gz",
         "ARIC_phs001211_TOPMed_WGS_freeze.8.chr2.hg38.c1.biallelicOnly.PASSOnly.vcf.gz",
         "ARIC_phs001211_TOPMed_WGS_freeze.8.chr3.hg38.c1.biallelicOnly.PASSOnly.vcf.gz",
@@ -52,7 +52,7 @@
         "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"
     ],
     "subset_convert_vcf_wf.samples_file": "s3://rti-shared/shared_data/pre_qc/topmed_reference/ARIC/ARIC.AA.geneticSampleIDs.txt",
-    "subset_convert_vcf_wf.output_basename": [
+    "subset_convert_vcf_wf.output_basenames": [
         "ARIC_phs001211_TOPMed_WGS_freeze.8.chr1.hg38.c1.biallelicOnly.PASSOnly.AA",
         "ARIC_phs001211_TOPMed_WGS_freeze.8.chr2.hg38.c1.biallelicOnly.PASSOnly.AA",
         "ARIC_phs001211_TOPMed_WGS_freeze.8.chr3.hg38.c1.biallelicOnly.PASSOnly.AA",
