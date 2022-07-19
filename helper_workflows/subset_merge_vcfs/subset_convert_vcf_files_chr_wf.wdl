@@ -24,7 +24,7 @@ task convert_vcf_to_bed{
         #    # Otherwise just create softlink with normal
         #    ln -s ${vcf_in} plink_input/${input_prefix}.vcf
 
-        ln -s ${vcf_in} plink/${input_prefix}.vcf.gz
+        ln -s ${vcf_in} plink_input/${input_prefix}.vcf.gz
 
         # Convert
         plink2 \
