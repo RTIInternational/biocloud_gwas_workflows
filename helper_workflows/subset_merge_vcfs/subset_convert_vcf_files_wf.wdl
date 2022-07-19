@@ -11,7 +11,7 @@ workflow subset_convert_vcf_wf{
 
     scatter(index in range(length(vcfs_in))){
     
-        call SUBSET_CONVERT.convert_vcf_to_bed{
+        call SUBSET_CONVERT.subset_convert_vcf_chr_wf{
             input:
                 vcf_in = vcfs_in[index],
                 samples_file = samples_file,
@@ -22,10 +22,10 @@ workflow subset_convert_vcf_wf{
     }
     
     output {
-        Array[File] bed = convert_vcf_to_bed.bed_out
-        Array[File] bim = convert_vcf_to_bed.bim_out
-        Array[File] fam = convert_vcf_to_bed.fam_out
-        Array[File] log = convert_vcf_to_bed.plink_log
+        Array[File] bed = subset_convert_vcf_chr_wf.bed
+        Array[File] bim = subset_convert_vcf_chr_wf.bim
+        Array[File] fam = subset_convert_vcf_chr_wf.fam
+        Array[File] log = subset_convert_vcf_chr_wf.log
     }
     
 }
