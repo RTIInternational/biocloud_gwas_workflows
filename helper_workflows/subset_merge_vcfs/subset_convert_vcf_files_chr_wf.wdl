@@ -17,16 +17,18 @@ task convert_vcf_to_bed{
         mkdir plink_input
 
         # VCF file preprocessing
-        if [[ ${vcf_in} =~ \.gz$ ]]; then
-            # Unzip
-            unpigz -p ${cpu} -c ${vcf_in} > plink_input/${input_prefix}.vcf
-        else
-            # Otherwise just create softlink with normal
-            ln -s ${vcf_in} plink_input/${input_prefix}.vcf
+        #if [[ ${vcf_in} =~ \.gz$ ]]; then
+        #    # Unzip
+        #    unpigz -p ${cpu} -c ${vcf_in} > plink_input/${input_prefix}.vcf
+        #else
+        #    # Otherwise just create softlink with normal
+        #    ln -s ${vcf_in} plink_input/${input_prefix}.vcf
+
+        ln -s ${vcf_in} plink/${input_prefix}.vcf.gz
 
         # Convert
         plink2 \
-            --vcf plink_input/${input_prefix}.vcf \
+            --vcf plink_input/${input_prefix}.vcf.gz \
             --vcf-idspace-to_ --const-fid --allow-extra-chr 0 \
             --set-missing-var-ids @:#:\$r:\$a \
             --new-id-max-allele-len 23 missing \
