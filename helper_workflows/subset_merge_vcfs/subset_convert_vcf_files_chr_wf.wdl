@@ -29,7 +29,7 @@ task convert_vcf_to_bed{
         # Convert
         plink2 \
             --vcf plink_input/${input_prefix}.vcf.gz \
-            --vcf-idspace-to_ --const-fid --allow-extra-chr 0 \
+            --keep-allele-order --vcf-idspace-to _ --const-fid --allow-extra-chr 0 \
             --set-missing-var-ids @:#:\$r:\$a \
             --new-id-max-allele-len 23 missing \
             --vcf-filter PASS \
