@@ -9,7 +9,7 @@ task convert_vcf_to_bed{
 
     String docker = "rtibiocloud/plink:v2.0_888cf13"
     Int cpu = 1
-    Int mem_gb = 3
+    Int mem_gb = 5
     Int max_retries = 3
 
     command <<<
