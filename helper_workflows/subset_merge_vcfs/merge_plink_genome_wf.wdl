@@ -8,8 +8,6 @@ task merge_plink{
     Array[File] fam_in
     String output_basename
     
-    String input_prefix = basename(sub(fam_in, "\\.gz$". ""), ".fam")
-
     String docker = "rtibiocloud/plink:v1.9_178bb91"
     Int cpu
     Int mem_gb
@@ -20,35 +18,37 @@ task merge_plink{
 
         # Bed file preprocessing
         for file in ${sep=" " bed_in}; do
-            String input_prefix_bed = basename(sub($file, "\\.gz$". ""), ".bed")
+            input_prefix_bed = basename(sub($file, "\\.gz$". ""), ".bed")
             if [[ ${file} =~ \.gz$ ]]; then
                 # Append gz tag to let plink know its gzipped input
-                unpigz -p ${cpu} -c ${file} > plink_input/${input_prefix}.bed
+                unpigz -p ${cpu} -c ${file} > plink_input/${input_prefix_bed}.bed
             else
                 # Otherwise just create softlink with normal
-                ln -s ${file} plink_input/${input_prefix}.bed
+                ln -s ${file} plink_input/${input_prefix_bed}.bed
             fi
-            echo "plink_input/${input_prefix}.bed" >> plink_input/bed_files.txt
+            echo "plink_input/${input_prefix_bed}.bed" >> plink_input/bed_files.txt
         done
 
         # Bim file preprocessing
         for file2 in ${sep=" " bim_in}; do
+            input_prefix_bim = basename(sub($file, "\\.gz$". ""), ".bim")
             if [[ ${file2} =~ \.gz$ ]]; then
-                unpigz -p ${cpu} -c ${file2} > plink_input/${input_prefix}.bim
+                unpigz -p ${cpu} -c ${file2} > plink_input/${input_prefix_bim}.bim
             else
-                ln -s ${file2} plink_input/${input_prefix}.bim
+                ln -s ${file2} plink_input/${input_prefix_bim}.bim
             fi
-            echo "plink_input/${input_prefix}.bim" >> plink_input/bim_files.txt
+            echo "plink_input/${input_prefix_bim}.bim" >> plink_input/bim_files.txt
         done
 
         # Fam file preprocessing
         for file3 in ${sep=" " fam_in}; do
-            if [[ ${fam_in} =~ \.gz$ ]]; then
-                unpigz -p ${cpu} -c ${fam_in} > plink_input/${input_prefix}.fam
+            input_prefix_fam = basename(sub($file, "\\.gz$". ""), ".fam")
+            if [[ ${file3} =~ \.gz$ ]]; then
+                unpigz -p ${cpu} -c ${file3} > plink_input/${input_prefix_fam}.fam
             else
-                ln -s ${fam_in} plink_input/${input_prefix}.fam
+                ln -s ${file3} plink_input/${input_prefix_fam}.fam
             fi
-            echo "plink_input/${input_prefix}.fam" >> plink_input/fam_files.txt
+            echo "plink_input/${input_prefix_fam}.fam" >> plink_input/fam_files.txt
         done
 
         # Merge bed/bim/fam links into merge-list file
