@@ -11,7 +11,7 @@ workflow merge_plink_wf{
 
     call PLINK.merge_beds{
         input:
-            bed_in = beds_in
+            bed_in = beds_in,
             bim_in = bims_in,
             fam_in = fams_in,
             output_basename = output_basename
