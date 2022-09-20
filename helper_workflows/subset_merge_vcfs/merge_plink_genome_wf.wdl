@@ -1,85 +1,5 @@
 import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
 
-task merge_plink{
-    # This merging is specific to TOPMed whole genome sequencing (WGS) data.
-
-    Array[File] bed_in
-    Array[File] bim_in
-    Array[File] fam_in
-    String output_basename
-    
-    String docker = "rtibiocloud/plink:v1.9_178bb91"
-    Int cpu
-    Int mem_gb
-    Int max_retries = 3
-
-    command <<
-        mkdir plink_input
-
-        # Bed file preprocessing
-        for file in ${sep=" " bed_in}; do
-            input_prefix_bed = basename(sub($file, "\\.gz$". ""), ".bed")
-            if [[ ${file} =~ \.gz$ ]]; then
-                # Append gz tag to let plink know its gzipped input
-                unpigz -p ${cpu} -c ${file} > plink_input/${input_prefix_bed}.bed
-            else
-                # Otherwise just create softlink with normal
-                ln -s ${file} plink_input/${input_prefix_bed}.bed
-            fi
-            echo "plink_input/${input_prefix_bed}.bed" >> plink_input/bed_files.txt
-        done
-
-        # Bim file preprocessing
-        for file2 in ${sep=" " bim_in}; do
-            input_prefix_bim = basename(sub($file, "\\.gz$". ""), ".bim")
-            if [[ ${file2} =~ \.gz$ ]]; then
-                unpigz -p ${cpu} -c ${file2} > plink_input/${input_prefix_bim}.bim
-            else
-                ln -s ${file2} plink_input/${input_prefix_bim}.bim
-            fi
-            echo "plink_input/${input_prefix_bim}.bim" >> plink_input/bim_files.txt
-        done
-
-        # Fam file preprocessing
-        for file3 in ${sep=" " fam_in}; do
-            input_prefix_fam = basename(sub($file, "\\.gz$". ""), ".fam")
-            if [[ ${file3} =~ \.gz$ ]]; then
-                unpigz -p ${cpu} -c ${file3} > plink_input/${input_prefix_fam}.fam
-            else
-                ln -s ${file3} plink_input/${input_prefix_fam}.fam
-            fi
-            echo "plink_input/${input_prefix_fam}.fam" >> plink_input/fam_files.txt
-        done
-
-        # Merge bed/bim/fam links into merge-list file
-        paste -d " " plink_input/bed_files.txt plink_input/bim_files.txt plink_input/fam_files.txt > plink_input/merge_list.txt
-
-        # Now run plink
-        plink --make-bed \
-            --threads ${cpu} \
-            --set-missing-var-ids @:#:\$r:$a \
-            --new-id-max-allele-len 300 \
-            --max-alleles 2 \
-            --merge-list plink_input/merge_list.txt \
-            --out ${output_basename}
-
-    >>>
-
-    runtime {
-        docker: docker
-        cpu: cpu
-        memory: "${mem_gb} GB"
-        maxRetries: max_retries
-    }
-
-    output{
-        File bed_out = "${output_basename}.bed"
-        File bim_out = "${output_basename}.bim"
-        File fam_out = "${output_basename}.fam"
-        File plink_log = "${output_basename}.log"
-    }
-}
-
 workflow merge_plink_wf{
     Array[File] beds_in
     Array[File] bims_in
@@ -89,7 +9,7 @@ workflow merge_plink_wf{
     Int cpu
     Int mem_gb
 
-    call merge_plink{
+    call PLINK.merge_beds{
         input:
             bed_in = beds_in
             bim_in = bims_in,
