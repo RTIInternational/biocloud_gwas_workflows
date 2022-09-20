@@ -14,9 +14,8 @@ workflow merge_plink_wf{
             bed_in = beds_in,
             bim_in = bims_in,
             fam_in = fams_in,
-            output_basename = output_basename
-
-            cpu = cpu
+            output_basename = output_basename,
+            cpu = cpu,
             mem_gb = mem_gb
     }
     
