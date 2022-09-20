@@ -20,10 +20,10 @@ workflow merge_plink_wf{
     }
     
     output {
-        File bed = merge_plink.bed_out
-        File bim = merge_plink.bim_out
-        File fam = merge_plink.fam_out
-        File log = merge_plink.plink_log
+        File bed = merge_beds.bed_out
+        File bim = merge_beds.bim_out
+        File fam = merge_beds.fam_out
+        File log = merge_beds.plink_log
     }
     
 }
