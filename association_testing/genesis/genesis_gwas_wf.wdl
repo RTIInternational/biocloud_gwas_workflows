@@ -70,6 +70,7 @@ workflow genesis_gwas_wf{
         if (!use_variant_lists) {
             call GENESIS_CHR.genesis_gwas_chr_wf as genesis{
                 input:
+                    container_source = container_source,
                     file_in_geno = genotype_files[index],
                     file_out_prefix = output_file_prefix + '_chr' + chrs[index],
                     file_in_pheno = pheno_file,
@@ -95,6 +96,7 @@ workflow genesis_gwas_wf{
         if (use_variant_lists) {
             call GENESIS_CHR.genesis_gwas_chr_wf as genesis_variant_list{
                 input:
+                    container_source = container_source,
                     file_in_geno = genotype_files[index],
                     file_in_variant_list = variant_lists[index],
                     use_variant_list = use_variant_lists,
@@ -138,6 +140,7 @@ workflow genesis_gwas_wf{
                 ref_deletion_allele = ref_deletion_allele,
                 output_filename = basename(summary_stats, ".tsv") + id_label + ".tsv.gz",
                 output_compression = "gzip",
+                container_source = container_source,
                 cpu = id_conversion_cpu,
                 mem_gb = id_conversion_mem_gb
         }
@@ -148,14 +151,16 @@ workflow genesis_gwas_wf{
     call COLLECT.collect_large_file_list_wf as collect_sumstats{
         input:
             input_files = convert_variant_ids.output_file,
-            output_dir_name = output_file_prefix + "_genesis_chr_output"
+            output_dir_name = output_file_prefix + "_genesis_chr_output",
+            container_source = container_source
     }
 
     # Concat all sumstats files into single sumstat file
     call TSV.tsv_append as cat_sumstats{
         input:
             tsv_inputs_tarball = collect_sumstats.output_dir,
-            output_filename = output_file_prefix + ".tsv"
+            output_filename = output_file_prefix + ".tsv",
+            container_source = container_source
     }
 
     # Generate summaries for each possible combo of MAF/Rsq cutoff
@@ -182,7 +187,8 @@ workflow genesis_gwas_wf{
                 pop_maf_cutoff = pop_maf_cutoff,
                 sig_alpha = sig_alpha,
                 pvalue_colnames = p_value_fields,
-                plot_mem_gb = plot_mem_gb
+                plot_mem_gb = plot_mem_gb,
+                container_source = container_source
         }
 
     }

@@ -1,4 +1,5 @@
 {
+    "genesis_gwas_wf.container_source": "docker",
     "genesis_gwas_wf.genotype_files": [
         "<INPUT_PREFIX>chr1<INPUT_SUFFIX>",
         "<INPUT_PREFIX>chr2<INPUT_SUFFIX>",

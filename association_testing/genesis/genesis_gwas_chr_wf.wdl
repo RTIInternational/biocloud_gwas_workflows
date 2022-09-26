@@ -45,7 +45,8 @@ workflow genesis_gwas_chr_wf{
                 input_gds = file_in_geno,
                 chunk_size = chunk_size,
                 variant_id_field = variant_id_field,
-                output_basename = "variant_list"
+                output_basename = "variant_list",
+                container_source = container_source
         }
     }
 
@@ -68,7 +69,8 @@ workflow genesis_gwas_chr_wf{
                     gxe = gxe,
                     chr = chr,
                     cpu = genesis_cpu,
-                    mem_gb = genesis_mem_gb
+                    mem_gb = genesis_mem_gb,
+                    container_source = container_source
             }
         }
 
@@ -76,7 +78,8 @@ workflow genesis_gwas_chr_wf{
         call COLLECT.collect_large_file_list_wf as collect_splits{
             input:
                 input_files = split_genesis.sumstats_out,
-                output_dir_name = file_out_prefix + "_genesis_output"
+                output_dir_name = file_out_prefix + "_genesis_output",
+                container_source = container_source
         }
 
         # Concat all sumstats files into single sumstat file
@@ -84,7 +87,8 @@ workflow genesis_gwas_chr_wf{
             input:
                 tsv_inputs_tarball = collect_splits.output_dir,
                 output_filename = file_out_prefix + ".tsv",
-                mem_gb = tsv_append_mem_gb
+                mem_gb = tsv_append_mem_gb,
+                container_source = container_source
         }
     }
 
@@ -101,7 +105,8 @@ workflow genesis_gwas_chr_wf{
                 gxe = gxe,
                 chr = chr,
                 cpu = genesis_cpu,
-                mem_gb = genesis_mem_gb
+                mem_gb = genesis_mem_gb,
+                container_source = container_source
         }
     }
 
@@ -113,7 +118,8 @@ workflow genesis_gwas_chr_wf{
             file_in_summary_stats_format = "genesis",
             file_in_info = file_in_info,
             file_in_info_format = file_in_info_format,
-            file_out_prefix = file_out_prefix + "_std"
+            file_out_prefix = file_out_prefix + "_std",
+            container_source = container_source
     }
 
     output {
