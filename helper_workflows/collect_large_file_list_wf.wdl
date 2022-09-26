@@ -6,6 +6,9 @@ task collect_chunks{
 
     # Runtime environment
     String docker = "ubuntu:18.04"
+    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:18.04"
+    String container_source = "docker"
+    String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 2
     Int mem_gb = 4
     Int max_retries = 3
@@ -26,7 +29,7 @@ task collect_chunks{
     >>>
 
     runtime {
-        docker: docker
+        docker: container_image
         cpu: cpu
         memory: "${mem_gb} GB"
         maxRetries: max_retries

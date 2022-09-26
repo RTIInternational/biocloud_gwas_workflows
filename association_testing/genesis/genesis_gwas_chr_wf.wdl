@@ -2,8 +2,12 @@ import "biocloud_gwas_workflows/biocloud_wdl_tools/genesis/genesis.wdl" as GENES
 import "biocloud_gwas_workflows/biocloud_wdl_tools/gds_utils/gds_utils.wdl" as SPLIT
 import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV
 import "biocloud_gwas_workflows/helper_workflows/collect_large_file_list_wf.wdl" as COLLECT
+import "biocloud_gwas_workflows/biocloud_wdl_tools/make_gwas_summary_stats/make_gwas_summary_stats.wdl" as STAT
 
 workflow genesis_gwas_chr_wf{
+
+    String container_source = "docker"
+    
     File file_in_geno
     File file_in_pheno
     File file_in_variant_list = "no_file"
@@ -30,6 +34,10 @@ workflow genesis_gwas_chr_wf{
     # TSV utils options
     Int tsv_append_mem_gb = 4
     
+    # Options for make_gwas_summary_stats
+    File file_in_info
+    String file_in_info_format
+
     # Split genotypes for parallel processing
     if (split_gds) {
         call SPLIT.split_by_variant as split_by_variant{
@@ -65,16 +73,16 @@ workflow genesis_gwas_chr_wf{
         }
 
         # Collect chunked sumstats files into single zip folder
-        call COLLECT.collect_large_file_list_wf as collect_sumstats{
+        call COLLECT.collect_large_file_list_wf as collect_splits{
             input:
                 input_files = split_genesis.sumstats_out,
                 output_dir_name = file_out_prefix + "_genesis_output"
         }
 
         # Concat all sumstats files into single sumstat file
-        call TSV.tsv_append as cat_sumstats{
+        call TSV.tsv_append as cat_splits{
             input:
-                tsv_inputs_tarball = collect_sumstats.output_dir,
+                tsv_inputs_tarball = collect_splits.output_dir,
                 output_filename = file_out_prefix + ".tsv",
                 mem_gb = tsv_append_mem_gb
         }
@@ -97,9 +105,19 @@ workflow genesis_gwas_chr_wf{
         }
     }
 
-    File output_file = select_first([cat_sumstats.tsv_output, genesis.sumstats_out])
+    File genesis_sum_stats = select_first([cat_splits.tsv_output, genesis.sumstats_out])
+
+    call STAT.make_gwas_summary_stats as annotate_sumstats{
+        input:
+            file_in_summary_stats = genesis_sum_stats,
+            file_in_summary_stats_format = "genesis",
+            file_in_info = file_in_info,
+            file_in_info_format = file_in_info_format,
+            file_out_prefix = file_out_prefix + "_std"
+    }
 
     output {
-        File summary_stats = output_file
+        File summary_stats = annotate_sumstats.output_file
+        File make_gwas_summary_stats_log = annotate_sumstats.log_file
     }
 }

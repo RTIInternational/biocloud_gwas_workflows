@@ -23,30 +23,7 @@
         "<INPUT_PREFIX>chr21<INPUT_SUFFIX>",
         "<INPUT_PREFIX>chr22<INPUT_SUFFIX>"
     ],
-    "genesis_gwas_wf.output_file_prefixes": [
-        "<OUTPUT_PREFIX>chr1<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr2<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr3<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr4<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr5<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr6<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr7<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr8<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr9<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr10<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr11<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr12<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr13<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr14<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr15<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr16<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr17<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr18<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr19<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr20<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr21<OUTPUT_SUFFIX>",
-        "<OUTPUT_PREFIX>chr22<OUTPUT_SUFFIX>"
-    ],
+    "genesis_gwas_wf.output_file_prefix": "<OUTPUT_PREFIX>",
     "genesis_gwas_wf.chrs": [
         "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
         "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"
@@ -61,6 +38,33 @@
     "genesis_gwas_wf.genesis_cpu": 1,
     "genesis_gwas_wf.genesis_mem_gb": 2,
     "genesis_gwas_wf.split_gds": true,
+
+    "genesis_gwas_wf.info_files": [
+        "<INFO_PREFIX>chr1<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr2<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr3<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr4<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr5<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr6<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr7<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr8<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr9<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr10<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr11<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr12<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr13<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr14<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr15<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr16<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr17<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr18<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr19<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr20<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr21<INFO_SUFFIX>",
+        "<INFO_PREFIX>chr22<INFO_SUFFIX>"
+    ],
+    "genesis_gwas_wf.info_file_format": "<INFO_FILE_FORMAT>",
+
     "genesis_gwas_wf.id_ref_files": [
         "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr1.tsv.gz",
         "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr2.tsv.gz",
@@ -89,6 +93,19 @@
     "genesis_gwas_wf.in_deletion_allele": "-",
     "genesis_gwas_wf.ref_deletion_allele": ".",
     "genesis_gwas_wf.id_label": "grch37_dbsnp_b153",
+
+    "genesis_gwas_wf.filter_by_sample_maf": true,
+    "genesis_gwas_wf.filter_by_pop_maf": false,
+    "genesis_gwas_wf.maf_cutoffs": [0.01],
+
+    "genesis_gwas_wf.filter_by_rsq": true,
+    "genesis_gwas_wf.rsq_cutoffs": [0.8],
+
+    "genesis_gwas_wf.filter_by_pvalue": true,
+    "genesis_gwas_wf.sig_alpha": 0.001,
+
+    "genesis_gwas_wf.plot_mem_gb": 16,
+
     "genesis_gwas_wf.id_conversion_cpu": 1,
     "genesis_gwas_wf.id_conversion_mem_gb": 1,
     "genesis_gwas_wf.tsv_append_mem_gb": 4
