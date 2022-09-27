@@ -20,6 +20,8 @@ workflow summarize_gwas_wf{
     String pop_maf_colname = "POP_MAF"
     Array[String] pvalue_colnames = ["P"]
 
+    String container_source
+
     Int plot_mem_gb
 
     # Optionally filter on Rsq if desired
@@ -28,7 +30,8 @@ workflow summarize_gwas_wf{
             input:
                 tsv_input = summary_stats_input,
                 output_filename = output_basename + "_rsq_${min_rsq}.tsv",
-                filter_string = "--is-numeric '${rsq_colname}' --ge '${rsq_colname}:${min_rsq}'"
+                filter_string = "--is-numeric '${rsq_colname}' --ge '${rsq_colname}:${min_rsq}'",
+                container_source = container_source
         }
     }
 
@@ -40,7 +43,8 @@ workflow summarize_gwas_wf{
             input:
                 tsv_input = rsq_summary_stats,
                 output_filename = basename(rsq_summary_stats, ".tsv") + "_sampleMAF_${sample_maf_cutoff}.tsv",
-                filter_string = sample_filter_string
+                filter_string = sample_filter_string,
+                container_source = container_source
         }
     }
 
@@ -52,7 +56,8 @@ workflow summarize_gwas_wf{
             input:
                 tsv_input = sample_maf_summary_stats,
                 output_filename = basename(sample_maf_summary_stats, ".tsv") + "_popMAF_${pop_maf_cutoff}.tsv",
-                filter_string = pop_filter_string
+                filter_string = pop_filter_string,
+                container_source = container_source
         }
     }
 
@@ -68,7 +73,8 @@ workflow summarize_gwas_wf{
                 col_position = pos_colname,
                 col_p = pvalue_colname,
                 output_basename = basename(summary_stats, ".tsv") + "_${pvalue_colname}",
-                mem_gb = plot_mem_gb
+                mem_gb = plot_mem_gb,
+                container_source = container_source
         }
 
     }
@@ -80,7 +86,8 @@ workflow summarize_gwas_wf{
             input:
                 tsv_input = summary_stats,
                 output_filename = basename(summary_stats, ".tsv") + "_${pvalue_colname}_${sig_alpha}.tsv",
-                filter_string = "--is-numeric '${pvalue_colname}' --le '${pvalue_colname}:${sig_alpha}'"
+                filter_string = "--is-numeric '${pvalue_colname}' --le '${pvalue_colname}:${sig_alpha}'",
+                container_source = container_source
         }
 
     }
@@ -88,7 +95,8 @@ workflow summarize_gwas_wf{
     # Gzip summary stats for downstream easiness
     call IO.gzip{
         input:
-            input_file = summary_stats
+            input_file = summary_stats,
+            container_source = container_source
     }
 
     output{
