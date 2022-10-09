@@ -28,7 +28,7 @@ workflow convert_variant_ids_wf{
     # Convert resources
     Int cpu = 1
     Int mem_gb = 4
-    String docker = "rtibiocloud/convert_variant_ids:v1_5f1842c"
+    String docker = "rtibiocloud/convert_variant_ids:v1_7b4adf9"
 
     # Sort resources
     Int sort_cpu = 1
