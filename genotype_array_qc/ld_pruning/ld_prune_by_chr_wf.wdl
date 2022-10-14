@@ -1,6 +1,6 @@
 import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" as LD
 
-workflow ld_prune_wf{
+workflow ld_prune_by_chr_wf{
     Array[File] bed_ins
     Array[File] bim_ins
     Array[File] fam_ins
