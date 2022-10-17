@@ -16,7 +16,6 @@ workflow ld_prune_by_chr_wf{
     Float? r2_threshold
     Float? vif_threshold
     Int? x_chr_mode
-    Float? maf
 
     Int cpu
     Int mem_gb
