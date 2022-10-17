@@ -10,12 +10,14 @@ workflow ld_prune_by_chr_wf{
     File? exclude_regions
     Float? maf
     String ld_type = "indep-pairphase"
-    Int window_size
-    Int step_size
+    Int? window_size
+    Int? step_size
     String? window_size_unit
     Float? r2_threshold
     Float? vif_threshold
     Int? x_chr_mode
+    Float? maf
+    File? exclude_regions
 
     Int cpu
     Int mem_gb
@@ -32,11 +34,11 @@ workflow ld_prune_by_chr_wf{
                 window_size = window_size,
                 step_size = step_size,
                 r2_threshold = r2_threshold,
-                cpu = ld_cpu,
-                mem_gb = ld_mem_gb,
-                maf = min_ld_maf,
+                cpu = cpu,
+                mem_gb = mem_gb,
+                maf = maf,
                 chr = chrs[index],
-                exclude_regions = ld_exclude_regions
+                exclude_regions = exclude_regions
         }
     }
 
