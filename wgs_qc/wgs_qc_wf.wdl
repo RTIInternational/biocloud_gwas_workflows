@@ -7,9 +7,9 @@ import "biocloud_gwas_workflows/genotype_array_qc/sex_check/sex_check_wf.wdl" as
 import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
 
 workflow genotype_array_qc_wf{
-    File bed
-    File bim
-    File fam
+    Array[File] beds
+    Array[File] bims
+    Array[File] fams
     Array[String] chrs
     Array[String]? hwe_chrs # intended to be used in cases where the cohort is all-male or nearly all male and to tell the hwe_wf to skip chrx
     Array[File] id_legend_files
@@ -145,64 +145,73 @@ workflow genotype_array_qc_wf{
         }
     }
 
-    # Remove phenotype from fam file
-    call PLINK.remove_fam_phenotype{
-        input:
-            fam_in = fam,
-            output_basename = "${output_basename}.no_pheno"
+    
+    
+    scatter(chr in range(length(chrs))){
+        # Remove phenotype from fam file
+        call PLINK.remove_fam_phenotype{
+            input:
+                fam_in = fams[chr],
+                output_basename = "${output_basename[chr]}.no_pheno"
+        }
+
+        # Fix founder information in pedigree to make sure mother and father ids actually exist in dataset
+        call PLINK.make_founders{
+            input:
+                fam_in = remove_fam_phenotype.fam_out,
+                output_basename = "${output_basename}.chr${chr}.no_pheno.make_founders"
+        }
+
+        # Count initial number of samples and sites
+        call UTILS.wc as init_snp_count{
+            input:
+                input_file = bims[chr]
+        }
+
+        # Count initial number of samples and sites
+        call UTILS.wc as init_sample_count{
+            input:
+                input_file = fams[chr]
+        }
+
+        # Convert variant IDs to impute2 format and remove duplicate variants
+        call IDCONVERT.impute2_id_conversion_wf as convert_impute2_ids{
+            input:
+                bed_in = beds[chr],
+                bim_in = bims[chr],
+                fam_in = make_founders.fam_out,
+                output_basename = output_basenames[chr],
+                chrs = chrs[chr],
+                id_legend_files = id_legend_files,
+                in_monomorphic_allele = in_monomorphic_allele,
+                in_deletion_allele = in_deletion_allele,
+                ref_deletion_allele = id_legend_deletion_allele,
+                rescue_rsids = rescue_monomorph_rsids,
+                remove_duplicates = true,
+                build_code = build_code,
+                id_convert_cpu = id_convert_cpu,
+                id_convert_mem_gb = id_convert_mem_gb,
+                plink_cpu = plink_filter_cpu,
+                plink_mem_gb = plink_filter_mem_gb
+        }
+
+        # Count sites after removing dups
+        call UTILS.wc as impute2_snp_count{
+            input:
+                input_file = convert_impute2_ids.bim_out
+        }
+
+        # LD Pruning
+    
     }
 
-    # Fix founder information in pedigree to make sure mother and father ids actually exist in dataset
-    call PLINK.make_founders{
-        input:
-            fam_in = remove_fam_phenotype.fam_out,
-            output_basename = "${output_basename}.no_pheno.make_founders"
-    }
-
-    # Count initial number of samples and sites
-    call UTILS.wc as init_snp_count{
-        input:
-            input_file = bim
-    }
-
-    # Count initial number of samples and sites
-    call UTILS.wc as init_sample_count{
-        input:
-            input_file = fam
-    }
-
-    # Convert variant IDs to impute2 format and remove duplicate variants
-    call IDCONVERT.impute2_id_conversion_wf as convert_impute2_ids{
-        input:
-            bed_in = bed,
-            bim_in = bim,
-            fam_in = make_founders.fam_out,
-            output_basename = output_basename,
-            chrs = chrs,
-            id_legend_files = id_legend_files,
-            in_monomorphic_allele = in_monomorphic_allele,
-            in_deletion_allele = in_deletion_allele,
-            ref_deletion_allele = id_legend_deletion_allele,
-            rescue_rsids = rescue_monomorph_rsids,
-            remove_duplicates = true,
-            build_code = build_code,
-            id_convert_cpu = id_convert_cpu,
-            id_convert_mem_gb = id_convert_mem_gb,
-            plink_cpu = plink_filter_cpu,
-            plink_mem_gb = plink_filter_mem_gb
-    }
-
-    # Count sites after removing dups
-    call UTILS.wc as impute2_snp_count{
-        input:
-            input_file = convert_impute2_ids.bim_out
-    }
+    # Merge LD pruned data
 
     # Remove failed subjects with >99% missing data so they don't throw off anything downstream
     call PLINK.make_bed as filter_failed_samples{
         input:
-            bed_in = convert_impute2_ids.bed_out,
-            bim_in = convert_impute2_ids.bim_out,
+            bed_in = <output_from_merge_ld_prune>,
+            bim_in = <output_from_merge_ld_prune>,
             fam_in = convert_impute2_ids.fam_out,
             output_basename = "${output_basename}.filter_failed_samples",
             mind = 0.99,
