@@ -1,4 +1,4 @@
-import "biocloud_gwas_workflows/genotype_array_qc/impute2_id_conversion/impute2_id_conversion_wf.wdl" as IMPUTE2
+import "biocloud_gwas_workflows/genotype_array_qc/impute2_id_conversion/impute2_id_conversion_wf.wdl" as IDCONVERT
 
 workflow impute2_id_conversion_by_chr_wf{
     Array[File] bed_ins
@@ -10,28 +10,32 @@ workflow impute2_id_conversion_by_chr_wf{
 
     String build_code
 
-    Int plink_cpu
-    Int plink_mem_gb
-    Int id_convert_cpu
-    Int id_convert_mem_gb
+    Int plink_cpu = 1
+    Int plink_mem_gb = 2
+    Int id_convert_cpu = 1
+    Int id_convert_mem_gb = 3
 
     scatter(index in range(length(chrs))){
 
-        call LD.ld_prune_wf as ld_prune{
+        # Convert variant IDs to impute2 format and remove duplicate variants
+        call IDCONVERT.impute2_id_conversion_wf as convert_impute2_ids{
             input:
                 bed_in = bed_ins[index],
                 bim_in = bim_ins[index],
                 fam_in = fam_ins[index],
                 output_basename = output_basenames[index],
-                ld_type = ld_type,
-                window_size = window_size,
-                step_size = step_size,
-                r2_threshold = r2_threshold,
-                cpu = cpu,
-                mem_gb = mem_gb,
-                maf = maf,
-                chr = chrs[index],
-                exclude_regions = exclude_regions
+                chrs = chrs[index],
+                id_legend_files = id_legend_files[index],
+                in_monomorphic_allele = in_monomorphic_allele,
+                in_deletion_allele = in_deletion_allele,
+                ref_deletion_allele = id_legend_deletion_allele,
+                rescue_rsids = rescue_monomorph_rsids,
+                remove_duplicates = true,
+                build_code = build_code,
+                id_convert_cpu = id_convert_cpu,
+                id_convert_mem_gb = id_convert_mem_gb,
+                plink_cpu = plink_filter_cpu,
+                plink_mem_gb = plink_filter_mem_gb
         }
     }
 
