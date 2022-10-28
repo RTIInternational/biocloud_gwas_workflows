@@ -34,8 +34,8 @@ workflow impute2_id_conversion_by_chr_wf{
                 build_code = build_code,
                 id_convert_cpu = id_convert_cpu,
                 id_convert_mem_gb = id_convert_mem_gb,
-                plink_cpu = plink_filter_cpu,
-                plink_mem_gb = plink_filter_mem_gb
+                plink_cpu = plink_cpu,
+                plink_mem_gb = plink_mem_gb
         }
     }
 
