@@ -9,6 +9,10 @@ workflow impute2_id_conversion_by_chr_wf{
     Array[File] output_basenames
 
     String build_code
+    String in_monomorphic_allele = "0"
+    String in_deletion_allele = "-"
+    String id_legend_deletion_allele = "."
+    Boolean rescue_monomorph_rsids = true
 
     Int plink_cpu = 1
     Int plink_mem_gb = 2
