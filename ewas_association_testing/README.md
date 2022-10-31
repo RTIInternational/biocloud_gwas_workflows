@@ -1,6 +1,6 @@
 ### To-do
 
-- [ ] Make phenotype file input be an rda object so that formatting is not an issue.
+- [X] Make phenotype file input be an rda object so that formatting is not an issue.
 - [ ] Remove the FDR option, the algorithm we implemented just takes too long.
 
 <br><br>
