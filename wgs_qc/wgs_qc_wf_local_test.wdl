@@ -1,11 +1,11 @@
-import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
-import "biocloud_gwas_workflows/genotype_array_qc/impute2_id_conversion/impute2_id_conversion_wf.wdl" as IDCONVERT
-import "biocloud_gwas_workflows/genotype_array_qc/STRUCTURE/classic_structure_split_wf.wdl" as STRUCTURE
-import "biocloud_gwas_workflows/genotype_array_qc/hwe_filter/hwe_filter_wf.wdl" as HWE
-import "biocloud_gwas_workflows/genotype_array_qc/relatedness/relatedness_wf.wdl" as REL
-import "biocloud_gwas_workflows/genotype_array_qc/sex_check/sex_check_wf.wdl" as SEX
-import "biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" LD
-import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
+import "/home/ubuntu/rti-heroin/aa-ref-panel/test/biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
+import "/home/ubuntu/rti-heroin/aa-ref-panel/test/biocloud_gwas_workflows/genotype_array_qc/impute2_id_conversion/impute2_id_conversion_wf.wdl" as IDCONVERT
+import "/home/ubuntu/rti-heroin/aa-ref-panel/test/biocloud_gwas_workflows/genotype_array_qc/STRUCTURE/classic_structure_split_wf.wdl" as STRUCTURE
+import "/home/ubuntu/rti-heroin/aa-ref-panel/test/biocloud_gwas_workflows/genotype_array_qc/hwe_filter/hwe_filter_wf.wdl" as HWE
+import "/home/ubuntu/rti-heroin/aa-ref-panel/test/biocloud_gwas_workflows/genotype_array_qc/relatedness/relatedness_wf.wdl" as REL
+import "/home/ubuntu/rti-heroin/aa-ref-panel/test/biocloud_gwas_workflows/genotype_array_qc/sex_check/sex_check_wf.wdl" as SEX
+import "/home/ubuntu/rti-heroin/aa-ref-panel/test/biocloud_gwas_workflows/genotype_array_qc/ld_pruning/ld_prune_wf.wdl" LD
+import "/home/ubuntu/rti-heroin/aa-ref-panel/test/biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
 
 workflow genotype_array_qc_wf{
     Array[File] beds
