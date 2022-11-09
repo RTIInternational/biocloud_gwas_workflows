@@ -19,17 +19,19 @@ workflow impute2_id_conversion_by_chr_wf{
     Int id_convert_cpu = 1
     Int id_convert_mem_gb = 3
 
-    scatter(index in range(length(chrs))){
+    scatter(i in range(length(chrs))){
+        Int chr = chrs[i]
 
+        Array[String] chr_array = [chr]
         # Convert variant IDs to impute2 format and remove duplicate variants
         call IDCONVERT.impute2_id_conversion_wf as convert_impute2_ids{
             input:
-                bed_in = bed_ins[index],
-                bim_in = bim_ins[index],
-                fam_in = fam_ins[index],
-                output_basename = output_basenames[index],
-                chrs = chrs[index],
-                id_legend_files = id_legend_files[index],
+                bed_in = bed_ins[i],
+                bim_in = bim_ins[i],
+                fam_in = fam_ins[i],
+                output_basename = output_basenames[i],
+                chrs = chr_array,
+                id_legend_files = id_legend_files,
                 in_monomorphic_allele = in_monomorphic_allele,
                 in_deletion_allele = in_deletion_allele,
                 ref_deletion_allele = id_legend_deletion_allele,
