@@ -1,0 +1,5 @@
+{
+    "default_runtime_attributes": {
+      "queueArn": "arn:aws:batch:us-east-1:404545384114:job-queue/priority-p50-synergy-core-0218755-001-002-001"
+    }
+}
