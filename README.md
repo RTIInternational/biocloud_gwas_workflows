@@ -3,7 +3,7 @@ Portable WDL workflows for automating GWAS analysis pipelines at scale
 
 ## Cloning this repo and biocloud_wdl_tools submodule together
 	
-	git clone --recurse-submodules https://github.rti.org/RTI/biocloud_gwas_workflows.git
+	git clone --recurse-submodules https://github.com/RTIInternational/biocloud_gwas_workflows
 
 ## Pulling latest version of biocloud_wdl_tools into master branch
 
