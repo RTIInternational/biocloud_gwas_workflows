@@ -7,7 +7,10 @@ For example, convert GWAS summary statistics from GRCh38 to GRCh37, or vice vers
 # Step 1: Select chainfile
 * Navigate to the Human genome liftOver files at http://hgdownload.soe.ucsc.edu/downloads.html#human.
 * Click "LiftOver files" under the sub-header of your starting genome build. For example, if my summary statistics are currently in build 38 I would click on [LiftOver files](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/) under the sub-header `Dec. 2013 (GRCh38/hg38)`.
-* Copy the link to the desired build conversion. For example, if my sumstats are currenlty in build 38 and I want to convert to build 37 the link would be `http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz`.
+* Copy the link to the desired build conversion. For example, if my sumstats are currenlty in build 38 and I want to convert to build 37 the link would be `http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz`. Other commonly used liftover files:
+* `https://hgdownload.soe.ucsc.edu/goldenPath/hg18/liftOver/hg18ToHg19.over.chain.gz`
+* `https://hgdownload.soe.ucsc.edu/goldenPath/hg18/liftOver/hg18ToHg38.over.chain.gz`
+* `https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz`
 
 # Step 2: Prepare input file
 The inputs JSON file is where the parameters are set. 
