@@ -57,6 +57,8 @@ workflow ld_prune_wf{
             fam_in = fam_in,
             output_basename = output_basename,
             chr = chr,
+            cpu = cpu,
+            mem_gb = mem_gb,
             extract = prune_ld_markers.include_markers
     }
 
