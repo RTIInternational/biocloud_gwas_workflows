@@ -6,6 +6,8 @@ import "biocloud_gwas_workflows/helper_workflows/summarize_gwas_wf_v2.wdl" as SU
 
 workflow gem_gwas_bgen_wf{
 
+    String container_source = "docker"
+
     Array[String] chrs
 
     # GEM Input/Output File Options:
@@ -164,6 +166,7 @@ workflow gem_gwas_bgen_wf{
         # Generate summary of
         call SUM.summarize_gwas_wf as summarize_filtered_sumstats{
             input:
+                container_source = container_source,
                 summary_stats_input = cat_sumstats.tsv_output,
                 output_basename = basename(cat_sumstats.tsv_output, ".tsv"),
                 min_rsq = min_rsq,
