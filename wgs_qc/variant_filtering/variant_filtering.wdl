@@ -1,8 +1,8 @@
-task make_bed{
+task variant_filtering{
     File vcf_in
     String out_prefix
 
-    String docker = "rtibiocloud/plink:v2.0_888cf13" # need to change!
+    String docker = "ubuntu:18.04"
     Int cpu = 1
     Int mem_gb = 2
     Int max_retries = 3
