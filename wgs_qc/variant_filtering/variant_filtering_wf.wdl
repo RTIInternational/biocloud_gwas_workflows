@@ -2,7 +2,7 @@ task variant_filtering{
     File vcf_in
     String out_prefix
 
-    String docker = "ubuntu:18.04"
+    String docker = "perl:threaded-bullseye"
     Int cpu = 1
     Int mem_gb = 2
     Int max_retries = 3
