@@ -104,6 +104,9 @@ workflow variant_filtering_wf{
     Array[String] chrs
     Array[String] out_prefixes
 
+    Int cpu = 1
+    Int mem_gb = 4
+
     # Call variant filtering task on each chromosome in parallel
     scatter(index in range(length(vcfs_in))){
 
@@ -111,6 +114,8 @@ workflow variant_filtering_wf{
             input:
                 vcf_in = vcfs_in[index],
                 out_prefix = out_prefixes[index],
+                cpu = cpu,
+                mem_gb = mem_gb,
         }
     }
 
