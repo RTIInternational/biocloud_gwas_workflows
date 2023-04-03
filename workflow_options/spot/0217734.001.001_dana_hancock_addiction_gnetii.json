@@ -1,0 +1,5 @@
+{
+    "default_runtime_attributes": {
+      "queueArn": "arn:aws:batch:us-east-1:404545384114:job-queue/default-Dana-Addiction-GNetii-R01-0217734-001-001"
+    }
+}
