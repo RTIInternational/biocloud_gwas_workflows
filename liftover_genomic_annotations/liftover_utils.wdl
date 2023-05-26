@@ -205,7 +205,7 @@ task  final_sumstats {
         header = sumSTATS.readline().split()
         print(header)
         outUNMAPPED.write(" ".join(header) + "\n")
-        header[position_col] = "GRCh{}_POS".format(new_build)
+        header[position_col] = "hg{}_POS".format(new_build)
         header = " ".join(header) + "\n" # change to space separated
         outF.write(header)
     
