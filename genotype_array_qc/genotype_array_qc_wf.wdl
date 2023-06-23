@@ -127,6 +127,8 @@ workflow genotype_array_qc_wf{
     Int king_mem_gb_per_split = 8
     Int pca_cpu = 4
     Int pca_mem_gb = 8
+    Int structure_postprocess_cpu = 1
+    Int structure_postprocess_mem_gb = 2
 
     # Check some common errors to save time because otherwise it would take like 2 hours to catch these
     # Quit if ancestry definitions and ancestries aren't same length
@@ -251,7 +253,9 @@ workflow genotype_array_qc_wf{
             structure_cpu = structure_cpu,
             structure_mem_gb = structure_mem_gb,
             plink_cpu = plink_filter_cpu,
-            plink_mem_gb = plink_filter_mem_gb
+            plink_mem_gb = plink_filter_mem_gb,
+            structure_postprocess_cpu = structure_postprocess_cpu,
+            structure_postprocess_mem_gb = structure_postprocess_mem_gb
     }
 
     # Filter out any ancestries with less than a minimum cutoff of samples

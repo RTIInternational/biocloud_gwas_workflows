@@ -166,6 +166,8 @@ workflow structure_wf{
     Int merge_bed_mem_gb = 8
     Int plink_cpu = 1
     Int plink_mem_gb = 2
+    Int structure_postprocess_cpu = 1
+    Int structure_postprocess_mem_gb = 2
 
     # Set false to do unsuperviesed clustering (but realistically don't touch this)
     # Controls whether structure uses ref pop assignments, which it pretty much always should
@@ -429,7 +431,9 @@ workflow structure_wf{
             psam = ancestry_psam,
             ref_pop_type = ancestry_pop_type,
             ancestry_definitions = ancestry_definitions,
-            output_basename = output_basename
+            output_basename = output_basename,
+            cpu = structure_postprocess_cpu,
+            mem_gb = structure_postprocess_mem_gb
     }
 
     # Order keep files to be same order as input ancestry groups
