@@ -1,5 +1,5 @@
 {
     "default_runtime_attributes": {
-      "queueArn": "arn:aws:batch:us-east-1:404545384114:job-queue/default-omics-hiv-lr-0216573-000-001"
+      "queueArn": "arn:aws:batch:us-east-1:404545384114:job-queue/default-hiv-omics-0216573-000-001"
     }
 }
