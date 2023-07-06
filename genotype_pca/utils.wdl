@@ -1,5 +1,8 @@
 task locate_high_ld_regions {
     File bimfile
+    File reference_file
+    String output_file
+
 
     String docker
     String cpu = 1
@@ -7,18 +10,36 @@ task locate_high_ld_regions {
 
     command <<<
 
-        awk '
-         {if (($1==5 && $4 >= 43964243 && $4 <= 51464243) || 
-             ($1==6 && $4 >= 24892021  && $4 <= 33392022) || 
-             ($1==8 && $4 >= 7962590   && $4 <= 11962591)  || 
-             ($1==11 && $4 >= 45043424 && $4 <= 57243424))
-            {print $2}
-         }' ${bimfile} > "high_ld_regions.remove"
+      python - <<EOF
+      reference_file = "${reference_file}"
+      bim_file = "${bimfile}"
+      output_file = "${output_file}"
 
+      regions = []
+      with open(reference_file) as ref_file:
+          next(ref_file)  # Skip header
+          for line in ref_file:
+              chrom, start, end = line.strip().split()
+              regions.append((chrom, int(start), int(end)))
+
+      with open(bim_file) as bim_file, open(output_file, 'w') as out_file:
+          for line in bim_file:
+              columns = line.strip().split()
+              chrom = columns[0]
+              snp = columns[1]
+              pos = int(columns[3])
+
+              # Check each region to find a match
+              for region in regions:
+                  if chrom == region[0]:
+                      if region[1] <= pos <= region[2]:
+                          # Write SNP to the output file
+                          out_file.write(snp + "\n")
+      EOF
     >>>
 
     output {
-        File high_ld_regions = "high_ld_regions.remove"
+        File snps_in_high_ld_regions = "${output_file}"
     }
 
     runtime {
@@ -29,7 +50,9 @@ task locate_high_ld_regions {
 
     parameter_meta {
         bimfile: "Plink formatted bimfile."
-        docker: "Docker image"
+        reference_file: "Tab Separated text file containing regions of high LD. Should contain 3 columns and a header: chromosome, start position, and stop position. See https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD) for examples."
+        output_file: "Name of the output file"
+        docker: "Docker image with python3, such as python:3.10"
         cpu: "Number of CPUs for the image."
         mem: "Amount of RAM in GB for the image."
     }

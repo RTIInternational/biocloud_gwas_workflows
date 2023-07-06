@@ -9,16 +9,22 @@ workflow eigenstrat_smartpca{
     File bimfile
     File famfile
 
+    File reference_file
+    String high_ld_output_file = "remove_high_ld_regions.txt"
+
     String docker_ubuntu = "ubuntu:22.04"
+    String docker_python3 = "python:3.10"
     String docker_plink1_9 = "rtibiocloud/plink:v1.9_178bb91"
     String docker_eigensoft = "rtibiocloud/eigensoft:v6.1.4_2d0f99b"
     String cpu = 1
     String mem = 2
 
-    call UTILS.locate_high_ld_regions {
+    call UTILS.locate_high_ld_regions as locate_ld_regions {
         input:
             bimfile = bimfile,
-            docker = docker_ubuntu,
+            docker = docker_python3,
+            reference_file = reference_file,
+            output_file = high_ld_output_file,
             cpu = cpu,
             mem = mem
     }
@@ -30,7 +36,7 @@ workflow eigenstrat_smartpca{
             bedfile = bedfile, 
             bimfile = bimfile,
             famfile = famfile, 
-            high_ld_regions = locate_high_ld_regions.high_ld_regions,
+            high_ld_regions = locate_ld_regions.snps_in_high_ld_regions,
             docker = docker_plink1_9,
             cpu = cpu,
             mem = mem
