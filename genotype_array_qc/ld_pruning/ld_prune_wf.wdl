@@ -8,6 +8,7 @@ workflow ld_prune_wf{
     File output_basename
 
     File? exclude_regions
+    File? exclude
     String? chr
     Float? maf
     String ld_type = "indep-pairphase"
@@ -46,7 +47,8 @@ workflow ld_prune_wf{
             maf = maf,
             chr = chr,
             bad_ld = (get_num_samples.num_lines <= 50),
-            exclude_regions = exclude_regions
+            exclude_regions = exclude_regions,
+            exclude = exclude
     }
 
     # Filter to include only the LD-pruned markers returned from previous step
