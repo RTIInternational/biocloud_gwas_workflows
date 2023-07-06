@@ -1,8 +1,152 @@
-# Principle components analysis (PCA)
-Perform a PCA on the genotype data and extract the top10 eigenvectors.
+# WDL workflow eigenstrat_smartpca: Principle components analysis 
+
+This repository contains a WDL workflow named eigenstrat_smartpca. This workflow performs Eigenstrat PCA analysis on genotype data, including steps for locating high LD regions, removing high LD regions, LD pruning, merging pruned files, extracting LD variants, renaming BIM and FAM files, running SMARTPCA, and creating the final output file.
+<br><br>
+
+## Workflow steps
+
+The `eigenstrat_smartpca` workflow consists of the following steps:
+
+<details>
+  <summary>Step 1: locate_high_ld_regions</summary>
+  
+   - Description: This step identifies high LD regions in the genotype data.
+   - Inputs:
+     - `bimfile`: BIM file containing variant information
+     - `docker`: Docker image (Ubuntu 18.04)
+     - `cpu`: Number of CPUs to allocate
+     - `mem`: Amount of memory to allocate
+</details>
 
 
-### Authors
-For any questions, comments, concerns, or bugs, send me an email or slack and I'll be happy to help.
+<details>
+<summary>Step 2: remove_high_ld_regions</summary>
+  
+   - Description: This step removes high LD regions from the genotype data.
+   - Inputs:
+     - `study_name`: Name of the study
+     - `ancestry`: Ancestry information
+     - `bedfile`: BED file containing genotype data
+     - `bimfile`: BIM file containing variant information
+     - `famfile`: FAM file containing sample information
+     - `high_ld_regions`: High LD regions identified in the previous step
+     - `docker`: Docker image (Plink v1.9)
+     - `cpu`: Number of CPUs to allocate
+     - `mem`: Amount of memory to allocate
+</details>
 
-Jesse Marks (jmarks@rti.org)
+
+
+<details>
+<summary>Step 3: ld_pruning</summary>
+
+   - Description: This step performs LD pruning on the genotype data.
+   - Inputs:
+     - `study_name`: Name of the study
+     - `ancestry`: Ancestry information
+     - `bedfile`: BED file containing genotype data
+     - `bimfile`: BIM file containing variant information
+     - `famfile`: FAM file containing sample information
+     - `docker`: Docker image (Plink v1.9)
+     - `cpu`: Number of CPUs to allocate
+     - `mem`: Amount of memory to allocate
+</details>
+
+<details>
+<summary>Step 4: merge_pruned</summary>
+  
+   - Description: This step merges the pruned genotype files.
+   - Inputs:
+     - `pruned_files`: List of pruned genotype files
+     - `docker`: Docker image (Ubuntu 18.04)
+     - `cpu`: Number of CPUs to allocate
+     - `mem`: Amount of memory to allocate
+</details>
+
+
+
+<details>
+<summary>Step 5: extract_ld_variants</summary>
+
+  - Description: This step extracts LD variants from the genotype data.
+   - Inputs:
+     - `study_name`: Name of the study
+     - `ancestry`: Ancestry information
+     - `bedfile`: BED file containing genotype data
+     - `bimfile`: BIM file containing variant information
+     - `famfile`: FAM file containing sample information
+     - `combined_variants`: Combined variant information from the previous step
+     - `docker`: Docker image (Plink v1.9)
+     - `cpu`: Number of CPUs to allocate
+     - `mem`: Amount of memory to allocate
+</details>
+
+
+ 
+<details>
+<summary>Step 6: rename_bimfam</summary>
+
+   - Description: This step renames the BIM and FAM files.
+   - Inputs:
+     - `bimfile`: BIM file to rename
+     - `famfile`: FAM file to rename
+     - `docker`: Docker image (Plink v1.9)
+     - `cpu`: Number of CPUs to allocate
+     - `mem`: Amount of memory to allocate  
+</details>
+
+
+
+
+<details>
+<summary>Step 7: run_smartpca</summary>
+
+   - Description: This step runs SMARTPCA analysis on the genotype data.
+   - Inputs:
+     - `ancestry`: Ancestry information
+     - `study_name`: Name of the study
+     - `bedfile`: BED file containing genotype data
+     - `bimfile`: Renamed BIM file
+     - `famfile`: Renamed FAM file
+     - `docker`: Docker image (Eigensoft v6.1.4)
+     - `cpu`: Number of CPUs to allocate
+     - `mem`: Amount of memory to allocate  
+</details>
+
+
+<details>
+<summary>Step 8: create_final_file</summary>
+
+   - Description: This step creates the final output file.
+   - Inputs:
+     - `study_name`: Name of the study
+     - `ancestry`: Ancestry information
+     - `evec_file`: SMARTPCA eigenvectors file
+     - `famfile`: FAM file containing sample information
+     - `docker`: Docker image (Ubuntu 18.04)
+     - `cpu`: Number of CPUs to allocate
+     - `mem`: Amount of memory to allocate  
+</details>
+
+<br><br>
+
+
+## Usage
+
+To use this WDL workflow, follow these steps:
+
+1. Clone the repository to your local machine.
+1. Modify the `inputs.json` file to provide the required inputs:
+   - `bedfile`: Genotype data in BED format (on S3).
+   - `bimfile`: Variant information in BIM format (on S3).
+   - `famfile`: Sample information in FAM format (on S3).
+   - `study_name`: Name of the study.
+   - `ancestry`: Ancestry information.
+   - Modify any other desired parameters, such as the Docker images and resource allocation (CPU and memory).
+1. Execute the WDL workflow. See the [WDL/Cromwell Guide](https://researchtriangleinstitute.sharepoint.com/sites/OmicsGroup/_layouts/15/Doc.aspx?sourcedoc={a2b17bca-8f68-4450-a563-f80609bd497a}&action=edit&wd=target%28Computing%20Infrastructure.one%7Ca745a153-ea3f-4b6e-8f16-9163bfe64932%2FWDL%5C%2FCromwell%20Guide%7C80665feb-2dbf-481d-92d8-cf8c8e7d30dc%2F%29&wdorigin=703) on Microsoft Teams
+1. Once the workflow completes, the final output file (`final_file`) will be generated. You can locate this on S3 at: `s3://rti-cromwell-output/cromwell-execution/eigenstrat_smartpca/<job-id>`
+
+<br><br>
+
+## References
+For any questions or comments, send me an email or slack and I'll be happy to help: Jesse Marks (jmarks@rti.org)
