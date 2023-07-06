@@ -85,6 +85,7 @@ workflow convert_variant_ids_wf{
     }
 
     output{
-        Array[File] results_files = output_files
+        Array[File] results_files = convert_variant_ids.output_file
+        Array[File] log_files = convert_variant_ids.log
     }
 }
