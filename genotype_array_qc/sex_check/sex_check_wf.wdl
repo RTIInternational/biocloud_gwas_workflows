@@ -100,21 +100,33 @@ workflow sex_check_wf{
             delimiter = delimiter
     }
 
-    # Make sure PAR/NONPAR regions are split
-    call NORM.normalize_sex_chr_wf{
+    # Update sex based on pheno file
+    call PLINK.make_bed as update_sex{
         input:
             bed_in = bed_in,
             bim_in = bim_in,
             fam_in = fam_in,
+            update_sex = format_phenotype_file.phenotype_out,
+            output_basename = "${output_basename}.updated_sex",
+            cpu = plink_cpu,
+            mem_gb = plink_mem_gb
+    }
+
+    # Make sure PAR/NONPAR regions are split
+    call NORM.normalize_sex_chr_wf{
+        input:
+            bed_in = update_sex.bed_out,
+            bim_in = update_sex.bim_out,
+            fam_in = update_sex.fam_out,
             expected_chrs = ["23","25"],
             build_code = build_code,
             no_fail = no_fail,
-            output_basename = output_basename,
+            output_basename = "${output_basename}.x_split",
             plink_cpu = plink_cpu,
             plink_mem_gb = plink_mem_gb
     }
 
-    # Get LD pruning set
+    # Get LD pruned set
     call LD.ld_prune_wf as ld_prune{
         input:
             bed_in = normalize_sex_chr_wf.bed_out,
@@ -143,7 +155,6 @@ workflow sex_check_wf{
             female_max_f = female_max_f,
             male_min_f = male_min_f,
             output_basename = "${output_basename}.sexcheck",
-            update_sex = format_phenotype_file.phenotype_out,
             cpu = sex_check_cpu,
             mem_gb = sex_check_mem_gb
     }
