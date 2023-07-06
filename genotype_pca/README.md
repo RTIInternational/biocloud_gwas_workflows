@@ -8,7 +8,7 @@ This repository contains a WDL workflow named eigenstrat_smartpca. This workflow
 The `eigenstrat_smartpca` workflow consists of the following steps:
 
 <details>
-  <summary>Step 1: locate_high_ld_regions</summary>
+  <summary><b>Step 1:</b> locate_high_ld_regions</summary>
   
    - Description: This step identifies high LD regions in the genotype data.
    - Inputs:
@@ -20,7 +20,7 @@ The `eigenstrat_smartpca` workflow consists of the following steps:
 
 
 <details>
-<summary>Step 2: remove_high_ld_regions</summary>
+<summary><b>Step 2:</b> remove_high_ld_regions</summary>
   
    - Description: This step removes high LD regions from the genotype data.
    - Inputs:
@@ -33,12 +33,13 @@ The `eigenstrat_smartpca` workflow consists of the following steps:
      - `docker`: Docker image (Plink v1.9)
      - `cpu`: Number of CPUs to allocate
      - `mem`: Amount of memory to allocate
+    <br>
 </details>
 
 
 
 <details>
-<summary>Step 3: ld_pruning</summary>
+<summary><b>Step 3:</b> ld_pruning</summary>
 
    - Description: This step performs LD pruning on the genotype data.
    - Inputs:
@@ -50,10 +51,11 @@ The `eigenstrat_smartpca` workflow consists of the following steps:
      - `docker`: Docker image (Plink v1.9)
      - `cpu`: Number of CPUs to allocate
      - `mem`: Amount of memory to allocate
+     <br>
 </details>
 
 <details>
-<summary>Step 4: merge_pruned</summary>
+<summary><b>Step 4:</b>: merge_pruned</summary>
   
    - Description: This step merges the pruned genotype files.
    - Inputs:
@@ -61,12 +63,13 @@ The `eigenstrat_smartpca` workflow consists of the following steps:
      - `docker`: Docker image (Ubuntu 18.04)
      - `cpu`: Number of CPUs to allocate
      - `mem`: Amount of memory to allocate
+     <br>
 </details>
 
 
 
 <details>
-<summary>Step 5: extract_ld_variants</summary>
+<summary><b>Step 5:</b> extract_ld_variants</summary>
 
   - Description: This step extracts LD variants from the genotype data.
    - Inputs:
@@ -79,12 +82,13 @@ The `eigenstrat_smartpca` workflow consists of the following steps:
      - `docker`: Docker image (Plink v1.9)
      - `cpu`: Number of CPUs to allocate
      - `mem`: Amount of memory to allocate
+<br>
 </details>
 
 
  
 <details>
-<summary>Step 6: rename_bimfam</summary>
+<summary><b>Step 6:</b> rename_bimfam</summary>
 
    - Description: This step renames the BIM and FAM files.
    - Inputs:
@@ -99,7 +103,7 @@ The `eigenstrat_smartpca` workflow consists of the following steps:
 
 
 <details>
-<summary>Step 7: run_smartpca</summary>
+<summary><b>Step 7:</b> run_smartpca</summary>
 
    - Description: This step runs SMARTPCA analysis on the genotype data.
    - Inputs:
@@ -111,11 +115,12 @@ The `eigenstrat_smartpca` workflow consists of the following steps:
      - `docker`: Docker image (Eigensoft v6.1.4)
      - `cpu`: Number of CPUs to allocate
      - `mem`: Amount of memory to allocate  
+<br>
 </details>
 
 
 <details>
-<summary>Step 8: create_final_file</summary>
+<summary><b>Step 8:</b> create_final_file</summary>
 
    - Description: This step creates the final output file.
    - Inputs:
@@ -126,6 +131,7 @@ The `eigenstrat_smartpca` workflow consists of the following steps:
      - `docker`: Docker image (Ubuntu 18.04)
      - `cpu`: Number of CPUs to allocate
      - `mem`: Amount of memory to allocate  
+<br>
 </details>
 
 <br><br>
