@@ -30,7 +30,7 @@ task locate_high_ld_regions {
               # Check each region to find a match
               for region in regions:
                   if chrom == region[0]:
-                      if region[1] <= pos <= region[2]:
+                      if region[1] < pos <= region[2]:
                           # Write SNP to the output file
                           out_file.write(snp + "\n")
       EOF
