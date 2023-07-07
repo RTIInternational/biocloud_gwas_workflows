@@ -227,10 +227,15 @@ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_377b
 </details>
 
 ### regions of high LD
+<details>
+  <summary>expand</summary>
+
 There are example files on S3 for genome build 37 and 38. These files were created from the wiki at: https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD).
 You can use these, or create your own an provide to the workflow.
-- s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.tsv
-- s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg38.tsv
+- `s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.tsv`
+- `s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg38.tsv`
+</details>
+
 
 <br><br>
 
