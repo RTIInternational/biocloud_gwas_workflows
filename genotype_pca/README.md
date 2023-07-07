@@ -163,7 +163,7 @@ To use this WDL workflow, follow these steps:
 
 <br><br>
 
-### example code
+## example code
 <details>
   <summary>expand</summary>
   
@@ -212,40 +212,30 @@ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_377b
     --aws-secret-access-key abcde12345
 ```
 </details>
+  
+  <br>
 
-### example input.json file
+## input.json
+See the `inputs.json` file in this repo for an example. Note that the docker images have defaults, thus it is not necessary to provide them unless you plan to use a different image that the defaults.
 
-<details>
-  <summary>expand</summary>
+<br>
 
+## regions of high LD
+Provide [BED-formatted](https://en.wikipedia.org/wiki/BED_(file_format)) files. BED starts are zero-based and BED ends are one-based ([ref](https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/bedtools/BEDTools-User-Manual.v4.pdf#%5B%7B%22num%22%3A381%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2C54%2C392.724%2C0%5D)). The workflow handles this with
 ```
-{
-  "eigenstrat_smartpca.study_name": "wihs2",
-  "eigenstrat_smartpca.ancestry": "eur",
-  "eigenstrat_smartpca.bedfile": "s3://rti-hiv/scratch/sgiamberardino/hiv/genotype_pca/0001/input/wihs2_no_sex_discrepancies.bed",
-  "eigenstrat_smartpca.bimfile": "s3://rti-hiv/scratch/sgiamberardino/hiv/genotype_pca/0001/input/wihs2_no_sex_discrepancies.bim",
-  "eigenstrat_smartpca.famfile": "s3://rti-hiv/scratch/sgiamberardino/hiv/genotype_pca/0001/input/wihs2_no_sex_discrepancies.fam",
-  "eigenstrat_smartpca.reference_file": "s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.tsv",
-  "eigenstrat_smartpca.docker_eigensoft": "rtibiocloud/eigensoft:v6.1.4_2d0f99b",
-  "eigenstrat_smartpca.docker_plink1_9": "rtibiocloud/plink:v1.9_178bb91",
-  "eigenstrat_smartpca.docker_ubuntu": "ubuntu:22.04",
-  "eigenstrat_smartpca.docker_python3": "python:3.9.10-slim-buster"
-}
+if region[1] < pos <= region[2]:
 ```
-</details>
-
-### regions of high LD
 <details>
-  <summary>expand</summary>
+  <summary>example BED files</summary>
 
-There are example files on S3 for genome build 37 and 38. These files were created from the wiki at: https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD).
-You can use these, or create your own an provide to the workflow.
-- `s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.tsv`
-- `s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg38.tsv`
+There are example BED files on S3 for genome build 37 and 38. These files were created using the wiki at: https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD).
+You can use these, or create your own to provide to the workflow.
+- `s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.bed`
+- `s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg38.bed`
 </details>
 
 
 <br><br>
 
-## References
-For any questions or comments, send me an email or slack and I'll be happy to help: Jesse Marks (jmarks@rti.org)
+## Contact
+For any questions or comments, send me an email and I'll be happy to help: Jesse Marks (jmarks@rti.org)
