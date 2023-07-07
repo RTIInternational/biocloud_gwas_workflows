@@ -13,7 +13,8 @@ The `eigenstrat_smartpca` workflow consists of the following steps:
    - Description: This step identifies high LD regions in the genotype data.
    - Inputs:
      - `bimfile`: BIM file containing variant information
-     - `docker`: Docker image (Ubuntu 18.04)
+     - `reference_file`: `Tab Separated text file containing regions of high LD.` See https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD) for examples.
+     - `docker`: Docker image (Ubuntu 22.04)
      - `cpu`: Number of CPUs to allocate
      - `mem`: Amount of memory to allocate
 </details>
