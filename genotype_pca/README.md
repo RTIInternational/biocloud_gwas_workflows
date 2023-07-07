@@ -156,7 +156,9 @@ To use this WDL workflow, follow these steps:
 <br><br>
 
 ### example code
-
+<details>
+  <summary>expand</summary>
+  
 ```bash
 # clone repo
 home=/home/ubuntu
@@ -201,6 +203,34 @@ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_377b
     --aws-access-key AKIA12345 \
     --aws-secret-access-key abcde12345
 ```
+</details>
+
+### example input.json file
+
+<details>
+  <summary>expand</summary>
+
+```
+{
+  "eigenstrat_smartpca.study_name": "wihs2",
+  "eigenstrat_smartpca.ancestry": "eur",
+  "eigenstrat_smartpca.bedfile": "s3://rti-hiv/scratch/sgiamberardino/hiv/genotype_pca/0001/input/wihs2_no_sex_discrepancies.bed",
+  "eigenstrat_smartpca.bimfile": "s3://rti-hiv/scratch/sgiamberardino/hiv/genotype_pca/0001/input/wihs2_no_sex_discrepancies.bim",
+  "eigenstrat_smartpca.famfile": "s3://rti-hiv/scratch/sgiamberardino/hiv/genotype_pca/0001/input/wihs2_no_sex_discrepancies.fam",
+  "eigenstrat_smartpca.reference_file": "s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.tsv",
+  "eigenstrat_smartpca.docker_eigensoft": "rtibiocloud/eigensoft:v6.1.4_2d0f99b",
+  "eigenstrat_smartpca.docker_plink1_9": "rtibiocloud/plink:v1.9_178bb91",
+  "eigenstrat_smartpca.docker_ubuntu": "ubuntu:22.04",
+  "eigenstrat_smartpca.docker_python3": "python:3.9.10-slim-buster"
+}
+```
+</details>
+
+### regions of high LD
+There are example files on S3 for genome build 37 and 38. These files were created from the wiki at: https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD).
+You can use these, or create your own an provide to the workflow.
+- s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.tsv
+- s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg38.tsv
 
 <br><br>
 
