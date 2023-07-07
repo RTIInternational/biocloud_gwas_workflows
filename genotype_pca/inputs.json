@@ -4,7 +4,7 @@
   "eigenstrat_smartpca.bedfile": "s3://rti-hiv/scratch/sgiamberardino/hiv/genotype_pca/0001/input/wihs2_no_sex_discrepancies.bed",
   "eigenstrat_smartpca.bimfile": "s3://rti-hiv/scratch/sgiamberardino/hiv/genotype_pca/0001/input/wihs2_no_sex_discrepancies.bim",
   "eigenstrat_smartpca.famfile": "s3://rti-hiv/scratch/sgiamberardino/hiv/genotype_pca/0001/input/wihs2_no_sex_discrepancies.fam",
-  "eigenstrat_smartpca.reference_file": "s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.tsv",
+  "eigenstrat_smartpca.reference_file": "s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.bed",
   "eigenstrat_smartpca.docker_eigensoft": "rtibiocloud/eigensoft:v6.1.4_2d0f99b",
   "eigenstrat_smartpca.docker_plink1_9": "rtibiocloud/plink:v1.9_178bb91",
   "eigenstrat_smartpca.docker_ubuntu": "ubuntu:22.04",
