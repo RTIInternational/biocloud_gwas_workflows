@@ -10,7 +10,6 @@ workflow eigenstrat_smartpca{
     File famfile
 
     File reference_file
-    String high_ld_output_file = "remove_high_ld_regions.txt"
 
     String docker_ubuntu = "ubuntu:22.04"
     String docker_python3 = "python:3.10"
@@ -24,7 +23,6 @@ workflow eigenstrat_smartpca{
             bimfile = bimfile,
             docker = docker_python3,
             reference_file = reference_file,
-            output_file = high_ld_output_file,
             cpu = cpu,
             mem = mem
     }

@@ -1,8 +1,6 @@
 task locate_high_ld_regions {
     File bimfile
     File reference_file
-    String output_file
-
 
     String docker
     String cpu = 1
@@ -13,7 +11,7 @@ task locate_high_ld_regions {
       python - <<EOF
       reference_file = "${reference_file}"
       bim_file = "${bimfile}"
-      output_file = "${output_file}"
+      output_file = "snps_to_remove_in_high_ld_regions.txt"
 
       regions = []
       with open(reference_file) as ref_file:
@@ -39,7 +37,7 @@ task locate_high_ld_regions {
     >>>
 
     output {
-        File snps_in_high_ld_regions = "${output_file}"
+        File snps_in_high_ld_regions = "snps_to_remove_in_high_ld_regions.txt"
     }
 
     runtime {
@@ -51,7 +49,6 @@ task locate_high_ld_regions {
     parameter_meta {
         bimfile: "Plink formatted bimfile."
         reference_file: "Tab Separated text file containing regions of high LD. Should contain 3 columns and a header: chromosome, start position, and stop position. See https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD) for examples."
-        output_file: "Name of the output file"
         docker: "Docker image with python3, such as python:3.10"
         cpu: "Number of CPUs for the image."
         mem: "Amount of RAM in GB for the image."
