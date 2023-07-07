@@ -216,7 +216,7 @@ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_377b
   <br>
 
 ## input.json
-See the `inputs.json` file in this repo for an example. Note that the docker images have defaults, thus it is not necessary to provide them unless you plan to use a different image that the defaults.
+See the `inputs.json` file in this repo for an example. Note that the docker images have defaults, thus it is not necessary to provide them unless you plan to use different images than the defaults.
 
 <br>
 
