@@ -186,10 +186,19 @@ curl -X POST "http://localhost:8000/api/workflows/v1" -H "accept: application/js
 # {"id":"6865f67c-a3f9-49aa-8b27-228edc0179a2","status":"Submitted"}
 
 # record job ID
-job=6865f67c-a3f9-49aa-8b27-228edc0179a2
+job=033b8637-0dee-429c-87a9-14650e8b9084
 
 # check status of job
-curl -X GET "http://localhost:8000/api/workflows/v1/$job/status"
+curl -X GET "http://localhost:8000/api/workflows/v1/$job/status" # {"status":"Succeeded","id":"033b8637-0dee-429c-87a9-14650e8b9084"}
+
+# download results JSON
+curl -X GET "http://localhost:8000/api/workflows/v1/$job/outputs" > outputs.json
+
+# download files from results JSON to local
+docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_377bef8 \
+    --file /data/outputs.json \
+    --aws-access-key AKIA12345 \
+    --aws-secret-access-key abcde12345
 ```
 
 <br><br>
