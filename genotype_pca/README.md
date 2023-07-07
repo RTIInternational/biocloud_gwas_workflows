@@ -154,5 +154,45 @@ To use this WDL workflow, follow these steps:
 
 <br><br>
 
+### example code
+
+```bash
+# clone repo
+home=/home/ubuntu
+cd $home
+git clone --recurse-submodules https://github.com/RTIInternational/biocloud_gwas_workflows
+
+# modify inputs
+vim biocloud_gwas_workflows/genotype_pca/inputs.json
+
+# zip dependencies
+zip \
+    --exclude=*/var/* \
+    --exclude=*.git/* \
+    --exclude=*/test/* \
+    --exclude=*/.idea/* \
+    -r imports.zip \
+    biocloud_gwas_workflows/
+
+# Open up a connection or tunnel to the Cromwell server using another terminal tab (or more practically, with the screen terminal multiplexer)
+ssh -i ~/.ssh/gwas_rsa -L localhost:8000:localhost:8000 ec2-user@54.146.0.138
+
+# Submit job with cURL to Cromwell server (not from within the Cromwell server)
+curl -X POST "http://localhost:8000/api/workflows/v1" -H "accept: application/json" \
+    -F "workflowSource=@${home}/biocloud_gwas_workflows/genotype_pca/main.wdl" \
+    -F "workflowInputs=@${home}/biocloud_gwas_workflows/genotype_pca/inputs.json" \
+    -F "workflowDependencies=@${home}/imports.zip" \
+    -F "workflowOptions=@${home}/biocloud_gwas_workflows/workflow_options/spot/0216573.000.001_eric_johnson_hiv_omics.json"
+# {"id":"6865f67c-a3f9-49aa-8b27-228edc0179a2","status":"Submitted"}
+
+# record job ID
+job=6865f67c-a3f9-49aa-8b27-228edc0179a2
+
+# check status of job
+curl -X GET "http://localhost:8000/api/workflows/v1/$job/status"
+```
+
+<br><br>
+
 ## References
 For any questions or comments, send me an email or slack and I'll be happy to help: Jesse Marks (jmarks@rti.org)
