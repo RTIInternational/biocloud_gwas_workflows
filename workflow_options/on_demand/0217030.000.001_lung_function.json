@@ -1,5 +1,0 @@
-{
-    "default_runtime_attributes": {
-      "queueArn": "arn:aws:batch:us-east-1:404545384114:job-queue/default-Lung-function-0217030-000-001-2"
-    }
-}
