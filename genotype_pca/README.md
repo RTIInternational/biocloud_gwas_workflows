@@ -1,6 +1,6 @@
 # WDL workflow eigenstrat_smartpca: Principle components analysis 
 
-This repository contains a WDL workflow named eigenstrat_smartpca. This workflow performs Eigenstrat PCA analysis on genotype data, including steps for locating high LD regions, removing high LD regions, LD pruning, merging pruned files, extracting LD variants, renaming BIM and FAM files, running SMARTPCA, and creating the final output file.
+This repository contains a WDL workflow named eigenstrat_smartpca. This workflow performs Eigenstrat PCA analysis on Plink formatted genotype data (bed,bim,fam). It uses a user-provided [UCSC Genome Browser's BED formatted](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) file to locate regions of high LD and subsequently remove SNP from the Plink files that are within those genomic loci. The workflow then runs [SMARTPCA](https://www.hsph.harvard.edu/alkes-price/software/) to produce the final output file that contains the top-10 PCs.
 <br><br>
 
 ## Workflow steps
