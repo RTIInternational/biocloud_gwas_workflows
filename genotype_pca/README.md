@@ -194,7 +194,7 @@ curl -X POST "http://localhost:8000/api/workflows/v1" -H "accept: application/js
     -F "workflowInputs=@${home}/biocloud_gwas_workflows/genotype_pca/inputs.json" \
     -F "workflowDependencies=@${home}/imports.zip" \
     -F "workflowOptions=@${home}/biocloud_gwas_workflows/workflow_options/spot/0216573.000.001_eric_johnson_hiv_omics.json"
-# {"id":"6865f67c-a3f9-49aa-8b27-228edc0179a2","status":"Submitted"}
+# {"id":"033b8637-0dee-429c-87a9-14650e8b9084","status":"Submitted"}
 
 # record job ID
 job=033b8637-0dee-429c-87a9-14650e8b9084
