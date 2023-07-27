@@ -156,24 +156,7 @@ The workflow consists of multiple tasks executed within the `main.wdl` file, uti
      - `mem`: Amount of memory to allocate  
 <br>
 </details>
-
-
-<details>
-<summary><b>Step 8:</b> create_final_file</summary>
-
-   - Description: This step creates the final output file.
-   - Inputs:
-     - `study_name`: Name of the study
-     - `ancestry`: Ancestry information
-     - `evec_file`: SMARTPCA eigenvectors file
-     - `famfile`: FAM file containing sample information
-     - `docker`: Docker image (Ubuntu 18.04)
-     - `cpu`: Number of CPUs to allocate
-     - `mem`: Amount of memory to allocate  
-<br>
 </details>
-</details>
-
 
 
 
@@ -194,7 +177,7 @@ To use this WDL workflow, follow these steps:
    - Modify any other desired parameters, such as the Docker images and resource allocation (CPU and memory).
 1. Execute the WDL workflow. See the [WDL/Cromwell Guide](https://researchtriangleinstitute.sharepoint.com/sites/OmicsGroup/_layouts/15/Doc.aspx?sourcedoc={a2b17bca-8f68-4450-a563-f80609bd497a}&action=edit&wd=target%28Computing%20Infrastructure.one%7Ca745a153-ea3f-4b6e-8f16-9163bfe64932%2FWDL%5C%2FCromwell%20Guide%7C80665feb-2dbf-481d-92d8-cf8c8e7d30dc%2F%29&wdorigin=703) on Microsoft Teams.
 1. Once the workflow completes, the final output file containing the top10 PCs (`${study_name}_${ancestry}_ld_pruned_top10_pcs.txt`) will be generated.
-   * You can locate this on S3 at: `s3://rti-cromwell-output/cromwell-execution/eigenstrat_smartpca/<job-id>/call-create_final_file/`
+   * You can locate this on S3 at: `s3://rti-cromwell-output/cromwell-execution/eigenstrat_smartpca/<job-id>/call-run-smartpca/`
 1. You can also use the following custom docker tool download the results to your local machine: https://github.com/RTIInternational/biocloud_docker_tools/tree/master/download_wdl_results_from_json/v1 
 
 <br><br>
