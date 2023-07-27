@@ -95,19 +95,7 @@ workflow eigenstrat_smartpca{
             mem = mem
     }
 
-    call UTILS.create_final_file {
-        input:
-            study_name = study_name,
-            ancestry = ancestry,
-            evec_file = run_smartpca.eigenvectors,
-            famfile = famfile,
-
-            docker = docker_ubuntu,
-            cpu = cpu,
-            mem = mem
-    }
-
     output {
-        File final_file = create_final_file.final_file
+        File final_file = run_smartpca.evec_file
     }
 }

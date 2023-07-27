@@ -336,7 +336,7 @@ task run_smartpca {
     >>>
 
     output {
-        File eigenvectors = "${study_name}_${ancestry}_ld_pruned.pca.evec"
+        File evec_file = "${study_name}_${ancestry}_ld_pruned.pca.evec"
     }
 
     runtime {
@@ -356,63 +356,6 @@ task run_smartpca {
 
     meta {
         description: "Run smartpca on the LD-pruned genotype data."
-        author: "Jesse Marks"
-        email: "jmarks@rti.org"
-    }
-}
-
-task create_final_file {
-
-    String study_name
-    String ancestry
-
-    File evec_file
-    File famfile
-    String final_file_name = "${study_name}_${ancestry}_ld_pruned_top10_pcs.txt"
-
-    String docker
-    String cpu
-    String mem
-
-    command <<<
-
-        ## Extract eigenvectors (top 10 PCs) ##
-        ## The Principal components are the eigenvectors of the covariance matrix.
-        echo "PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10" > top10_pcs.tmp
-
-        tail -n +2 ${evec_file} | \
-          awk '{print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11}' >> top10_pcs.tmp
-
-        ## Add original IDs back in
-        echo "fid iid" > fid_iid.txt
-        awk '{print $1, $2}' ${famfile} >> fid_iid.txt
-
-        paste -d " " fid_iid.txt top10_pcs.tmp > ${final_file_name}
-    >>>
-
-    output {
-        File final_file = "${final_file_name}"
-    }
-
-    runtime {
-        docker: docker
-        cpu: cpu
-        mem: "${mem} GB"
-    }
-
-    parameter_meta {
-        study_name: "Name of the study/cohort whose genotype data you are analyzing."
-        ancestry: "Ancestry of the genotype data you analyzing."
-        evec_file: "Top eigenvectors from the PCA."
-        famfile: "Original famfile that has the original sample IDs so we can add them back in."
-        final_file_name: "Name of the final PCA file that contains the top10 PCs."
-        docker: "Docker image"
-        cpu: "Number of CPUs for the image."
-        mem: "Amount of RAM in GB for the image."
-    }
-
-    meta {
-        description: "Create top-10 PCs file."
         author: "Jesse Marks"
         email: "jmarks@rti.org"
     }
