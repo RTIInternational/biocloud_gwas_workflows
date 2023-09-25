@@ -1,0 +1,6 @@
+{
+    "remove_duplicate_variants_wf.bed_in": "s3://rti-cromwell-output/cromwell-execution/smartpca_ancestry_wf/d696948b-6582-4706-8636-5f0f7adc1872/call-split_dataset_by_chr/shard-0/weiss_chr1.bed",
+    "remove_duplicate_variants_wf.bim_in": "s3://rti-cromwell-output/cromwell-execution/smartpca_ancestry_wf/d696948b-6582-4706-8636-5f0f7adc1872/call-convert_dataset_variant_ids/shard-0/weiss_chr1_grch37_dbsnp_b153.bim",
+    "remove_duplicate_variants_wf.fam_in": "s3://rti-cromwell-output/cromwell-execution/smartpca_ancestry_wf/d696948b-6582-4706-8636-5f0f7adc1872/call-split_dataset_by_chr/shard-0/weiss_chr1.fam",
+    "remove_duplicate_variants_wf.output_basename": "test"
+}
