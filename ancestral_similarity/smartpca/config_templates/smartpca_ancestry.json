@@ -1,0 +1,16 @@
+{
+    "smartpca_ancestry_wf.dataset_bed": "<BED_IN>",
+    "smartpca_ancestry_wf.dataset_bim": "<BIM_IN>",
+    "smartpca_ancestry_wf.dataset_fam": "<FAM_IN>",
+    "smartpca_ancestry_wf.dataset_name": "<DATASET_NAME>",
+    "smartpca_ancestry_wf.ref_bed": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch37_dbsnp_b153.bed",
+    "smartpca_ancestry_wf.ref_bim": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch37_dbsnp_b153.bim",
+    "smartpca_ancestry_wf.ref_fam": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch37_dbsnp_b153.fam",
+    "smartpca_ancestry_wf.ancestry_psam": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/phase3_orig.psam",
+    "smartpca_ancestry_wf.ancestries_to_include": ["AFR", "AMR", "EAS", "EUR", "SAS"],
+    "smartpca_ancestry_wf.ancestry_pop_type": "SUPERPOP",
+    "smartpca_ancestry_wf.output_basename": "<OUTPUT_BASENAME>"
+}
+  
+  
+  
