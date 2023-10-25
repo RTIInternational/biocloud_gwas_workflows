@@ -1,5 +1,5 @@
 {
-  "file_name": {
+  "file_name": { 
     "description":"Full path to summary statistics. e.g., s3://rti...",
     "optional": false
   },
@@ -36,5 +36,17 @@
   "chain_source": {
     "description": "chain file source used ('ucsc'  or 'ensembl')",
     "optional": false
+  },
+  "docker": {
+    "description": "Docker image. default is 515876044319.dkr.ecr.us-east-1.amazonaws.com/omics:rtibiocloud_neurogenomicslab_mungesumstats_1.7.10",
+    "optional": true
+  },
+  "cpu": {
+    "description": "Number of CPUs. default is 1",
+    "optional": true
+  },
+  "mem": {
+    "description": "Amount of RAM. Default is cpu*2",
+    "optional": true
   }
 }
