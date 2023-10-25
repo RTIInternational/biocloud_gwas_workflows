@@ -1,8 +1,0 @@
-{
-  "genome_liftover.input_sumstats": "s3://rti-hiv/gwas/mclaren/processed/hiv_acquisition/final_stats/hg19/hg19_dan_chr_all_assoc_dosage_meta_ngt_metadaner_beta_sebeta.txt.gz",
-  "genome_liftover.final_file": "hg38_dan_chr_all_assoc_dosage_meta_ngt_metadaner_beta_sebeta.txt",
-  "genome_liftover.chainfile": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz",
-  "genome_liftover.chromosome_col": "0",
-  "genome_liftover.position_col": "2",
-  "genome_liftover.new_build": "38"
-}

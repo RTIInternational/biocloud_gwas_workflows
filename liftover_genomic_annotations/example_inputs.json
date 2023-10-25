@@ -1,0 +1,11 @@
+{
+  "liftOver.file_name": "s3://rti-hiv/scratch/jmarks/Shrine_30804560_FVC_meta-analysis_10000lines.txt",
+  "liftOver.output_name": "Shrine_30804560_FVC_meta-analysis_10000lines_GRCh38.txt",
+  "liftOver.sep": "\t",
+  "liftOver.snp_name": "MarkerName",
+  "liftOver.chrom_name": "Chromosome",
+  "liftOver.pos_name": "Position_b37",
+  "liftOver.ref_genome": "GRCh37",
+  "liftOver.convert_ref_genome": "GRCh38",
+  "liftOver.chain_source": "ucsc"
+}
