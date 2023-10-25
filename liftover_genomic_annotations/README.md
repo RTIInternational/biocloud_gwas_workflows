@@ -17,7 +17,7 @@ Get started with the local runner and dev-toolkit [miniwdl](https://miniwdl.read
 
 ## Inputs
 
-**Description to be added.**
+See `parameters.json`
 
 
 ## Workflow Details
