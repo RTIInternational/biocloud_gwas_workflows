@@ -1,110 +1,30 @@
 # LiftOver
-LiftOver is performed to bring all your genetical analyses to the same reference build.
-Use this workflow to perform a genome-wide liftover on your GWAS summary statitics.
 
-For example, convert GWAS summary statistics from GRCh38 to GRCh37, or vice versa.
+Leverage the [`liftover`](https://neurogenomics.github.io/MungeSumstats/reference/liftover.html) function from the open-source package [MungeSumstats](https://github.com/neurogenomics/MungeSumstats) to seamlessly transfer genomic coordinates from one genome build to another.
+This tool can convert GWAS summary statistics from GRCh38 to GRCh37 or vice versa.
 
-# Step 1: Select chainfile
-* Navigate to the Human genome liftOver files at http://hgdownload.soe.ucsc.edu/downloads.html#human.
-* Click "LiftOver files" under the sub-header of your starting genome build. For example, if my summary statistics are currently in build 38 I would click on [LiftOver files](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/) under the sub-header `Dec. 2013 (GRCh38/hg38)`.
-* Copy the link to the desired build conversion. For example, if my sumstats are currenlty in build 38 and I want to convert to build 37 the link would be `http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz`. Other commonly used liftover files:
-* `https://hgdownload.soe.ucsc.edu/goldenPath/hg18/liftOver/hg18ToHg19.over.chain.gz`
-* `https://hgdownload.soe.ucsc.edu/goldenPath/hg18/liftOver/hg18ToHg38.over.chain.gz`
-* `https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz`
+We utilize their Docker image, available at [neurogenomicslab/mungesumstats](https://hub.docker.com/r/neurogenomicslab/mungesumstats), as a base image and include our custom Rscript that allows us to harness the `liftover` function within our WDL workflow.
 
-# Step 2: Prepare input file
-The inputs JSON file is where the parameters are set. 
-<details>
-  <summary>genome_liftover.input_sumstats</summary>
-  
-  S3 Path to GWAS summary statistics. MUST BE GZIP.
-  * The results must be merged into one input file. If your results are split by chromosome, you will need to merge them before performing a genome-wide liftover. Though, the workflow will still work if you only want to perform the liftover on one set of chromosome results. 
-  * Make sure the results in the S3 Standard storage tier and not archived. They must be restored if they are 
-  </details>
-  
-  
-  
-  
-  <details>
-  <summary>genome_liftover.final_file</summary>
-  
-  The desired name of output file.
-  </details>
-  
-  
-  
-  
-  
-  <details>
-  <summary>genome_liftover.chainfile</summary>
-  
-  Paste the link to the chain file you copied in Step 1.
-  </details>
-  
-  
-  
-  
-  <details>
-  <summary>genome_liftover.chromosome_col</summary>
-  
-   Zero-based array index. For example, chromosome_col = 1 with the sumstats header below.
-  
-  | VARIANT_ID | CHR | POS | REF | ALT |
-|------------|-----|-----|-----|-----|
-  </details>
-  
-  
-  
-  <details>
-  <summary>genome_liftover.position_col</summary>
-  
-  Zero-based array index. For example, position_col = 2 with the sumstats header below.
-  
-  | VARIANT_ID | CHR | POS | REF | ALT |
-|------------|-----|-----|-----|-----|
-  </details>
+## How to Run
+
+Get started with the local runner and dev-toolkit [miniwdl](https://miniwdl.readthedocs.io/en/latest/index.html) in just a few steps:
+
+1. Clone this repository.
+1. Navigate to this folder.
+1. Edit the `inputs.json` file to suit your needs.
+1. Run the following command: `miniwdl zip main.wdl --input inputs.json`.
+1. Then execute the workflow with `miniwdl run main.wdl.zip`.
+
+## Inputs
+
+See `parameters.json`
 
 
+## Workflow Details
 
-# Step 3: Submit job
-See the Microsoft Teams Omics Group Computing Infrastructure [WDL/Cromwell Cheat Sheet](https://teams.microsoft.com/l/channel/19%3Af42632e48b7c4b9e9f362afa1e4e1957%40thread.tacv2/tab%3A%3A61aecad5-13fa-4bde-adce-ba3b16950439?groupId=9179c917-4161-4094-bec2-b13d4862274c&tenantId=2ffc2ede-4d44-4994-8082-487341fa43fb) for instructions.
+These WDL workflow files are specified to WDL syntax version 1.1.
+We have configured the import statements to seamlessly integrate with both miniwdl and [AWS HealthOmics](https://aws.amazon.com/healthomics/).
 
-<details>
-  <summary>example code</summary>
+## Contact
 
-  ```bash
-  git clone --recursive https://github.com/RTIInternational/biocloud_gwas_workflows/
-cd biocloud_gwas_workflows/liftover_genomic_annotations/
-
-# edit input file
-
-cd ../../
-zip \
-    --exclude=*/var/* \
-    --exclude=*.git/* \
-    --exclude=*/test/* \
-    --exclude=*/.idea/* \
-    -r biocloud_gwas_workflows/liftover_genomic_annotations/biocloud_gwas_workflows.zip \
-    biocloud_gwas_workflows/liftover_genomic_annotations
-
-curl -X POST "http://localhost:8000/api/workflows/v1" -H "accept: application/json" \
-    -F "workflowSource=@/home/ec2-user/rti-hiv/gwas/mclaren/biocloud_gwas_workflows/liftover_genomic_annotations/main.wdl" \
-    -F "workflowInputs=@/home/ec2-user/rti-hiv/gwas/mclaren/biocloud_gwas_workflows/liftover_genomic_annotations/inputs.json" \
-    -F "workflowDependencies=@/home/ec2-user/rti-hiv/gwas/mclaren/biocloud_gwas_workflows/liftover_genomic_annotations/biocloud_gwas_workflows.zip" \
-    -F "workflowOptions=@/home/ec2-user/bin/cromwell/hiv_gnetii_charge_code.json" \
-    >> job_id.txt
-
-# paste job id here and check status
-job=05f35e44-74cd-4a33-9659-d60ef58da3b9
-curl -X GET "http://localhost:8000/api/workflows/v1/${job}/status"
-  # {"status":"Succeeded","id":"05f35e44-74cd-4a33-9659-d60ef58da3b9"}
-
-# download
-aws s3 cp s3://rti-cromwell-output/cromwell-execution/genome_liftover/05f35e44-74cd-4a33-9659-d60ef58da3b9/call-final/hg38_dan_chr_all_assoc_dosage_meta_ngt_metadaner_beta_sebeta.txt .
-gzip hg38_dan_chr_all_assoc_dosage_meta_ngt_metadaner_beta_sebeta.txt
-
-# upload to s3
-aws s3 mv hg38_dan_chr_all_assoc_dosage_meta_ngt_metadaner_beta_sebeta.txt.gz s3://rti-hiv/gwas/mclaren/processed/hiv_acquisition/final_stats/hg38/
-  ```
-
-</details>
+For any questions, suggestions, or further assistance, please feel free to reach out to the maintainer, Jesse Marks, at [jmarks@rti.org](mailto:jmarks@rti.org).

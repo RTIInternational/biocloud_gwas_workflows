@@ -1,52 +1,49 @@
-import "biocloud_gwas_workflows/liftover_genomic_annotations/liftover_utils.wdl" as UTILS
+version 1.1
 
-workflow genome_liftover {
+import "tasks/liftover_utils.wdl" as utils
 
-    String chainfile =  "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz"
-    String new_build # 37 or 38
-    File input_sumstats
-    Int chromosome_col   # zero-based column index
-    Int position_col     # zero-based column index
-    String final_file
+workflow liftOver {
 
-    String docker = "rtibiocloud/liftover:v423_1471834"  
+ meta {
+    description: "Transfer genomic coordinates from one genome build to another (liftOver) using the liftover function from the MungeSumstats package by Neurogenomics Lab."
+    maintainer: "Jesse Marks <jmarks@rti.org>"
+    software_version: "1.7.10"
+    software_website: "https://neurogenomics.github.io/MungeSumstats/reference/liftover.html"
+  }
 
-    call UTILS.download_chainfile as chain {
-        input:
-            chainfile = chainfile,
-            docker = docker
-    }
+  input {
+    File file_name
+    String output_name
+    String sep
+    String snp_name
+    String chrom_name
+    String pos_name
+    String ref_genome
+    String convert_ref_genome
+    String chain_source
 
-    call UTILS.create_bedfile as bed {
-        input:
-            input_sumstats = input_sumstats,
-            chromosome_col = chromosome_col,
-            position_col = position_col,
-            docker = docker
+    String docker = "rtibiocloud/neurogenomicslab_mungesumstats:1.7.10"
+    Int cpu = 1
+    Int mem = 2
+  }
 
-    }
+  call utils.liftOverTask as lift {
+    input:
+      file_name = file_name,
+      output_name = output_name,
+      sep = sep,
+      snp_name = snp_name,
+      chrom_name = chrom_name,
+      pos_name = pos_name,
+      ref_genome = ref_genome,
+      convert_ref_genome = convert_ref_genome,
+      chain_source = chain_source,
+      docker = docker,
+      cpu = cpu,
+      mem = mem
+  }
 
-    call UTILS.perform_liftover as lift {
-        input:
-            input_bedfile = bed.sumstats_bed,
-            chainfile = chain.unzipped_output,
-            docker = docker
-    }
-
-    call UTILS.final_sumstats as final {
-        input:
-            original_sumstats = input_sumstats,
-            new_bed = lift.output_bed,
-            unmapped_bed = lift.unmapped_bed,
-            output_name = final_file,
-            position_col = position_col,
-            chr_col = chromosome_col,
-	    new_build = new_build,
-            docker = docker
-    }
-
-    output {
-        File mapped_stats = final.output_sumstats
-        File unmapped_stats = final.unmapped_sumstats
-    }
+  output {
+    File final_file = lift.output_file
+  }
 }
