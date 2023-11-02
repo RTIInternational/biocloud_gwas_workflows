@@ -1,0 +1,40 @@
+{
+  "file_name": { 
+    "description":"Full path to summary statistics. e.g., s3://rti...",
+    "optional": false
+  },
+  "output_name": {
+    "description": "What name would you like the new file to be called after performing liftover?",
+    "optional": false
+  },
+  "sep": {
+    "description": "Field separator character in your sumstats. e.g., '\t'",
+    "optional": false
+  },
+  "snp_name": {
+    "description": "Name of SNP column. e.g., 'MarkerName'",
+    "optional": false
+  },
+  "chrom_name": {
+    "description": "Name of the chromosome column. e.g., 'Chromosome'",
+    "optional": false
+  },
+
+  "pos_name": {
+    "description": "Name of the position column. e.g., 'Position_b37'",
+    "optional": false
+  },
+
+  "ref_genome": {
+    "description": "What genome build your sumstats are currently in. e.g., GRCh37",
+    "optional": false
+  },
+  "convert_ref_genome": {
+    "description": "What genome build you would like to liftover to. e.g., GRCh38",
+    "optional": false
+  },
+  "chain_source": {
+    "description": "chain file source used ('ucsc'  or 'ensembl')",
+    "optional": false
+  }
+}
