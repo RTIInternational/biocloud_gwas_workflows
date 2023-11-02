@@ -9,7 +9,7 @@ meta {
     maintainer: "Jesse Marks <jmarks@rti.org>"
     software_version: "1.7.10"
     software_website: "https://neurogenomics.github.io/MungeSumstats/reference/liftover.html"
-    }
+}
 
     input {
         File file_name
