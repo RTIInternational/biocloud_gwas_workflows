@@ -38,7 +38,7 @@
     "optional": false
   },
   "docker": {
-    "description": "Docker image. default is 515876044319.dkr.ecr.us-east-1.amazonaws.com/omics:rtibiocloud_neurogenomicslab_mungesumstats_1.7.10",
+    "description": "Docker image. default is: rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_3d50aed",
     "optional": true
   },
   "cpu": {
