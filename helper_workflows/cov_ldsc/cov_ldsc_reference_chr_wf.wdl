@@ -1,16 +1,20 @@
-import "biocloud_gwas_workflows/biocloud_wdl_tools/cov_ldsc/cov_ldsc.wdl" as COVLDSC
+version 1.1
 
-workflow cov_ldsc_chr_wf{
-    File bed_in
-    File bim_in
-    File fam_in
-    File cov_file
-    String out_prefix
-    Int covldsc_cpu = 16
-    Int covldsc_mem_gb = 64
+import "../../biocloud_wdl_tools/cov_ldsc/cov_ldsc.wdl" as COVLDSC
+
+workflow cov_ldsc_chr_wf {
+    input {
+        File bed_in
+        File bim_in
+        File fam_in
+        File cov_file
+        String out_prefix
+        Int covldsc_cpu = 16
+        Int covldsc_mem_gb = 64
+    }
 
     # Run cov-LDSC on the input file
-    call COVLDSC.cov_ldsc as cov_ldsc{
+    call COVLDSC.cov_ldsc as cov_ldsc {
         input:
             bed_in = bed_in,
             bim_in = bim_in,
@@ -28,4 +32,3 @@ workflow cov_ldsc_chr_wf{
         File ldsc_log = cov_ldsc.logFile
     }
 }
-
