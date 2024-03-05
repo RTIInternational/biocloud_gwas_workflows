@@ -41,9 +41,9 @@ task locate_high_ld_regions {
     }
 
     runtime {
-        docker : docker
-        cpu : cpu
-        mem : "${mem} GB"
+        docker: docker
+        cpu: cpu
+        memory: "${mem} GB"
     }
 
     parameter_meta {
@@ -97,7 +97,7 @@ task remove_high_ld_regions {
     runtime {
         docker: docker
         cpu: cpu
-        mem: "${mem} GB"
+        memory: "${mem} GB"
     }
 
     parameter_meta {
@@ -154,7 +154,7 @@ task ld_pruning {
     runtime {
         docker: docker
         cpu: cpu
-        mem: "${mem} GB"
+        memory: "${mem} GB"
     }
 
     parameter_meta {
@@ -194,7 +194,7 @@ task merge_pruned {
     runtime {
         docker: docker
         cpu: cpu
-        mem: "${mem} GB"
+        memory: "${mem} GB"
     }
 
     parameter_meta {
@@ -246,7 +246,7 @@ task extract_ld_variants {
     runtime {
         docker: docker
         cpu: cpu
-        mem: "${mem} GB"
+        memory: "${mem} GB"
     }
 
     parameter_meta {
@@ -290,7 +290,7 @@ task rename_bimfam {
     runtime {
         docker: docker
         cpu: cpu
-        mem: "${mem} GB"
+        memory: "${mem} GB"
     }
 
     parameter_meta {
@@ -342,7 +342,7 @@ task run_smartpca {
     runtime {
         docker: docker
         cpu: cpu
-        mem: "${mem} GB"
+        memory: "${mem} GB"
     }
 
     parameter_meta {
