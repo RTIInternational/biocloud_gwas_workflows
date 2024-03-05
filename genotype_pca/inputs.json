@@ -8,5 +8,7 @@
   "eigenstrat_smartpca.docker_eigensoft": "rtibiocloud/eigensoft:v6.1.4_2d0f99b",
   "eigenstrat_smartpca.docker_plink1_9": "rtibiocloud/plink:v1.9_178bb91",
   "eigenstrat_smartpca.docker_ubuntu": "ubuntu:22.04",
-  "eigenstrat_smartpca.docker_python3": "python:3.9.10-slim-buster"
+  "eigenstrat_smartpca.docker_python3": "python:3.9.10-slim-buster",
+  "eigenstrat_smartpca.mem": "4",
+  "eigenstrat_smartpca.cpu": "1"
 }
