@@ -13,6 +13,8 @@ workflow remove_duplicate_variants_wf{
     Int plink_cpu = 1
     Int plink_mem_gb = 2
 
+    String container_source
+
     # Append suffixes to duplicate variants
     call label_duplicate_variants{
         input:
@@ -77,6 +79,9 @@ task label_duplicate_variants{
 
     # Runtime environment
     String docker = "ubuntu:22.04"
+    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04"
+    String container_source = "docker"
+    String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
     Int mem_gb = 1
 
@@ -127,6 +132,9 @@ task get_duplicate_variant_ids{
 
     # Runtime environment
     String docker = "ubuntu:22.04"
+    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04"
+    String container_source = "docker"
+    String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
     Int mem_gb = 1
 
@@ -157,7 +165,10 @@ task get_variants_to_remove{
     String input_prefix = basename(sub(bed_in, "\\.gz$", ""), ".bed")
 
     # Runtime environment
-    String docker = "rtibiocloud/plink:v1.9_178bb91"
+    String docker = "rtibiocloud/plink:v1.9-77ee25f"
+    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
+    String container_source = "docker"
+    String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 4
     Int mem_gb = 8
 
@@ -243,6 +254,9 @@ task fix_ids{
 
     # Runtime environment
     String docker = "ubuntu:22.04"
+    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04"
+    String container_source = "docker"
+    String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
     Int mem_gb = 1
 
