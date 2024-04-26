@@ -1,6 +1,12 @@
 task gunzip {
   File in_file 
+  # this should probs be in {} since it internal var
   String out_filename = basename(in_file, ".gz")
+
+  String docker = "ubuntu:22.04"
+  Int cpu = 1
+  Int mem = 2
+
 
   command{
       gunzip -c ${in_file} > ${out_filename}
@@ -9,9 +15,9 @@ task gunzip {
       File output_file = "${out_filename}"
   }
     runtime{
-      docker: "ubuntu:18.04"
-      cpu: "1"
-      memory: "1 GB"
+      docker: docker
+      cpu: cpu
+      memory: "${mem} GB"
     }
 }
 
@@ -24,7 +30,7 @@ task split_by_chromosome {
   String study_basename 
   Array[Int] chromosomes_to_keep
 
-  String docker = "ubuntu:18.04"
+  String docker = "ubuntu:22.04"
   Int cpu = 1
   Int mem = 2
 
@@ -127,7 +133,7 @@ task keep_columns {
   String study_basename
   File infile
 
-  String docker = "ubuntu:18.04"
+  String docker = "ubuntu:22.04"
   Int cpu = 1
   Int mem = 2
   
@@ -172,10 +178,11 @@ task run_metal {
   String ancestry 
   Int chromosome
   Array[File] gwas_files
-
-  String docker = "rtibiocloud/metal:v2020.05.05_1c7e830"
+  String container_source
   Int cpu = 1
   Int mem = 4
+
+  String docker = if(container_source == "ecr") then "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/metal:v2020.05.05_1c7e830" else "rtibiocloud/metal:v2020.05.05_1c7e830"
 
   command <<<
 
@@ -226,7 +233,7 @@ task exclude_singletons {
   Int chromosome
   File gwas_file
   String remove_singletons
-  String docker = "ubuntu:18.04"
+  String docker = "ubuntu:22.04"
   Int cpu = 1
   Int mem = 2
   
@@ -299,7 +306,7 @@ task merge_final_results {
   Array[File] gwas_results
   String full_results_name = "final_results_table"
 
-  String docker = "python:3.8"
+  String docker = "python:3.11"
   Int cpu = 1
   Int mem = 2
 
@@ -376,7 +383,7 @@ task top_results {
   File gwas_results
   Float pvalue
 
-  String docker = "ubuntu:18.04"
+  String docker = "ubuntu:22.04"
   Int cpu = 1
   Int mem = 2
 

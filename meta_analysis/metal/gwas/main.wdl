@@ -11,6 +11,7 @@ workflow metal_gwas_meta_analysis_wf {
   String ancestry
   String full_results_name
   String remove_singletons
+  Float pvalue_threshold = 0.001
 
   Array[Int] variant_id_column
   Array[Int] chromosome_column
@@ -22,7 +23,7 @@ workflow metal_gwas_meta_analysis_wf {
   Array[Int] standard_error_column
 #  Array[Int] maf_column
 #  Array[Int] rsquared_column
-
+  String container_source = "ecr" # or "dockerhub"
 
   # Prepare input files for meta-analysis
   scatter (gwas_index in range(length(gwas_results))) {
@@ -40,9 +41,10 @@ workflow metal_gwas_meta_analysis_wf {
         coded_allele_column = coded_allele_column[gwas_index],
         noncoded_allele_column = noncoded_allele_column[gwas_index],
         pvalue_column = pvalue_column[gwas_index],
-       standard_error_column = standard_error_column[gwas_index]
+        standard_error_column = standard_error_column[gwas_index],
         #maf_column = maf_column[gwas_index],
-        #rsquared_column = rsquared_column[gwas_index]  
+        #rsquared_column = rsquared_column[gwas_index]
+        container_source = container_source
     }
   }
 
@@ -55,8 +57,8 @@ workflow metal_gwas_meta_analysis_wf {
       input:
         gwas_files = metal_input[chrom_order],
         chromosome = preprocessing.chromosome_order[0][chrom_order],
-        ancestry = ancestry
-
+        ancestry = ancestry,
+        container_source = container_source
     }
   }
 
@@ -65,8 +67,9 @@ workflow metal_gwas_meta_analysis_wf {
     input:
       metal_results = metal.metal_results,
       full_results_name = full_results_name,
-      remove_singletons = remove_singletons
-
+      remove_singletons = remove_singletons,
+      pvalue_threshold = pvalue_threshold,
+      container_source = container_source
   }
 
   output {

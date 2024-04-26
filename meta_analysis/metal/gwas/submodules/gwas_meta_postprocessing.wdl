@@ -1,12 +1,15 @@
 import "biocloud_gwas_workflows/meta_analysis/metal/gwas/submodules/gwas_meta_utils.wdl" as UTILS
 import "biocloud_gwas_workflows/biocloud_wdl_tools/generate_gwas_plots/generate_gwas_plots.wdl" as PLOT
 
-
 workflow postprocessing {
   String full_results_name
-  Float pvalue_threshold = 0.001
+  Float pvalue_threshold
   Array[File] metal_results
   String remove_singletons
+  String container_source
+
+  String docker_ubuntu = if(container_source == "dockerhub") then "ubuntu:22.04-alpine" else "public.ecr.aws/ubuntu/ubuntu:22.04-alpine"
+  String docker_python = if(container_source == "dockerhub") then "python:3.12-alpine" else "public.ecr.aws/docker/library/python:3.12-alpine"
 
   # exclude singletons and capitalize alleles
   scatter (chrom_results in range(length(metal_results))) {
@@ -15,24 +18,25 @@ workflow postprocessing {
       input:
         gwas_file = metal_results[chrom_results],
         chromosome = chr,
-        remove_singletons = remove_singletons
+        remove_singletons = remove_singletons,
+        docker = docker_ubuntu
     }
   }
-
 
   # merge the chromosome-specific results files into one chromosome-sorted file
   call UTILS.merge_final_results as merge {
     input:
       gwas_results = singletons.singletons_output,
-      full_results_name = full_results_name
+      full_results_name = full_results_name,
+      docker = docker_python
   }
-
 
 #  # create a P-value filtered table
   call UTILS.top_results as final_table {
     input:
       gwas_results = merge.merged_results,
-      pvalue = pvalue_threshold
+      pvalue = pvalue_threshold,
+      docker = docker_ubuntu
   }
 
 
@@ -44,7 +48,8 @@ workflow postprocessing {
       col_chromosome = "Chromosome",
       col_position = "Position",
       col_p = "P-value",
-      output_basename = full_results_name
+      output_basename = full_results_name,
+      container_source = container_source
   }
 
   output {

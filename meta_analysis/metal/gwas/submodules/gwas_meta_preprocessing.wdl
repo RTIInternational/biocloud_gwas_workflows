@@ -14,12 +14,17 @@ workflow preprocessing {
   Int effect_size_column
   Int standard_error_column
   Int pvalue_column
+  String container_source
+
+  String docker_ubuntu = if(container_source == "dockerhub") then "ubuntu:22.04-alpine" else "public.ecr.aws/ubuntu/ubuntu:22.04-alpine"
+  String docker_python = if(container_source == "dockerhub") then "python:3.12-alpine" else "public.ecr.aws/docker/library/python:3.12-alpine"
 
   # Unzip file if it needs to be unzipped
   if(basename(gwas_results) != basename(gwas_results,".gz")){
     call UTILS.gunzip as gunzip {
       input:
-        in_file = gwas_results
+        in_file = gwas_results,
+        docker = docker_ubuntu
     }
     File unzipped_gwas_results = gunzip.output_file
   }
@@ -36,7 +41,8 @@ workflow preprocessing {
       gwas_results = to_split,
       chromosome_column = chromosome_column,
       study_basename = study_basename,
-      chromosomes_to_keep = chromosomes_to_keep
+      chromosomes_to_keep = chromosomes_to_keep,
+      docker = docker_ubuntu
   }
   
   Array[File] chr_split_results = split_gwas.chr_files
@@ -47,7 +53,7 @@ workflow preprocessing {
   scatter (chrom_order in range(length(chr_split_results))) {
     call UTILS.keep_columns as keep_columns {
       input:
-       infile =  chr_split_results[chrom_order],
+        infile =  chr_split_results[chrom_order],
         chromosome = kept_chroms[chrom_order],
         study_basename = split_gwas.gwas_name,
 
@@ -59,6 +65,7 @@ workflow preprocessing {
         effect_size_column = effect_size_column,
         standard_error_column = standard_error_column,
         pvalue_column = pvalue_column,
+        docker = docker_ubuntu
     }
   }
 
