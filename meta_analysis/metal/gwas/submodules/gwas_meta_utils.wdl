@@ -306,7 +306,7 @@ task merge_final_results {
   Array[File] gwas_results
   String full_results_name = "final_results_table"
 
-  String docker = "python:3.11"
+  String docker = "python:3.12-alpine"
   Int cpu = 1
   Int mem = 2
 
@@ -424,5 +424,3 @@ task top_results {
 
   }
 }        
-
-

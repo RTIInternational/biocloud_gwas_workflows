@@ -16,7 +16,7 @@ workflow preprocessing {
   Int pvalue_column
   String container_source
 
-  String docker_ubuntu = if(container_source == "dockerhub") then "ubuntu:22.04-alpine" else "public.ecr.aws/ubuntu/ubuntu:22.04-alpine"
+  String docker_ubuntu = if(container_source == "dockerhub") then "ubuntu:22.04" else "public.ecr.aws/ubuntu/ubuntu:22.04"
   String docker_python = if(container_source == "dockerhub") then "python:3.12-alpine" else "public.ecr.aws/docker/library/python:3.12-alpine"
 
   # Unzip file if it needs to be unzipped
