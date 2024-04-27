@@ -25,7 +25,7 @@ workflow metal_gwas_meta_analysis_wf {
 #  Array[Int] rsquared_column
   String container_source = "ecr" # or "dockerhub"
   String docker_ubuntu = if(container_source == "dockerhub") then "ubuntu:22.04" else "public.ecr.aws/ubuntu/ubuntu:22.04"
-  String docker_python = if(container_source == "dockerhub") then "python:3.12-alpine" else "public.ecr.aws/docker/library/python:3.12-alpine"
+  String docker_python = if(container_source == "dockerhub") then "python:3.12" else "public.ecr.aws/docker/library/python:3.12"
   String docker_metal  = if(container_source == "dockerhub") then "rtibiocloud/metal:v2020.05.05_1c7e830" else "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/metal:v2020.05.05_1c7e830"
 
   # Prepare input files for meta-analysis
