@@ -178,11 +178,9 @@ task run_metal {
   String ancestry 
   Int chromosome
   Array[File] gwas_files
-  String container_source
   Int cpu = 1
   Int mem = 4
-
-  String docker = if(container_source == "ecr") then "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/metal:v2020.05.05_1c7e830" else "rtibiocloud/metal:v2020.05.05_1c7e830"
+  String docker
 
   command <<<
 

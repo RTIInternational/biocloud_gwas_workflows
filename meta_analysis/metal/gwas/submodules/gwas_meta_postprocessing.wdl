@@ -6,10 +6,10 @@ workflow postprocessing {
   Float pvalue_threshold
   Array[File] metal_results
   String remove_singletons
-  String container_source
 
-  String docker_ubuntu = if(container_source == "dockerhub") then "ubuntu:22.04" else "public.ecr.aws/ubuntu/ubuntu:22.04"
-  String docker_python = if(container_source == "dockerhub") then "python:3.12-alpine" else "public.ecr.aws/docker/library/python:3.12-alpine"
+  String docker_ubuntu
+  String docker_python
+  String container_source
 
   # exclude singletons and capitalize alleles
   scatter (chrom_results in range(length(metal_results))) {

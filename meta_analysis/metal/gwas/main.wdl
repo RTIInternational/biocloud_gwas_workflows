@@ -24,6 +24,9 @@ workflow metal_gwas_meta_analysis_wf {
 #  Array[Int] maf_column
 #  Array[Int] rsquared_column
   String container_source = "ecr" # or "dockerhub"
+  String docker_ubuntu = if(container_source == "dockerhub") then "ubuntu:22.04" else "public.ecr.aws/ubuntu/ubuntu:22.04"
+  String docker_python = if(container_source == "dockerhub") then "python:3.12-alpine" else "public.ecr.aws/docker/library/python:3.12-alpine"
+  String docker_metal  = if(container_source == "dockerhub") then "rtibiocloud/metal:v2020.05.05_1c7e830" else "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/metal:v2020.05.05_1c7e830"
 
   # Prepare input files for meta-analysis
   scatter (gwas_index in range(length(gwas_results))) {
@@ -44,7 +47,8 @@ workflow metal_gwas_meta_analysis_wf {
         standard_error_column = standard_error_column[gwas_index],
         #maf_column = maf_column[gwas_index],
         #rsquared_column = rsquared_column[gwas_index]
-        container_source = container_source
+        docker_ubuntu = docker_ubuntu,
+        docker_python = docker_python
     }
   }
 
@@ -58,7 +62,7 @@ workflow metal_gwas_meta_analysis_wf {
         gwas_files = metal_input[chrom_order],
         chromosome = preprocessing.chromosome_order[0][chrom_order],
         ancestry = ancestry,
-        container_source = container_source
+        docker = docker_metal
     }
   }
 
@@ -69,6 +73,8 @@ workflow metal_gwas_meta_analysis_wf {
       full_results_name = full_results_name,
       remove_singletons = remove_singletons,
       pvalue_threshold = pvalue_threshold,
+      docker_ubuntu = docker_ubuntu,
+      docker_python = docker_python,
       container_source = container_source
   }
 
