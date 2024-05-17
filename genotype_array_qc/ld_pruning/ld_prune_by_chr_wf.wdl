@@ -20,6 +20,9 @@ workflow ld_prune_by_chr_wf{
     Int cpu
     Int mem_gb
 
+    # Container
+    String container_source = "docker"
+
     scatter(index in range(length(chrs))){
 
         call LD.ld_prune_wf as ld_prune{
@@ -36,7 +39,8 @@ workflow ld_prune_by_chr_wf{
                 mem_gb = mem_gb,
                 maf = maf,
                 chr = chrs[index],
-                exclude_regions = exclude_regions
+                exclude_regions = exclude_regions,
+                container_source = container_source
         }
     }
 

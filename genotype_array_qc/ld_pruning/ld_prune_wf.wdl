@@ -22,6 +22,9 @@ workflow ld_prune_wf{
     Int cpu
     Int mem_gb
 
+    # Container
+    String container_source = "docker"
+
     # Count number of samples (if <50 set --bad-ld option or plink2 will error out
     call UTILS.wc as get_num_samples{
         input:
@@ -48,7 +51,8 @@ workflow ld_prune_wf{
             chr = chr,
             bad_ld = (get_num_samples.num_lines <= 50),
             exclude_regions = exclude_regions,
-            exclude = exclude
+            exclude = exclude,
+            container_source = container_source
     }
 
     # Filter to include only the LD-pruned markers returned from previous step
@@ -61,7 +65,8 @@ workflow ld_prune_wf{
             chr = chr,
             cpu = cpu,
             mem_gb = mem_gb,
-            extract = prune_ld_markers.include_markers
+            extract = prune_ld_markers.include_markers,
+            container_source = container_source
     }
 
     output{

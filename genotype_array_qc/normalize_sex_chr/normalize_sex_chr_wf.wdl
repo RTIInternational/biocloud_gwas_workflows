@@ -9,6 +9,9 @@ workflow normalize_sex_chr_wf{
     File bim_in
     File fam_in
 
+    # Optional file of individuals to keep
+    File? keep_samples
+
     # List of chromosomes you're expecting to be in bed/bim/fam
     Array[String] expected_chrs
 
@@ -19,11 +22,15 @@ workflow normalize_sex_chr_wf{
     Int plink_cpu
     Int plink_mem_gb
 
+    # Container
+    String container_source = "docker"
+
     # Check if we're expecting a chr23 in bim
     call UTILS.array_contains as expect_sex_chr{
         input:
             input_array = expected_chrs,
-            query = "23"
+            query = "23",
+            container_source = container_source
 
     }
 
@@ -31,14 +38,16 @@ workflow normalize_sex_chr_wf{
     call UTILS.array_contains as expect_split_sex_chr{
         input:
             input_array = expected_chrs,
-            query = "25"
+            query = "25",
+            container_source = container_source
     }
 
     # Check to see whether current bim sex chr is split into PAR/NONPAR
     call PLINK.contains_chr as bim_split_sex_chr{
         input:
             bim_in = bim_in,
-            chr = "25"
+            chr = "25",
+            container_source = container_source
     }
 
     # Split sex chr if it needs splitting
@@ -51,12 +60,14 @@ workflow normalize_sex_chr_wf{
                 bed_in = bed_in,
                 bim_in = bim_in,
                 fam_in = fam_in,
+                keep_samples = keep_samples,
                 output_basename = "${output_basename}.splitx",
                 split_x = true,
                 build_code = build_code,
                 split_no_fail = no_fail,
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                container_source = container_source
         }
     }
 
@@ -69,11 +80,13 @@ workflow normalize_sex_chr_wf{
                 bed_in = bed_in,
                 bim_in = bim_in,
                 fam_in = fam_in,
+                keep_samples = keep_samples,
                 output_basename = "${output_basename}.mergex",
                 merge_x = true,
                 merge_no_fail = no_fail,
                 cpu = plink_cpu,
-                mem_gb = plink_mem_gb
+                mem_gb = plink_mem_gb,
+                container_source = container_source
         }
     }
 
