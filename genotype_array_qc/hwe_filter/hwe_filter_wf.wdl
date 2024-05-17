@@ -18,6 +18,9 @@ workflow hwe_filter_wf{
     # Workflow can optionally be used on a single chr
     Array[String]? chrs
 
+    # Optional file of individuals to keep
+    File? keep_samples
+
     # Optional file of related individuals to exclude from HWE calculation
     File? related_samples
 
@@ -36,6 +39,7 @@ workflow hwe_filter_wf{
             bed_in = bed_in,
             bim_in = bim_in,
             fam_in = fam_in,
+            keep_samples = keep_samples,
             expected_chrs = ["23"],
             output_basename = "${output_basename}.sex_norm",
             build_code = "dummy",
