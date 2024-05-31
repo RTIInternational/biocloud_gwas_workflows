@@ -22,6 +22,19 @@ workflow smartpca_ancestry_wf{
     String ancestry_pop_type = "SUPERPOP"
     Array[String] ancestries_to_include = ["AFR", "AMR", "EAS", "EUR", "SAS"]
     Array[String] ancestries_display_names = ["African", "American Admixed", "East Asian", "European", "South Asian"]
+    String genome_build_code = "GRCh37"
+
+    ## ID Conversion
+    Boolean do_id_conversion = true
+    Array[File] id_conversion_ref_files
+    String? id_conversion_in_sep
+    String? id_conversion_in_missing_allele
+    String? id_conversion_in_deletion_allele
+    String? id_conversion_ref_deletion_allele
+    Int? id_conversion_in_chunk_size
+    Int? id_conversion_ref_chunk_size
+    Boolean? id_conversion_rescue_rsids
+
     # String ancestry_pop_type = "POP"
     # All populations
     ## Array[String] ancestries_to_include = ["ASW", "ACB", "ESN", "GWD", "LWK", "MSL", "YRI", "CLM", "MXL", "PEL", "PUR", "CDX", "CHB", "JPT", "KHV", "CHS", "GBR", "FIN", "IBS", "TSI", "CEU", "BEB", "GIH", "ITU", "PJL", "STU"]
@@ -74,6 +87,8 @@ workflow smartpca_ancestry_wf{
     Int convert_variant_ids_mem_gb = 2
     Int smartpca_cpu = 8
     Int smartpca_mem_gb = 16
+    Int assign_ancestry_cpu = 8
+    Int assign_ancestry_mem_gb = 16
 
     # Get keep list of reference samples for specified ancestries
     call get_ref_samples{
@@ -127,35 +142,39 @@ workflow smartpca_ancestry_wf{
                 mem_gb = plink_dataset_mem_gb
         }
 
-        # Convert dataset variant IDs
-        call IDCONVERT.convert_variant_ids as convert_dataset_variant_ids{
-            input:
-                chr = chr,
-                in_file = split_dataset_by_chr.bim_out,
-                in_header = 0,
-                in_sep = "tab",
-                in_id_col = 1,
-                in_chr_col = 0,
-                in_pos_col = 3,
-                in_a1_col = 4,
-                in_a2_col = 5,
-                in_missing_allele = "0",
-                in_deletion_allele = "-",
-                in_chunk_size = 50000,
-                ref = "s3://rti-common/variants/b153/GRCh37.p13/id_conversion/variant_lookup_chr${chr}.tsv.gz",
-                ref_deletion_allele = ".",
-                ref_chunk_size = 1000000,
-                output_filename = "${dataset_short_name}_chr${chr}_grch37_dbsnp_b153.bim",
-                cpu = convert_variant_ids_cpu,
-                mem_gb = convert_variant_ids_cpu,
-                container_source = container_source
+        if(do_id_conversion){
+            # Convert dataset variant IDs
+            call IDCONVERT.convert_variant_ids as convert_dataset_variant_ids{
+                input:
+                    chr = chr,
+                    in_file = split_dataset_by_chr.bim_out,
+                    in_header = 0,
+                    in_sep = "tab",
+                    in_id_col = 1,
+                    in_chr_col = 0,
+                    in_pos_col = 3,
+                    in_a1_col = 4,
+                    in_a2_col = 5,
+                    in_missing_allele = "0",
+                    in_deletion_allele = "-",
+                    in_chunk_size = 50000,
+                    ref = id_conversion_ref_files[chr_index],
+                    ref_deletion_allele = ".",
+                    ref_chunk_size = 1000000,
+                    output_filename = "${dataset_short_name}_chr${chr}_${genome_build_code}_idsbim",
+                    cpu = convert_variant_ids_cpu,
+                    mem_gb = convert_variant_ids_cpu,
+                    container_source = container_source
+            }
         }
+
+        File post_id_conversion_dataset_bim = select_first([convert_dataset_variant_ids.output_file, split_dataset_by_chr.bim_out])
 
         # Get overlapping variants between ref and datset
         call get_variants{
             input:
                 ref_bim = split_ref_by_chr.bim_out,
-                dataset_bim = convert_dataset_variant_ids.output_file,
+                dataset_bim = post_id_conversion_dataset_bim,
                 output_filename = "variants_chr${chr}"
         }
 
@@ -163,7 +182,7 @@ workflow smartpca_ancestry_wf{
         call PLINK.make_bed as subset_dataset{
             input:
                 bed_in = split_dataset_by_chr.bed_out,
-                bim_in = convert_dataset_variant_ids.output_file,
+                bim_in = post_id_conversion_dataset_bim,
                 fam_in = split_dataset_by_chr.fam_out,
                 extract = get_variants.variant_ids,
                 output_basename = "${dataset_short_name}_chr${chr}_smartpca_snps",
@@ -227,6 +246,7 @@ workflow smartpca_ancestry_wf{
                 bim_in_b = select_first([flip_ref.bim_out, subset_ref.bim_out]),
                 fam_in_b = select_first([flip_ref.fam_out, subset_ref.fam_out]),
                 ignore_errors = false,
+                allow_no_sex = true,
                 output_basename = "ref_${dataset_short_name}_chr${chr}",
                 cpu = plink_merged_chr_cpu,
                 mem_gb = plink_merged_chr_mem_gb
@@ -257,6 +277,7 @@ workflow smartpca_ancestry_wf{
             bed_in = ld_prune.bed_out,
             bim_in = ld_prune.bim_out,
             fam_in = ld_prune.fam_out,
+            allow_no_sex = true,
             output_basename = "ref_${dataset_short_name}_ldpruned",
             cpu = plink_merged_cpu,
             mem_gb = plink_merged_mem_gb
@@ -306,7 +327,9 @@ workflow smartpca_ancestry_wf{
             ref_pops = ancestries_to_include,
             ref_pops_legend_labels = ancestries_display_names,
             use_pcs_count = use_pcs_count,
-            midpoint_formula = midpoint_formula
+            midpoint_formula = midpoint_formula,
+            cpu = assign_ancestry_cpu,
+            mem_gb = assign_ancestry_mem_gb
     }
 
     # Order keep files to be same order as input ancestry groups
@@ -341,8 +364,8 @@ task get_ref_samples{
     String output_filename
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "ubuntu:22.04"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
+    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -402,8 +425,8 @@ task add_pop_ids_to_fam_files {
     File ref_pop_xref
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "ubuntu:22.04"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
+    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -472,8 +495,8 @@ task get_variants{
     String output_filename
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "ubuntu:22.04"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
+    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 4
@@ -532,8 +555,8 @@ task prepare_smartpca_input_files {
     File pop_id_xref
     String dataset_name
     
-    String docker = "ubuntu:22.04"
-    String ecr = "ubuntu:22.04"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
+    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -592,14 +615,14 @@ task prepare_smartpca_input_files {
     runtime {
         docker: container_image
         cpu: cpu
-        mem: "${mem} GB"
+        memory: "${mem} GB"
     }
 
     parameter_meta {
         bim_in: "Plink formatted bim file."
         fam_in: "Plink formatted fam file."
         cpu: "Number of CPUs for the image."
-        mem: "Amount of RAM in GB for the image."
+        memory: "Amount of RAM in GB for the image."
     }
 
     meta {
@@ -618,8 +641,8 @@ task process_smartpca_results {
     File fam_id_xref
     String output_basename
 
-    String docker = "ubuntu:22.04"
-    String ecr = "ubuntu:22.04"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
+    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -674,7 +697,7 @@ task process_smartpca_results {
     runtime {
         docker: container_image
         cpu: cpu
-        mem: "${mem} GB"
+        memory: "${mem} GB"
     }
 
 }
@@ -686,8 +709,8 @@ task order_by_ancestry {
     Array[String] ancestries
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "ubuntu:22.04"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
+    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -709,7 +732,7 @@ task order_by_ancestry {
     runtime {
         docker: container_image
         cpu: cpu
-        mem: "${mem} GB"
+        memory: "${mem} GB"
     }
 
 }
