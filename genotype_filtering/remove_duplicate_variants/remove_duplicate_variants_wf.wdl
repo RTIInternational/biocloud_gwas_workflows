@@ -78,8 +78,8 @@ task label_duplicate_variants{
     String output_basename
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
+    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -115,7 +115,7 @@ task label_duplicate_variants{
     >>>
 
     runtime {
-        docker: docker
+        docker: container_image
         cpu: cpu
         memory: "${mem_gb} GB"
     }
@@ -131,8 +131,8 @@ task get_duplicate_variant_ids{
     String output_basename
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
+    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -145,7 +145,7 @@ task get_duplicate_variant_ids{
     }
 
     runtime {
-        docker: docker
+        docker: container_image
         cpu: cpu
         memory: "${mem_gb} GB"
     }
@@ -166,7 +166,7 @@ task get_variants_to_remove{
 
     # Runtime environment
     String docker = "rtibiocloud/plink:v1.9-77ee25f"
-    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_178bb91"
+    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9-77ee25f"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 4
@@ -237,7 +237,7 @@ task get_variants_to_remove{
     >>>
 
     runtime {
-        docker: docker
+        docker: container_image
         cpu: cpu
         memory: "${mem_gb} GB"
     }
@@ -253,8 +253,8 @@ task fix_ids{
     String output_basename
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "404545384114.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
+    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -266,7 +266,7 @@ task fix_ids{
     }
 
     runtime {
-        docker: docker
+        docker: container_image
         cpu: cpu
         memory: "${mem_gb} GB"
     }
