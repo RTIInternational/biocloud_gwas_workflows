@@ -174,8 +174,8 @@ task format_phenotype_file{
     Int tail_n = header_rows + 1
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -214,8 +214,8 @@ task count_chr_x_variants{
     File bim
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -240,8 +240,8 @@ task create_empty_file{
     String file_name
 
     # Runtime environment
-    String docker = "ubuntu:22.04"
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1

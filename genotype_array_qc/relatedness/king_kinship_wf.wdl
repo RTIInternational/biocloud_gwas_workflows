@@ -23,6 +23,8 @@ workflow king_kinship_wf{
     Int king_split_cpu = 2
     Int king_split_mem_gb = 4
 
+    String container_source = "docker"
+
     # Split plink sample file into however many chunks
     call SPLIT.split_file as split_fam{
         input:

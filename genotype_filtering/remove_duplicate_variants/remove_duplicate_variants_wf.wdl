@@ -79,7 +79,7 @@ task label_duplicate_variants{
 
     # Runtime environment
     String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -132,7 +132,7 @@ task get_duplicate_variant_ids{
 
     # Runtime environment
     String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -254,7 +254,7 @@ task fix_ids{
 
     # Runtime environment
     String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1

@@ -365,7 +365,7 @@ task get_ref_samples{
 
     # Runtime environment
     String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -426,7 +426,7 @@ task add_pop_ids_to_fam_files {
 
     # Runtime environment
     String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -496,7 +496,7 @@ task get_variants{
 
     # Runtime environment
     String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 4
@@ -556,7 +556,7 @@ task prepare_smartpca_input_files {
     String dataset_name
     
     String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -642,7 +642,7 @@ task process_smartpca_results {
     String output_basename
 
     String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
@@ -710,7 +710,7 @@ task order_by_ancestry {
 
     # Runtime environment
     String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2" # ubuntu:22.04
-    String ecr = "public.ecr.aws/lts/ubuntu:22.04_stable"
+    String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
     String container_source = "docker"
     String container_image = if(container_source == "docker") then docker else ecr
     Int cpu = 1
