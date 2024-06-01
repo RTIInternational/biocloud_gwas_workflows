@@ -24,6 +24,8 @@ workflow hwe_filter_wf{
     # Optional file of related individuals to exclude from HWE calculation
     File? related_samples
 
+    # Runtime
+    String container_source = "docker"
     Int plink_chr_cpu = 1
     Int plink_chr_mem_gb = 2
     Int plink_filter_cpu = 1
@@ -45,7 +47,8 @@ workflow hwe_filter_wf{
             build_code = "dummy",
             no_fail = true,
             plink_cpu = plink_filter_cpu,
-            plink_mem_gb = plink_filter_mem_gb
+            plink_mem_gb = plink_filter_mem_gb,
+            container_source = container_source
     }
 
     File norm_bed = normalize_sex_chr_wf.bed_out
@@ -56,7 +59,8 @@ workflow hwe_filter_wf{
     if(!defined(chrs)){
         call PLINK.get_bim_chrs{
             input:
-                bim_in = norm_bim
+                bim_in = norm_bim,
+                container_source = container_source
         }
     }
 
@@ -78,7 +82,8 @@ workflow hwe_filter_wf{
                 remove_samples = related_samples,
                 output_basename = "${output_basename}.chr.${chr}",
                 cpu = plink_chr_cpu,
-                mem_gb = plink_chr_mem_gb
+                mem_gb = plink_chr_mem_gb,
+                container_source = container_source
         }
     }
 
@@ -86,7 +91,8 @@ workflow hwe_filter_wf{
     call UTILS.cat as cat_remove{
         input:
             input_files = hwe.remove,
-            output_filename = "${output_basename}.hwe.remove"
+            output_filename = "${output_basename}.hwe.remove",
+            container_source = container_source
     }
 
     # Remove failed HWE SNPs from full dataset
@@ -99,7 +105,8 @@ workflow hwe_filter_wf{
             chrs = scatter_chrs,
             output_basename = "${output_basename}.hwe",
             cpu = plink_filter_cpu,
-            mem_gb = plink_filter_mem_gb
+            mem_gb = plink_filter_mem_gb,
+            container_source = container_source
     }
 
     output{
