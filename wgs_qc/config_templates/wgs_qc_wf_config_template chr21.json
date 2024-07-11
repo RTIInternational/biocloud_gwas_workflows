@@ -1,0 +1,53 @@
+{
+    "wgs_qc_wf.vcfs": [
+        "s3://rti-shared/shared_data/raw/topmed/genotype/sequencing/TOPMed_ARIC_phs001211/GenotypeFiles/Freeze8/ARIC_phs001211_TOPMed_WGS_freeze.8.chr21.hg38.c1.vcf.gz"
+    ],
+    "wgs_qc_wf.output_basename": "aric",
+    "wgs_qc_wf.keep": "s3://rti-shared/shared_data/raw/topmed/genotype/sequencing/TOPMed_ARIC_phs001211/PhenotypeFiles/ARIC_Baylor_phase2_allSamples.txt",
+    "wgs_qc_wf.sex_xref": "s3://rti-shared/shared_data/raw/topmed/genotype/sequencing/TOPMed_ARIC_phs001211/GenotypeFiles/phg001155.v2.TOPMed_WGS_ARIC_v3.sample-info.MULTI/_fam_sub_mot_fat_sam_sex_con_con_con_use_sra_twn",
+    "wgs_qc_wf.sex_xref_fid_col": "1",
+    "wgs_qc_wf.sex_xref_iid_col": "5",
+    "wgs_qc_wf.sex_xref_sex_col": "6",
+    "wgs_qc_wf.dataset_short_name": "aric",
+    "wgs_qc_wf.dataset_display_name": "ARIC",
+    "wgs_qc_wf.chrs": [
+        "21"
+    ],
+    "wgs_qc_wf.genome_build_code": "b38",
+
+    "wgs_qc_wf.id_conversion_ref_files": [
+        "s3://rti-common/variants/b153/GRCh38/id_conversion/variant_lookup_chr21.tsv.gz"
+    ],
+    "wgs_qc_wf.id_conversion_in_missing_allele": "0",
+    "wgs_qc_wf.id_conversion_in_deletion_allele": "D",
+    "wgs_qc_wf.id_conversion_in_chunk_size": 50000,
+
+    "wgs_qc_wf.ref_variant_list": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch38_dbsnp_b153_variant_list.txt",
+
+    "wgs_qc_wf.ancestry_ref_bed": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch38_dbsnp_b153.bed",
+    "wgs_qc_wf.ancestry_ref_bim": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch38_dbsnp_b153.bim",
+    "wgs_qc_wf.ancestry_ref_fam": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch38_dbsnp_b153.fam",
+    "wgs_qc_wf.ancestry_ref_psam": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/phase3_orig.psam",
+    "wgs_qc_wf.ancestry_pop_type": "SUPERPOP",
+    "wgs_qc_wf.ancestries_to_include": ["AFR", "AMR", "EAS", "EUR", "SAS"],
+    "wgs_qc_wf.ancestries_display_names": ["African", "American Admixed", "East Asian", "European", "South Asian"],
+    "wgs_qc_wf.ancestry_std_dev_cutoff": 3,
+
+    "wgs_qc_wf.sex_check_phenotype_file": "s3://rti-shared/shared_data/raw/weiss/genotype/array/nida_study61_wOUD.fam",
+    "wgs_qc_wf.phenotype_header_rows": 0,
+    "wgs_qc_wf.phenotype_fid_col": 0,
+    "wgs_qc_wf.phenotype_iid_col": 1,
+    "wgs_qc_wf.phenotype_sex_col": 4,
+    "wgs_qc_wf.phenotype_delimiter": "space",
+
+    "wgs_qc_wf.plink_cpu": 8,
+    "wgs_qc_wf.plink_mem_gb": 16,
+    "wgs_qc_wf.plink_chr_cpu": 8,
+    "wgs_qc_wf.plink_chr_mem_gb": 16,
+    "wgs_qc_wf.merge_bed_cpu": 8,
+    "wgs_qc_wf.merge_bed_mem_gb": 16,
+    "wgs_qc_wf.id_conversion_cpu": 8,
+    "wgs_qc_wf.id_conversion_mem_gb": 16,
+
+    "wgs_qc_wf.container_source": "docker"
+}

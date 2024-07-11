@@ -1,0 +1,274 @@
+{
+	"vcfs": {
+		"description": "-"
+	},
+	"keep": {
+		"description": "-"
+	},
+	"output_basename": {
+		"description": "-"
+	},
+	"dataset_short_name": {
+		"description": "-"
+	},
+	"dataset_display_name": {
+		"description": "-",
+        "optional": true
+	},
+	"chrs": {
+		"description": "-"
+	},
+	"hwe_chrs": {
+		"description": "-",
+        "optional": true
+	},
+	"genome_build_code": {
+		"description": "-"
+	},
+	"id_conversion_ref_files": {
+		"description": "-"
+	},
+	"id_conversion_in_sep": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_in_missing_allele": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_in_deletion_allele": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_ref_deletion_allele": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_in_chunk_size": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_ref_chunk_size": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_rescue_rsids": {
+		"description": "-",
+        "optional": true
+	},
+	"ref_variant_list": {
+		"description": "-"
+	},
+	"ancestry_ref_bed": {
+		"description": "-"
+	},
+	"ancestry_ref_bim": {
+		"description": "-"
+	},
+	"ancestry_ref_fam": {
+		"description": "-"
+	},
+	"ancestry_ref_psam": {
+		"description": "-"
+	},
+	"ancestry_pop_type": {
+		"description": "-",
+        "optional": true
+	},
+	"ancestries_to_include": {
+		"description": "-",
+        "optional": true
+	},
+	"ancestries_display_names": {
+		"description": "-",
+        "optional": true
+	},
+	"ancestry_std_dev_cutoff": {
+		"description": "-",
+        "optional": true
+	},
+	"max_sample_missing_rate": {
+		"description": "-",
+        "optional": true
+	},
+	"min_sample_he": {
+		"description": "-",
+        "optional": true
+	},
+	"max_sample_he": {
+		"description": "-",
+        "optional": true
+	},
+	"max_missing_site_rate": {
+		"description": "-",
+        "optional": true
+	},
+	"hwe_filter_pvalue": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_exclude_regions": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_type": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_window_size": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_step_size": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_r2_threshold": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_maf_cutoff": {
+		"description": "-",
+        "optional": true
+	},
+	"min_ancestry_samples_to_postprocess": {
+		"description": "-",
+        "optional": true
+	},
+	"filter_discrepant_sex": {
+		"description": "-",
+        "optional": true
+	},
+	"max_female_f": {
+		"description": "-",
+        "optional": true
+	},
+	"min_male_f": {
+		"description": "-",
+        "optional": true
+	},
+	"sex_xref": {
+		"description": "-"
+	},
+	"sex_xref_fid_col": {
+		"description": "-"
+	},
+	"sex_xref_iid_col": {
+		"description": "-"
+	},
+	"sex_xref_sex_col": {
+		"description": "-"
+	},
+	"sex_xref_header": {
+		"description": "-",
+        "optional": true
+	},
+	"sex_xref_delimiter": {
+		"description": "-",
+        "optional": true
+	},
+    "filter_related_samples": {
+		"description": "-",
+        "optional": true
+	},
+	"degree": {
+		"description": "-",
+        "optional": true
+	},
+	"num_king_splits": {
+		"description": "-",
+        "optional": true
+	},
+	"kinship_pcs_to_analyze": {
+		"description": "-",
+        "optional": true
+	},
+	"ancestral_pca_loading_cutoff": {
+		"description": "-",
+        "optional": true
+	},
+	"max_kinship_snps": {
+		"description": "-",
+        "optional": true
+	},
+	"min_kinship_snps": {
+		"description": "-",
+        "optional": true
+	},
+	"ancestral_pca_loading_step_size": {
+		"description": "-",
+        "optional": true
+	},
+	"max_ancestral_pca_loading_cutoff": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_chr_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_chr_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"merge_bed_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"merge_bed_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"sex_check_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"sex_check_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"king_cpu_per_split": {
+		"description": "-",
+        "optional": true
+	},
+	"king_mem_gb_per_split": {
+		"description": "-",
+        "optional": true
+	},
+	"pca_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"pca_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"assign_ancestry_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"assign_ancestry_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"container_source": {
+		"description": "-",
+        "optional": true
+	}
+}
