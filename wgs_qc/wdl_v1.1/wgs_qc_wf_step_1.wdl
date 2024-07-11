@@ -1,14 +1,16 @@
-import "biocloud_gwas_workflows/id_conversion/convert_variant_ids_bfile/convert_variant_ids_bfile_chr_wf.wdl" as IDCONVERT
-import "biocloud_gwas_workflows/biocloud_wdl_tools/plink/plink.wdl" as PLINK
-import "biocloud_gwas_workflows/genotype_filtering/remove_duplicate_variants/remove_duplicate_variants_wf.wdl" as DUPLICATES
-import "biocloud_gwas_workflows/ancestral_similarity/smartpca/smartpca_ancestry_wf.wdl" as ANCESTRY
-import "biocloud_gwas_workflows/biocloud_wdl_tools/utils/utils.wdl" as UTILS
-import "biocloud_gwas_workflows/biocloud_wdl_tools/tsv_utils/tsv_utils.wdl" as TSV_UTILS
-import "biocloud_gwas_workflows/wgs_qc/wgs_qc_ancestry_wf.wdl" as WGS_QC_ANCESTRY
+version 1.1
 
-workflow wgs_qc_wf{
+import "convert_variant_ids_bfile_chr_wf.wdl" as IDCONVERT
+import "plink.wdl" as PLINK
+import "remove_duplicate_variants_wf.wdl" as DUPLICATES
+import "smartpca_ancestry_wf.wdl" as ANCESTRY
+import "utils.wdl" as UTILS
+import "tsv_utils.wdl" as TSV_UTILS
+import "structs.wdl" as STRUCTS
 
-    # input {
+workflow wgs_qc_wf_step_1{
+
+    input {
 
         # Input dataset parameters
         Array[File] vcfs
@@ -17,7 +19,6 @@ workflow wgs_qc_wf{
         String dataset_short_name
         String dataset_display_name = dataset_short_name
         Array[String] chrs
-        Array[String]? hwe_chrs # intended to be used in cases where the cohort is all-male or nearly all male and to tell the hwe_wf to skip chrx
         String genome_build_code
 
         #### Parameters for id conversion
@@ -71,9 +72,9 @@ workflow wgs_qc_wf{
 
         # Sex xref for adding sex
         File sex_xref
-        String sex_xref_fid_col     # 1-based
-        String sex_xref_iid_col     # 1-based
-        String sex_xref_sex_col     # 1-based
+        Int sex_xref_fid_col     # 1-based
+        Int sex_xref_iid_col     # 1-based
+        Int sex_xref_sex_col     # 1-based
         Boolean sex_xref_header = false
         String? sex_xref_delimiter
 
@@ -122,8 +123,9 @@ workflow wgs_qc_wf{
 
         # Container
         String container_source = "docker"
+        Int? ecr_account_id
     
-    # }
+    }
 
     # Check some common errors to save time because otherwise it would take like 2 hours to catch these
     # Quit if ancestry definitions and ancestries aren't same length
@@ -131,7 +133,8 @@ workflow wgs_qc_wf{
         call UTILS.raise_error as ancestry_definition_fail{
             input:
                 msg = "Workflow input error: ancestries_to_incude must be same length as ancestries_display_names!",
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
     }
 
@@ -140,12 +143,13 @@ workflow wgs_qc_wf{
         call UTILS.raise_error as ancestry_pop_type_fail{
             input:
                 msg = "Workflow input error: ancestry_type MUST be either POP or SUPERPOP!",
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
     }
 
     # Prepare file for updating sex
-    Array[String] sex_xref_cols = [sex_xref_fid_col, sex_xref_iid_col, sex_xref_sex_col]
+    Array[String] sex_xref_cols = ["~{sex_xref_fid_col}", "~{sex_xref_iid_col}", "~{sex_xref_sex_col}"]
     call TSV_UTILS.tsv_select as create_sex_update_file {
         input:
             tsv_input = sex_xref,
@@ -153,27 +157,30 @@ workflow wgs_qc_wf{
             fields = sex_xref_cols,
             header = sex_xref_header,
             delimiter = sex_xref_delimiter,
-            container_source = container_source
+            container_source = container_source,
+            ecr_account_id = ecr_account_id
     }
 
     scatter(i in range(length(chrs))) {
 
-        String chr = chrs[i]
+        String chr = "~{chrs[i]}"
 
         # Convert vcf to plink bfile
         call PLINK.convert_vcf_to_bed as all_snps_chr_convert_vcf_to_bfile{
             input:
                 vcf_in = vcfs[i],
-                output_basename = "${output_basename}_chr${chr}",
+                output_basename = "~{output_basename}_chr~{chr}",
                 cpu = plink_chr_cpu,
                 mem_gb = plink_chr_mem_gb,
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
 
         call UTILS.wc as chr_count_init_snps{
             input:
                 input_file = all_snps_chr_convert_vcf_to_bfile.bim_out,
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
 
         # Extract batch samples and update sex
@@ -184,26 +191,31 @@ workflow wgs_qc_wf{
                 fam_in = all_snps_chr_convert_vcf_to_bfile.fam_out,
                 keep_samples = keep,
                 update_sex = create_sex_update_file.tsv_output,
-                output_basename = "${output_basename}_chr${chr}_batch_samples",
+                output_basename = "~{output_basename}_chr~{chr}_batch_samples",
                 cpu = plink_chr_cpu,
                 mem_gb = plink_chr_mem_gb,
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
 
         # Remove phenotype from fam file
         call PLINK.remove_fam_phenotype as remove_fam_pheno{
             input:
                 fam_in = all_snps_chr_select_samples.fam_out,
-                output_basename = "${output_basename}_chr${chr}_no_pheno",
-                container_source = container_source
+                output_basename = "~{output_basename}_chr~{chr}_no_pheno",
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
 
         # Fix founder information in pedigree to make sure mother and father ids actually exist in dataset
         call PLINK.make_founders as make_founders{
             input:
                 fam_in = remove_fam_pheno.fam_out,
-                output_basename = "${output_basename}_chr${chr}_no_pheno_make_founders",
-                container_source = container_source
+                output_basename = "~{output_basename}_chr~{chr}_no_pheno_make_founders",
+                cpu = plink_chr_cpu,
+                mem_gb = plink_chr_mem_gb,
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
 
 
@@ -213,7 +225,7 @@ workflow wgs_qc_wf{
                 bim_in = all_snps_chr_select_samples.bim_out,
                 ref_file = id_conversion_ref_files[i],
                 chr = chr,
-                output_basename = "${output_basename}_chr${chr}_convert_ids",
+                output_basename = "~{output_basename}_chr~{chr}_convert_ids",
                 in_sep = id_conversion_in_sep,
                 in_missing_allele = id_conversion_in_missing_allele,
                 in_deletion_allele = id_conversion_in_deletion_allele,
@@ -223,7 +235,8 @@ workflow wgs_qc_wf{
                 rescue_rsids = id_conversion_rescue_rsids,
                 convert_cpu = id_conversion_cpu,
                 convert_mem_gb = id_conversion_mem_gb,
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
 
         # Remove duplicates
@@ -232,18 +245,20 @@ workflow wgs_qc_wf{
                 bed_in = all_snps_chr_select_samples.bed_out,
                 bim_in = all_snps_chr_convert_variant_ids.bim_out,
                 fam_in = make_founders.fam_out,
-                output_basename = "${output_basename}_chr${chr}_no_dups",
+                output_basename = "~{output_basename}_chr~{chr}_no_dups",
                 label_duplicate_variants_cpu = id_conversion_cpu,
                 label_duplicate_variants_mem_gb = id_conversion_mem_gb,
                 plink_cpu = plink_chr_cpu,
                 plink_mem_gb = plink_chr_mem_gb,
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
 
         call UTILS.wc as chr_count_post_id_conversion_snps{
             input:
                 input_file = all_snps_chr_remove_duplicates.bim_out,
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
 
         # Extract ref_panel variants from dataset
@@ -253,18 +268,21 @@ workflow wgs_qc_wf{
                 bim_in = all_snps_chr_remove_duplicates.bim_out,
                 fam_in = all_snps_chr_remove_duplicates.fam_out,
                 extract = ref_variant_list,
-                output_basename = "${output_basename}_chr${chr}_ref_snps",
+                output_basename = "~{output_basename}_chr~{chr}_ref_snps",
                 cpu = plink_chr_cpu,
                 mem_gb = plink_chr_mem_gb,
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
 
     }
 
     # Count initial snps in dataset
     call UTILS.sum_ints as count_init_snps{
-        input: ints = chr_count_init_snps.num_lines,
-        container_source = container_source
+        input: 
+            ints = chr_count_init_snps.num_lines,
+            container_source = container_source,
+            ecr_account_id = ecr_account_id
     }
     Int init_snp_count = count_init_snps.sum
 
@@ -272,14 +290,17 @@ workflow wgs_qc_wf{
     call UTILS.wc as count_init_samples{
         input:
             input_file = all_snps_chr_select_samples.fam_out[0],
-            container_source = container_source
+            container_source = container_source,
+            ecr_account_id = ecr_account_id
     }
     Int init_sample_count = count_init_samples.num_lines
 
     # Count post ID conversion snps
     call UTILS.sum_ints as count_post_id_conversion_snps{
-        input: ints = chr_count_post_id_conversion_snps.num_lines,
-        container_source = container_source
+        input: 
+            ints = chr_count_post_id_conversion_snps.num_lines,
+            container_source = container_source,
+            ecr_account_id = ecr_account_id
     }
     Int post_id_conversion_snp_count = count_post_id_conversion_snps.sum
 
@@ -289,10 +310,11 @@ workflow wgs_qc_wf{
             bed_in = ref_snps_chr_extract_variants.bed_out,
             bim_in = ref_snps_chr_extract_variants.bim_out,
             fam_in = ref_snps_chr_extract_variants.fam_out,
-            output_basename = "${output_basename}_ref_snps",
+            output_basename = "~{output_basename}_ref_snps",
             cpu = merge_bed_cpu,
             mem_gb = merge_bed_mem_gb,
-            container_source = container_source
+            container_source = container_source,
+            ecr_account_id = ecr_account_id
     }
 
     # Smartpca ancestry WF to partition by ancestry
@@ -321,7 +343,8 @@ workflow wgs_qc_wf{
             smartpca_mem_gb = pca_mem_gb,
             assign_ancestry_cpu = assign_ancestry_cpu,
             assign_ancestry_mem_gb = assign_ancestry_mem_gb,
-            container_source = container_source
+            container_source = container_source,
+            ecr_account_id = ecr_account_id
     }
 
     # Filter out any ancestries with less than a minimum cutoff of samples
@@ -330,7 +353,8 @@ workflow wgs_qc_wf{
         call UTILS.wc as count_ancestry_samples{
             input:
                 input_file = smartpca_ancestry_wf.dataset_ancestry_keep_lists[ancestry_index],
-                container_source = container_source
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
         }
         Int ancestry_sample_count = count_ancestry_samples.num_lines
 
@@ -348,70 +372,82 @@ workflow wgs_qc_wf{
     Array[String] out_ancestries = select_all(ancestry_maybe)
     Array[File] output_ancestry_samples = select_all(ancestry_samples_maybe)
 
-    # Split by ancestry group and process each separately
+    # Create JSON files with arguments for step 2 of WF
     scatter(ancestry_index in range(length(out_ancestries))){
+
         String ancestry = out_ancestries[ancestry_index]
         File ancestry_samples = output_ancestry_samples[ancestry_index]
         Int initial_ancestry_sample_count = out_ancestries_init_sample_counts[ancestry_index]
-
-        call WGS_QC_ANCESTRY.wgs_qc_ancestry_wf {
-            input:
-                ancestry = ancestry,
-                complete_beds = all_snps_chr_remove_duplicates.bed_out,
-                complete_bims = all_snps_chr_remove_duplicates.bim_out,
-                complete_fams = all_snps_chr_remove_duplicates.fam_out,
-                filtered_bed = ref_snps_post_id_conversion.bed_out,
-                filtered_bim = ref_snps_post_id_conversion.bim_out,
-                filtered_fam = ref_snps_post_id_conversion.fam_out,
-                ancestry_samples = ancestry_samples,
-                output_basename = "${output_basename}_${ancestry}",
-                chrs = chrs,
-                hwe_chrs = hwe_chrs,
-                genome_build_code = genome_build_code,
-                init_snp_count = init_snp_count,
-                post_id_conversion_snp_count = post_id_conversion_snp_count,
-                initial_ancestry_sample_count = initial_ancestry_sample_count,
-                max_missing_site_rate = max_missing_site_rate,
-                hwe_filter_pvalue = hwe_filter_pvalue,
-                ld_exclude_regions = ld_exclude_regions,
-                ld_type = ld_type,
-                ld_window_size = ld_window_size,
-                ld_step_size = ld_step_size,
-                ld_r2_threshold = ld_r2_threshold,
-                ld_maf_cutoff = ld_maf_cutoff,
-                max_sample_missing_rate = max_sample_missing_rate,
-                min_sample_he = min_sample_he,
-                max_sample_he = max_sample_he,
-                filter_related_samples = filter_related_samples,
-                degree = degree,
-                num_king_splits = num_king_splits,
-                kinship_pcs_to_analyze = kinship_pcs_to_analyze,
-                filter_discrepant_sex = filter_discrepant_sex,
-                max_female_f = max_female_f,
-                min_male_f = min_male_f,
-                ancestral_pca_loading_cutoff = ancestral_pca_loading_cutoff,
-                max_kinship_snps = max_kinship_snps,
-                min_kinship_snps = min_kinship_snps,
-                ancestral_pca_loading_step_size = ancestral_pca_loading_step_size,
-                max_ancestral_pca_loading_cutoff = max_ancestral_pca_loading_cutoff,
-                plink_cpu = plink_cpu,
-                plink_mem_gb = plink_mem_gb,
-                plink_chr_cpu = plink_chr_cpu,
-                plink_chr_mem_gb = plink_chr_mem_gb,
-                merge_bed_cpu = merge_bed_cpu,
-                merge_bed_mem_gb = merge_bed_mem_gb,
-                sex_check_cpu = sex_check_cpu,
-                sex_check_mem_gb = sex_check_mem_gb,
-                king_cpu_per_split = king_cpu_per_split,
-                king_mem_gb_per_split = king_mem_gb_per_split,
-                pca_cpu = pca_cpu,
-                pca_mem_gb = pca_mem_gb,
-                container_source = container_source
-
+        STEP_2_ARGS step_2_args = STEP_2_ARGS {
+            ancestry: ancestry,
+            complete_beds: all_snps_chr_remove_duplicates.bed_out,
+            complete_bims: all_snps_chr_remove_duplicates.bim_out,
+            complete_fams: all_snps_chr_remove_duplicates.fam_out,
+            filtered_bed: ref_snps_post_id_conversion.bed_out,
+            filtered_bim: ref_snps_post_id_conversion.bim_out,
+            filtered_fam: ref_snps_post_id_conversion.fam_out,
+            ancestry_samples: ancestry_samples,
+            output_basename: "~{output_basename}_~{ancestry}",
+            chrs: chrs,
+            genome_build_code: genome_build_code,
+            init_snp_count: init_snp_count,
+            post_id_conversion_snp_count: post_id_conversion_snp_count,
+            initial_ancestry_sample_count: initial_ancestry_sample_count,
+            max_missing_site_rate: max_missing_site_rate,
+            hwe_filter_pvalue: hwe_filter_pvalue,
+            ld_exclude_regions: ld_exclude_regions,
+            ld_type: ld_type,
+            ld_window_size: ld_window_size,
+            ld_step_size: ld_step_size,
+            ld_r2_threshold: ld_r2_threshold,
+            ld_maf_cutoff: ld_maf_cutoff,
+            max_sample_missing_rate: max_sample_missing_rate,
+            min_sample_he: min_sample_he,
+            max_sample_he: max_sample_he,
+            filter_related_samples: filter_related_samples,
+            degree: degree,
+            num_king_splits: num_king_splits,
+            kinship_pcs_to_analyze: kinship_pcs_to_analyze,
+            filter_discrepant_sex: filter_discrepant_sex,
+            max_female_f: max_female_f,
+            min_male_f: min_male_f,
+            ancestral_pca_loading_cutoff: ancestral_pca_loading_cutoff,
+            max_kinship_snps: max_kinship_snps,
+            min_kinship_snps: min_kinship_snps,
+            ancestral_pca_loading_step_size: ancestral_pca_loading_step_size,
+            max_ancestral_pca_loading_cutoff: max_ancestral_pca_loading_cutoff,
+            plink_cpu: plink_cpu,
+            plink_mem_gb: plink_mem_gb,
+            plink_chr_cpu: plink_chr_cpu,
+            plink_chr_mem_gb: plink_chr_mem_gb,
+            merge_bed_cpu: merge_bed_cpu,
+            merge_bed_mem_gb: merge_bed_mem_gb,
+            sex_check_cpu: sex_check_cpu,
+            sex_check_mem_gb: sex_check_mem_gb,
+            king_cpu_per_split: king_cpu_per_split,
+            king_mem_gb_per_split: king_mem_gb_per_split,
+            pca_cpu: pca_cpu,
+            pca_mem_gb: pca_mem_gb,
+            container_source: container_source,
+            ecr_account_id: ecr_account_id
         }
+
+
+        call write_step_2_args_to_json {
+            input:
+                json_file = "~{output_basename}_~{ancestry}_step_2_args.json",
+                step_2_args = step_2_args,
+                container_source = container_source,
+                ecr_account_id = ecr_account_id
+        }
+
     }
 
     output{
+
+        # Step 2 args
+        Array[File] step_2_args_jsons = write_step_2_args_to_json.step_2_args_json
+
         # Filter count metrics
         Int initial_snp_count = init_snp_count
         Int initial_sample_count = init_sample_count
@@ -420,36 +456,14 @@ workflow wgs_qc_wf{
         Array[Int] input_ancestries_initial_sample_counts = input_ancestries_init_sample_counts
         Array[String] output_ancestries = out_ancestries
         Array[Int] output_ancestries_initial_sample_counts = out_ancestries_init_sample_counts
-        Array[Int] output_ancestries_low_call_snp_counts = wgs_qc_ancestry_wf.low_call_snp_count
-        Array[Int] output_ancestries_hwe_failed_snp_counts = wgs_qc_ancestry_wf.hwe_failed_snp_count
-        Array[Int] output_ancestries_low_call_sample_counts = wgs_qc_ancestry_wf.low_call_sample_count
-        Array[Int] output_ancestries_excess_homo_sample_counts = wgs_qc_ancestry_wf.excess_homo_sample_count
-        Array[Int] output_ancestries_related_sample_counts = wgs_qc_ancestry_wf.related_sample_count
-        Array[Int] output_ancestries_failed_sex_check_fail_sample_counts = wgs_qc_ancestry_wf.failed_sex_check_fail_sample_count
-        Array[Int] output_ancestries_final_snp_counts = wgs_qc_ancestry_wf.final_snp_count
-        Array[Int] output_ancestries_final_sample_counts = wgs_qc_ancestry_wf.final_sample_count
-        Array[Int] output_ancestries_final_removed_snp_counts = wgs_qc_ancestry_wf.final_removed_snp_count
-        Array[Int] output_ancestries_final_removed_sample_counts = wgs_qc_ancestry_wf.final_removed_sample_count
-        Array[Float] output_ancestries_final_snp_pct_pass = wgs_qc_ancestry_wf.final_snp_pct_pass
-        Array[Float] output_ancestries_final_sample_pct_pass = wgs_qc_ancestry_wf.final_sample_pct_pass
-        Array[Int] output_ancestries_unaccounted_sample_counts = wgs_qc_ancestry_wf.unaccounted_sample_count
 
-        # Fully filtered qc beds that have been through all filters
-        # Array[File] final_qc_beds = wgs_qc_ancestry_wf.final_qc_bed
-        # Array[File] final_qc_bims = wgs_qc_ancestry_wf.final_qc_bim
-        # Array[File] final_qc_fams = wgs_qc_ancestry_wf.final_qc_fam
-        Array[Array[File]] final_qc_beds_by_chr = wgs_qc_ancestry_wf.final_qc_beds_by_chr
-        Array[Array[File]] final_qc_bims_by_chr = wgs_qc_ancestry_wf.final_qc_bims_by_chr
-        Array[Array[File]] final_qc_fams_by_chr = wgs_qc_ancestry_wf.final_qc_fams_by_chr
-
-        # QC files that have gone through basic site/sample filter but no kinship/sex filters
-        # Can be used later if you don't want to use kinship/sex-discrepancy filtered datasets
-        # Array[File] basic_qc_beds = wgs_qc_ancestry_wf.basic_qc_bed
-        # Array[File] basic_qc_bims = wgs_qc_ancestry_wf.basic_qc_bim
-        # Array[File] basic_qc_fams = wgs_qc_ancestry_wf.basic_qc_fam
-        Array[Array[File]] basic_qc_beds_by_chr = wgs_qc_ancestry_wf.basic_qc_beds_by_chr
-        Array[Array[File]] basic_qc_bims_by_chr = wgs_qc_ancestry_wf.basic_qc_bims_by_chr
-        Array[Array[File]] basic_qc_fams_by_chr = wgs_qc_ancestry_wf.basic_qc_fams_by_chr
+        # Genotypes
+        Array[File] full_beds = all_snps_chr_remove_duplicates.bed_out
+        Array[File] full_bims = all_snps_chr_remove_duplicates.bim_out
+        Array[File] full_fams = all_snps_chr_remove_duplicates.fam_out
+        File pruned_bed = ref_snps_post_id_conversion.bed_out
+        File pruned_bim = ref_snps_post_id_conversion.bim_out
+        File pruned_fam = ref_snps_post_id_conversion.fam_out
 
         # Outputs from ancestry assignment workflow
         File ancestry_wf_evec = smartpca_ancestry_wf.evec
@@ -466,17 +480,44 @@ workflow wgs_qc_wf{
         Array[File] ancestry_wf_dataset_ancestry_outliers_plots = smartpca_ancestry_wf.dataset_ancestry_outliers_plots
         Array[File] ancestry_wf_dataset_ancestry_keep_lists = smartpca_ancestry_wf.dataset_ancestry_keep_lists
 
-        # Samples removed for low call rates or excess homozygosity for each ancestry
-        Array[File] excess_homo_samples = wgs_qc_ancestry_wf.excess_homo_samples
-
-        # Kinship estimation outputs for each ancestry
-        Array[File] related_samples = wgs_qc_ancestry_wf.related_samples
-        Array[File] annotated_kinships = wgs_qc_ancestry_wf.annotated_kinships
-        # Kinship id maps for each ancestry bc annotated kinship results have dummy family ids
-        Array[File] kinship_id_maps =  wgs_qc_ancestry_wf.kinship_id_maps
-
-        # Sex discrepancy outputs for each ancestry
-        Array[File] sex_check_reports = wgs_qc_ancestry_wf.sex_check_report
-        Array[File] sex_check_failed_samples = wgs_qc_ancestry_wf.sex_check_failed_samples
     }
+}
+
+
+task write_step_2_args_to_json{
+
+    input{
+
+        String json_file
+        STEP_2_ARGS step_2_args
+        
+        # Runtime environment
+        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        Int? ecr_account_id
+        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
+        String container_source = "docker"
+        String container_image = if(container_source == "docker") then docker else ecr
+        Int cpu = 1
+        Int mem_gb = 1
+
+    }
+
+    command <<<
+        python <<CODE
+        with open("~{json_file}", 'w') as f:
+            f.write("~{write_json(step_2_args)}")
+        CODE
+    >>>
+
+
+    runtime {
+        docker: container_image
+        cpu: cpu
+        memory: "~{mem_gb} GB"
+    }
+
+    output {
+        File step_2_args_json = "~{json_file}"
+    }
+
 }
