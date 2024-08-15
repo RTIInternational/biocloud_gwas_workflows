@@ -1,0 +1,16 @@
+{
+    "bed_in": "s3://rti-nida-iomics-oa-rti-common/ref_panels/1000G/plink2/all_phase3_unique_grch38_dbsnp_b153_no_singletons_chr22.bed",
+    "bim_in": "s3://rti-nida-iomics-oa-rti-common/ref_panels/1000G/plink2/all_phase3_unique_grch38_dbsnp_b153_no_singletons_chr22.bim",
+    "fam_in": "s3://rti-nida-iomics-oa-rti-common/ref_panels/1000G/plink2/all_phase3_unique_grch38_dbsnp_b153_no_singletons_chr22.fam",
+    "output_basename": "test",
+    "exclude_regions": "s3://rti-nida-iomics-oa-rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg38.bed",
+    "ld_type": "indep-pairwise",
+    "window_size": 20000,
+    "step_size": 2000,
+    "r2_threshold": 0.5,
+    "maf": 0.01,
+    "cpu": 1,
+    "mem_gb": 4,
+    "image_source": "ecr",
+    "ecr_repo": "515876044319.dkr.ecr.us-east-1.amazonaws.com"
+}
