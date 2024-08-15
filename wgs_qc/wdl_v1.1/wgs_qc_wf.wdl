@@ -123,8 +123,8 @@ workflow wgs_qc_wf{
         Int assign_ancestry_mem_gb = 4
 
         # Container
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
     
     }
 
@@ -134,7 +134,7 @@ workflow wgs_qc_wf{
         call UTILS.raise_error as ancestry_definition_fail{
             input:
                 msg = "Workflow input error: ancestries_to_incude must be same length as ancestries_display_names!",
-                container_source = container_source
+                image_source = image_source
         }
     }
 
@@ -143,7 +143,7 @@ workflow wgs_qc_wf{
         call UTILS.raise_error as ancestry_pop_type_fail{
             input:
                 msg = "Workflow input error: ancestry_type MUST be either POP or SUPERPOP!",
-                container_source = container_source
+                image_source = image_source
         }
     }
 
@@ -156,7 +156,7 @@ workflow wgs_qc_wf{
             fields = sex_xref_cols,
             header = sex_xref_header,
             delimiter = sex_xref_delimiter,
-            container_source = container_source
+            image_source = image_source
     }
 
     scatter(i in range(length(chrs))) {
@@ -170,13 +170,13 @@ workflow wgs_qc_wf{
                 output_basename = "~{output_basename}_chr~{chr}",
                 cpu = plink_chr_cpu,
                 mem_gb = plink_chr_mem_gb,
-                container_source = container_source
+                image_source = image_source
         }
 
         call UTILS.wc as chr_count_init_snps{
             input:
                 input_file = all_snps_chr_convert_vcf_to_bfile.bim_out,
-                container_source = container_source
+                image_source = image_source
         }
 
         # Extract batch samples and update sex
@@ -190,7 +190,7 @@ workflow wgs_qc_wf{
                 output_basename = "~{output_basename}_chr~{chr}_batch_samples",
                 cpu = plink_chr_cpu,
                 mem_gb = plink_chr_mem_gb,
-                container_source = container_source
+                image_source = image_source
         }
 
         # Remove phenotype from fam file
@@ -198,7 +198,7 @@ workflow wgs_qc_wf{
             input:
                 fam_in = all_snps_chr_select_samples.fam_out,
                 output_basename = "~{output_basename}_chr~{chr}_no_pheno",
-                container_source = container_source
+                image_source = image_source
         }
 
         # Fix founder information in pedigree to make sure mother and father ids actually exist in dataset
@@ -206,7 +206,7 @@ workflow wgs_qc_wf{
             input:
                 fam_in = remove_fam_pheno.fam_out,
                 output_basename = "~{output_basename}_chr~{chr}_no_pheno_make_founders",
-                container_source = container_source
+                image_source = image_source
         }
 
 
@@ -226,7 +226,7 @@ workflow wgs_qc_wf{
                 rescue_rsids = id_conversion_rescue_rsids,
                 convert_cpu = id_conversion_cpu,
                 convert_mem_gb = id_conversion_mem_gb,
-                container_source = container_source
+                image_source = image_source
         }
 
         # Remove duplicates
@@ -240,13 +240,13 @@ workflow wgs_qc_wf{
                 label_duplicate_variants_mem_gb = id_conversion_mem_gb,
                 plink_cpu = plink_chr_cpu,
                 plink_mem_gb = plink_chr_mem_gb,
-                container_source = container_source
+                image_source = image_source
         }
 
         call UTILS.wc as chr_count_post_id_conversion_snps{
             input:
                 input_file = all_snps_chr_remove_duplicates.bim_out,
-                container_source = container_source
+                image_source = image_source
         }
 
         # Extract ref_panel variants from dataset
@@ -259,7 +259,7 @@ workflow wgs_qc_wf{
                 output_basename = "~{output_basename}_chr~{chr}_ref_snps",
                 cpu = plink_chr_cpu,
                 mem_gb = plink_chr_mem_gb,
-                container_source = container_source
+                image_source = image_source
         }
 
     }
@@ -267,7 +267,7 @@ workflow wgs_qc_wf{
     # Count initial snps in dataset
     call UTILS.sum_ints as count_init_snps{
         input: ints = chr_count_init_snps.num_lines,
-        container_source = container_source
+        image_source = image_source
     }
     Int init_snp_count = count_init_snps.sum
 
@@ -275,14 +275,14 @@ workflow wgs_qc_wf{
     call UTILS.wc as count_init_samples{
         input:
             input_file = all_snps_chr_select_samples.fam_out[0],
-            container_source = container_source
+            image_source = image_source
     }
     Int init_sample_count = count_init_samples.num_lines
 
     # Count post ID conversion snps
     call UTILS.sum_ints as count_post_id_conversion_snps{
         input: ints = chr_count_post_id_conversion_snps.num_lines,
-        container_source = container_source
+        image_source = image_source
     }
     Int post_id_conversion_snp_count = count_post_id_conversion_snps.sum
 
@@ -295,7 +295,7 @@ workflow wgs_qc_wf{
             output_basename = "~{output_basename}_ref_snps",
             cpu = merge_bed_cpu,
             mem_gb = merge_bed_mem_gb,
-            container_source = container_source
+            image_source = image_source
     }
 
     # Smartpca ancestry WF to partition by ancestry
@@ -324,7 +324,7 @@ workflow wgs_qc_wf{
             smartpca_mem_gb = pca_mem_gb,
             assign_ancestry_cpu = assign_ancestry_cpu,
             assign_ancestry_mem_gb = assign_ancestry_mem_gb,
-            container_source = container_source
+            image_source = image_source
     }
 
     # Filter out any ancestries with less than a minimum cutoff of samples
@@ -333,7 +333,7 @@ workflow wgs_qc_wf{
         call UTILS.wc as count_ancestry_samples{
             input:
                 input_file = smartpca_ancestry_wf.dataset_ancestry_keep_lists[ancestry_index],
-                container_source = container_source
+                image_source = image_source
         }
         Int ancestry_sample_count = count_ancestry_samples.num_lines
 
@@ -409,7 +409,7 @@ workflow wgs_qc_wf{
     #             king_mem_gb_per_split = king_mem_gb_per_split,
     #             pca_cpu = pca_cpu,
     #             pca_mem_gb = pca_mem_gb,
-    #             container_source = container_source
+    #             image_source = image_source
 
     #     }
     # }

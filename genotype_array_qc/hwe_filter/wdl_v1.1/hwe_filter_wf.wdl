@@ -30,8 +30,8 @@ workflow hwe_filter_wf{
         File? related_samples
 
         # Runtime
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
         Int plink_chr_cpu = 1
         Int plink_chr_mem_gb = 2
         Int plink_filter_cpu = 1
@@ -56,8 +56,8 @@ workflow hwe_filter_wf{
             no_fail = true,
             plink_cpu = plink_filter_cpu,
             plink_mem_gb = plink_filter_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     File norm_bed = normalize_sex_chr_wf.bed_out
@@ -69,8 +69,8 @@ workflow hwe_filter_wf{
         call PLINK.get_bim_chrs{
             input:
                 bim_in = norm_bim,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -93,8 +93,8 @@ workflow hwe_filter_wf{
                 output_basename = "~{output_basename}.chr.~{chr}",
                 cpu = plink_chr_cpu,
                 mem_gb = plink_chr_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -103,8 +103,8 @@ workflow hwe_filter_wf{
         input:
             input_files = hwe.remove,
             output_filename = "~{output_basename}.hwe.remove",
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Remove failed HWE SNPs from full dataset
@@ -118,8 +118,8 @@ workflow hwe_filter_wf{
             output_basename = "~{output_basename}.hwe",
             cpu = plink_filter_cpu,
             mem_gb = plink_filter_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     output{

@@ -10,7 +10,7 @@ workflow ld_prune_wf{
         File bed_in
         File bim_in
         File fam_in
-        File output_basename
+        String output_basename
 
         File? exclude_regions
         File? exclude
@@ -28,18 +28,12 @@ workflow ld_prune_wf{
         Int mem_gb
 
         # Container
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
 
     }
 
-    # Count number of samples (if <50 set --bad-ld option or plink2 will error out
-    call UTILS.wc as get_num_samples{
-        input:
-            input_file = fam_in,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
-    }
+    Int num_samples = length(read_lines(fam_in))
 
     # Get LD pruning set
     call PLINK.prune_ld_markers{
@@ -59,11 +53,11 @@ workflow ld_prune_wf{
             mem_gb = mem_gb,
             maf = maf,
             chr = chr,
-            bad_ld = (get_num_samples.num_lines <= 50),
+            bad_ld = (num_samples <= 50),
             exclude_regions = exclude_regions,
             exclude = exclude,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Filter to include only the LD-pruned markers returned from previous step
@@ -77,8 +71,8 @@ workflow ld_prune_wf{
             cpu = cpu,
             mem_gb = mem_gb,
             extract = prune_ld_markers.include_markers,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     output{

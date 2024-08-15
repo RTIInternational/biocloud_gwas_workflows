@@ -12,9 +12,6 @@ struct STEP_2_ARGS {
     String output_basename
     Array[String] chrs
     String genome_build_code
-    Int init_snp_count
-    Int post_id_conversion_snp_count
-    Int initial_ancestry_sample_count
     Float max_missing_site_rate
     Float hwe_filter_pvalue
     File? ld_exclude_regions
@@ -50,6 +47,15 @@ struct STEP_2_ARGS {
     Int king_mem_gb_per_split
     Int pca_cpu
     Int pca_mem_gb
-    String container_source
-    Int ecr_account_id
+    String image_source
+    String ecr_repo
+}
+
+struct COUNTS {
+    Int variant_count_initial
+    Int variant_count_duplicates
+    Int variant_count_no_duplicates
+    Int sample_count_initial
+    Int sample_count_batch
+    Array[Pair[String, Int]] sample_count_ancestry
 }

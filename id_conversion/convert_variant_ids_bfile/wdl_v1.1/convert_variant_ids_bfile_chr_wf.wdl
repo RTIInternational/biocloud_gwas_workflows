@@ -4,7 +4,7 @@ import "plink.wdl" as PLINK
 import "convert_variant_ids.wdl" as IDCONVERT
 import "rti-tsv-utils.wdl" as SORT
 
-workflow convert_variant_ids_bfile_wf{
+workflow convert_variant_ids_bfile_chr_wf{
 
     input{
 
@@ -26,8 +26,8 @@ workflow convert_variant_ids_bfile_wf{
         Int convert_cpu = 1
         Int convert_mem_gb = 4
 
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
 
     }
 
@@ -54,8 +54,8 @@ workflow convert_variant_ids_bfile_wf{
             output_compression = output_compression,
             cpu = convert_cpu,
             mem_gb = convert_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     output{

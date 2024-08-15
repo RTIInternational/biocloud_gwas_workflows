@@ -12,8 +12,8 @@ workflow collect_large_file_list_wf{
         Int num_chunks = ceil(length(input_files)/(chunk_size*1.0))
         Int collect_chunk_cpus = 2
         Int collect_chunk_mem_gb = 4
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
 
     }
 
@@ -27,8 +27,8 @@ workflow collect_large_file_list_wf{
                 inputs = input_files,
                 start_pos = start_pos,
                 end_pos = start_pos + chunk_size,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # zip the sliced files into a tarball
@@ -36,8 +36,8 @@ workflow collect_large_file_list_wf{
             input:
                 output_dir_name = output_dir_name,
                 input_files = slice.outputs,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -48,8 +48,8 @@ workflow collect_large_file_list_wf{
             output_dir_name = output_dir_name,
             cpu = collect_chunk_cpus,
             mem_gb = collect_chunk_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     output{
@@ -65,11 +65,11 @@ task collect_chunks{
         String output_dir_name
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 2
         Int mem_gb = 4
         Int max_retries = 3

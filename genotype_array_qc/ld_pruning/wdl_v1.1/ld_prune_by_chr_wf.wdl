@@ -9,7 +9,7 @@ workflow ld_prune_by_chr_wf{
         Array[File] bed_ins
         Array[File] bim_ins
         Array[File] fam_ins
-        Array[File] output_basenames
+        Array[String] output_basenames
         Array[String] chrs
 
         File? exclude_regions
@@ -26,8 +26,8 @@ workflow ld_prune_by_chr_wf{
         Int mem_gb
 
         # Container
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
 
     }
 
@@ -48,8 +48,8 @@ workflow ld_prune_by_chr_wf{
                 maf = maf,
                 chr = chrs[index],
                 exclude_regions = exclude_regions,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 

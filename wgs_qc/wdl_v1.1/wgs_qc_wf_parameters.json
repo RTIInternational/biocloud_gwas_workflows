@@ -267,7 +267,7 @@
 		"description": "-",
         "optional": true
 	},
-	"container_source": {
+	"image_source": {
 		"description": "-",
         "optional": true
 	}

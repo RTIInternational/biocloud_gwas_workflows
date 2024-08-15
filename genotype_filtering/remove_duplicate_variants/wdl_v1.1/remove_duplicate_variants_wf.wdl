@@ -17,8 +17,8 @@ workflow remove_duplicate_variants_wf{
         Int plink_cpu = 1
         Int plink_mem_gb = 2
 
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
 
     }
 
@@ -29,8 +29,8 @@ workflow remove_duplicate_variants_wf{
             output_basename = output_basename,
             cpu = label_duplicate_variants_cpu,
             mem_gb = label_duplicate_variants_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Get list of variant IDs labeled as duplicates
@@ -38,8 +38,8 @@ workflow remove_duplicate_variants_wf{
         input:
             bim_in = label_duplicate_variants.bim_out,
             output_basename = output_basename,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     if (size(get_duplicate_variant_ids.duplicate_ids) > 0){
@@ -53,8 +53,8 @@ workflow remove_duplicate_variants_wf{
                 output_basename = output_basename,
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Remove duplicates from dataset
@@ -67,8 +67,8 @@ workflow remove_duplicate_variants_wf{
                 output_basename = output_basename,
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Remove numbers from duplicate variant IDs
@@ -76,8 +76,8 @@ workflow remove_duplicate_variants_wf{
             input:
                 bim_in = remove_dups.bim_out,
                 output_basename = output_basename,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -97,11 +97,11 @@ task label_duplicate_variants{
         String output_basename
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 1
 
@@ -155,11 +155,11 @@ task get_duplicate_variant_ids{
         String output_basename
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 1
 
@@ -195,11 +195,11 @@ task get_variants_to_remove{
         String input_prefix = basename(sub(bed_in, "\\.gz$", ""), ".bed")
 
         # Runtime environment
-        String docker = "rtibiocloud/plink:v1.9_2706f72"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/plink:v1.9_2706f72"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "rtibiocloud/plink:v1.9_2706f72"
+        String ecr_image = "rtibiocloud/plink:v1.9_2706f72"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 4
         Int mem_gb = 8
 
@@ -289,11 +289,11 @@ task fix_ids{
         String output_basename
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 1
 

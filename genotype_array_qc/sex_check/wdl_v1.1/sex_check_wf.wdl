@@ -49,8 +49,8 @@ workflow sex_check_wf{
         Int sex_check_mem_gb = 16
 
         # Container
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
 
     }
 
@@ -64,8 +64,8 @@ workflow sex_check_wf{
             iid_col = iid_col,
             sex_col = sex_col,
             delimiter = delimiter,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Update sex based on pheno file
@@ -78,8 +78,8 @@ workflow sex_check_wf{
             output_basename = "~{output_basename}.updated_sex",
             cpu = plink_cpu,
             mem_gb = plink_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Make sure PAR/NONPAR regions are split
@@ -94,8 +94,8 @@ workflow sex_check_wf{
             output_basename = "~{output_basename}.x_split",
             plink_cpu = plink_cpu,
             plink_mem_gb = plink_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Count number of chrX variants
@@ -124,8 +124,8 @@ workflow sex_check_wf{
                 mem_gb = ld_mem_gb,
                 maf = min_ld_maf,
                 exclude_regions = ld_exclude_regions,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Do Sex Check
@@ -139,8 +139,8 @@ workflow sex_check_wf{
                 output_basename = "~{output_basename}.sexcheck",
                 cpu = sex_check_cpu,
                 mem_gb = sex_check_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -148,22 +148,22 @@ workflow sex_check_wf{
         call create_empty_file as create_output_file {
             input:
                 file_name = "~{output_basename}.no_sexcheck.output",
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         call create_empty_file as create_problems_file {
             input:
                 file_name = "~{output_basename}.no_sexcheck.problems",
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         call create_empty_file as create_remove_file {
             input:
                 file_name = "~{output_basename}.no_sexcheck.remove",
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -194,11 +194,11 @@ task format_phenotype_file{
         Int tail_n = header_rows + 1
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 1
 
@@ -240,11 +240,11 @@ task count_chr_x_variants{
         File bim
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 1
 
@@ -272,11 +272,11 @@ task create_empty_file{
         String file_name
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 1
 

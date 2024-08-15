@@ -89,8 +89,8 @@ workflow wgs_qc_ancestry_wf{
         Int pca_mem_gb = 8
 
         # Container
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
     
     }
 
@@ -110,16 +110,16 @@ workflow wgs_qc_ancestry_wf{
                 allow_no_sex = true,
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Count number of SNPs that didn't pass call rate filter
         call UTILS.wc as chr_count_subset_ancestry_snps{
             input:
                 input_file = all_snps_chr_subset_ancestry.bim_out,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Set het haploids to missing
@@ -133,8 +133,8 @@ workflow wgs_qc_ancestry_wf{
                 output_basename = "~{output_basename}_chr~{chr}_snp_miss_het_hap_missing",
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Get list of SNPs that pass QC
@@ -143,8 +143,8 @@ workflow wgs_qc_ancestry_wf{
                 input_file = all_snps_chr_het_hap_to_missing.bim_out,
                 args = "-f 2",
                 output_filename = "~{output_basename}_chr~{chr}_post_snp_qc_snps.txt",
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -152,8 +152,8 @@ workflow wgs_qc_ancestry_wf{
     call UTILS.sum_ints as count_subset_ancestry_snps{
         input: 
             ints = chr_count_subset_ancestry_snps.num_lines,
-            container_source = container_source,
-                ecr_account_id = ecr_account_id
+            image_source = image_source,
+                ecr_repo = ecr_repo
     }
     Int ancestry_low_call_snp_count = post_id_conversion_snp_count - count_subset_ancestry_snps.sum
 
@@ -162,8 +162,8 @@ workflow wgs_qc_ancestry_wf{
         input:
             input_files = all_snps_chr_post_snp_qc_snps.output_file,
             output_filename = "~{output_basename}_post_snp_qc_snps.txt",
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Extract ancestry variants that pass SNP QC from ref SNP set
@@ -178,8 +178,8 @@ workflow wgs_qc_ancestry_wf{
             output_basename = "~{output_basename}_post_snp_qc_ref_snps",
             cpu = plink_cpu,
             mem_gb = plink_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Filter samples based on call rate (autosomes)
@@ -194,16 +194,16 @@ workflow wgs_qc_ancestry_wf{
             output_basename = "~{output_basename}_post_snp_qc_ref_snps_sample_miss",
             cpu = plink_cpu,
             mem_gb = plink_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Count samples removed due to low call rates
     call UTILS.wc as count_post_call_rate_filter_samples{
         input:
             input_file = ref_snps_filter_low_called_samples.fam_out,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
     Int ancestry_low_call_sample_count = initial_ancestry_sample_count - count_post_call_rate_filter_samples.num_lines
 
@@ -218,16 +218,16 @@ workflow wgs_qc_ancestry_wf{
             max_he = max_sample_he,
             cpu = plink_cpu,
             mem_gb = plink_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Count number of samples removed due to excess homo
     call UTILS.wc as count_excess_homo{
         input:
             input_file = get_excess_homo_samples.excess_homos,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
     Int ancestry_excess_homozygosity_sample_count = count_excess_homo.num_lines
 
@@ -243,8 +243,8 @@ workflow wgs_qc_ancestry_wf{
                 output_basename = "~{output_basename}_post_snp_qc_ref_snps_sample_miss_het",
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -285,16 +285,16 @@ workflow wgs_qc_ancestry_wf{
             ld_mem_gb = plink_chr_mem_gb,
             merge_bed_cpu = merge_bed_cpu,
             merge_bed_mem_gb = merge_bed_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Count number of related samples that need to be removed
     call UTILS.wc as count_related_samples{
         input:
             input_file = relatedness_wf.related_samples,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
     Int ancestry_related_sample_removal_candidate_count = count_related_samples.num_lines
 
@@ -327,16 +327,16 @@ workflow wgs_qc_ancestry_wf{
             sex_check_mem_gb = sex_check_mem_gb,
             plink_cpu = plink_cpu,
             plink_mem_gb = plink_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Count number of sex-discrepant samples
     call UTILS.wc as count_sex_check_failed_samples{
         input:
             input_file = sex_check_wf.samples_to_remove,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
     Int ancestry_sex_check_failed_samples = count_sex_check_failed_samples.num_lines 
 
@@ -348,16 +348,16 @@ workflow wgs_qc_ancestry_wf{
             input:
                 input_files = [sex_check_wf.samples_to_remove, relatedness_wf.related_samples],
                 output_filename = "~{output_basename}_sex_kin_remove",
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Count length of samples in union
         call UTILS.wc as count_get_sex_kin_filter{
             input:
                 input_file = get_file_union.output_file,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Number of related samples that also failed sex check
@@ -404,16 +404,16 @@ workflow wgs_qc_ancestry_wf{
                 plink_filter_mem_gb = plink_mem_gb,
                 plink_chr_cpu = plink_chr_cpu,
                 plink_chr_mem_gb = plink_chr_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Count number of snps not in hwe
         call UTILS.wc as count_chr_final_snps{
             input:
                 input_file = all_snps_chr_hwe_filter.bim_out,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Apply those discrepant sex and related filters
@@ -430,8 +430,8 @@ workflow wgs_qc_ancestry_wf{
                         output_basename = "~{output_basename}_chr~{chrs[i]}_post_snp_qc_post_sample_qc",
                         cpu = plink_cpu,
                         mem_gb = plink_mem_gb,
-                        container_source = container_source,
-                        ecr_account_id = ecr_account_id
+                        image_source = image_source,
+                        ecr_repo = ecr_repo
                 }
             }
         }
@@ -445,24 +445,24 @@ workflow wgs_qc_ancestry_wf{
         call UTILS.wc as count_chr_final_samples{
             input:
                 input_file = final_qc_merge_fam_by_chr,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
     }
 
     call UTILS.sum_ints as count_final_snps{
         input: ints = count_chr_final_snps.num_lines,
-        container_source = container_source,
-        ecr_account_id = ecr_account_id
+        image_source = image_source,
+        ecr_repo = ecr_repo
     }
     Int ancestry_final_snp_count = count_final_snps.sum
 
     # Final sample count
     call UTILS.sum_ints as count_final_samples{
         input: ints = count_chr_final_samples.num_lines,
-        container_source = container_source,
-        ecr_account_id = ecr_account_id
+        image_source = image_source,
+        ecr_repo = ecr_repo
     }
     Int ancestry_final_sample_count = count_final_samples.sum
 
@@ -490,7 +490,7 @@ workflow wgs_qc_ancestry_wf{
     #         output_basename = "~{output_basename}_basic_qc",
     #         cpu = merge_bed_cpu,
     #         mem_gb = merge_bed_mem_gb,
-    #         container_source = container_source
+    #         image_source = image_source
     # }
 
     # # Merge final beds
@@ -506,7 +506,7 @@ workflow wgs_qc_ancestry_wf{
     #             output_basename = "~{output_basename}_final_qc",
     #             cpu = merge_bed_cpu,
     #             mem_gb = merge_bed_mem_gb,
-    #             container_source = container_source
+    #             image_source = image_source
     #     }
     # }
 

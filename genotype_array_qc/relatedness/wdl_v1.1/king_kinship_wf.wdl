@@ -28,8 +28,8 @@ workflow king_kinship_wf{
         Int king_split_cpu = 2
         Int king_split_mem_gb = 4
 
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
 
     }
 
@@ -40,8 +40,8 @@ workflow king_kinship_wf{
             output_basename = basename(fam_in, ".fam"),
             output_extension = ".fam",
             num_splits = num_splits,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Create split plink files
@@ -53,8 +53,8 @@ workflow king_kinship_wf{
                 input_file = split_fam.output_files[split_index],
                 output_filename = "~{output_basename}.split.~{split_index}.keep",
                 args = "-f 1,2",
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Subset plink dataset using keep file
@@ -67,8 +67,8 @@ workflow king_kinship_wf{
                 output_basename = "~{output_basename}.split.~{split_index}",
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Do kinship within each subset
@@ -81,8 +81,8 @@ workflow king_kinship_wf{
                 degree = degree,
                 cpu = king_split_cpu,
                 mem_gb = king_split_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -110,8 +110,8 @@ workflow king_kinship_wf{
                         output_basename = "~{output_basename}.splitcombo.~{split_1}.~{split_2}",
                         cpu = king_split_cpu,
                         mem_gb = king_split_mem_gb,
-                        container_source = container_source,
-                        ecr_account_id = ecr_account_id
+                        image_source = image_source,
+                        ecr_repo = ecr_repo
                 }
             }
         }
@@ -120,8 +120,8 @@ workflow king_kinship_wf{
         call UTILS.flatten_string_array{
             input:
                 array=[select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output],
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Zip into single tarball for tsv-concat
@@ -129,8 +129,8 @@ workflow king_kinship_wf{
             input:
                 input_files = flatten_string_array.flat_array,
                 output_dir_name = "~{output_basename}_kinships",
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Concat all kinship files (preserving header) into single kinship file
@@ -138,8 +138,8 @@ workflow king_kinship_wf{
             input:
                 tsv_inputs_tarball = collect_kinships.output_dir,
                 output_filename = "~{output_basename}.merged.kinship.kin0",
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -150,8 +150,8 @@ workflow king_kinship_wf{
             kinship_in = king_kinship,
             output_basename = "~{output_basename}.pruned",
             mem_gb = ceil(size(king_kinship, "GB")) + 1,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     output{

@@ -14,11 +14,11 @@ task restore_pedigree_ids{
         String output_filename
 
         # Runtime environment
-        String docker = "rtibiocloud/tsv-utils:v2.2.0_5141a72"
-        String? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/rtibiocloud/tsv-utils:v2.2.0_5141a72"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "rtibiocloud/tsv-utils:v2.2.0_5141a72"
+        String ecr_image = "rtibiocloud/tsv-utils:v2.2.0_5141a72"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 1
 
@@ -114,8 +114,8 @@ workflow relatedness_wf{
         Float max_ancestral_pca_loading_cutoff = 0.01
 
         # Runtime
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
 
     }
 
@@ -124,8 +124,8 @@ workflow relatedness_wf{
         input:
             fam_in = fam_in,
             output_basename = "~{output_basename}.noped",
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Do HWE/Call Rate/Filtering
@@ -140,8 +140,8 @@ workflow relatedness_wf{
             hwe_mode = hwe_mode,
             cpu = qc_cpu,
             mem_gb = qc_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Do LD-prune of autosomes
@@ -163,8 +163,8 @@ workflow relatedness_wf{
                 maf = min_ld_maf,
                 chr = chr,
                 exclude_regions = ld_exclude_regions,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -177,8 +177,8 @@ workflow relatedness_wf{
             output_basename = "~{output_basename}.ldprune",
             cpu = merge_bed_cpu,
             mem_gb = merge_bed_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Call king to get related individuals to remove
@@ -194,8 +194,8 @@ workflow relatedness_wf{
             king_split_mem_gb = king_mem_gb_per_split,
             plink_cpu = qc_cpu,
             plink_mem_gb = qc_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
 
     }
 
@@ -214,8 +214,8 @@ workflow relatedness_wf{
                 hwe_mode = hwe_mode,
                 cpu = qc_cpu,
                 mem_gb = qc_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Re-do quality filter on unrelated samples
@@ -230,8 +230,8 @@ workflow relatedness_wf{
                 hwe_mode = hwe_mode,
                 cpu = qc_cpu,
                 mem_gb = qc_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Do LD-prune of autosomes
@@ -253,8 +253,8 @@ workflow relatedness_wf{
                     maf = min_ld_maf,
                     chr = chr_unrelated,
                     exclude_regions = ld_exclude_regions,
-                    container_source = container_source,
-                    ecr_account_id = ecr_account_id
+                    image_source = image_source,
+                    ecr_repo = ecr_repo
             }
         }
 
@@ -267,8 +267,8 @@ workflow relatedness_wf{
                 output_basename = "~{output_basename}.round1.unrelated.qc.ldprune",
                 cpu = merge_bed_cpu,
                 mem_gb = merge_bed_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -283,8 +283,8 @@ workflow relatedness_wf{
             seed = pca_seed,
             cpu = pca_cpu,
             mem_gb = pca_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Get list of non-ancestry informative SNPs from PC loadings
@@ -297,8 +297,8 @@ workflow relatedness_wf{
             min_snps = min_kinship_snps,
             cutoff_step_size = ancestral_pca_loading_step_size,
             max_cutoff = max_ancestral_pca_loading_cutoff,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Remove ancestry-informative SNPs from original QC dataset
@@ -311,8 +311,8 @@ workflow relatedness_wf{
             cpu = qc_cpu,
             mem_gb = qc_mem_gb,
             extract = get_non_ancestry_informative_snps.snps_to_keep,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
         }
 
     # Call king to get related individuals to remove
@@ -328,8 +328,8 @@ workflow relatedness_wf{
             king_split_mem_gb = king_mem_gb_per_split,
             plink_cpu = qc_cpu,
             plink_mem_gb = qc_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
 
     }
 
@@ -339,8 +339,8 @@ workflow relatedness_wf{
             id_list_in = final_get_relateds.related_samples,
             id_map = remove_fam_pedigree.id_map_out,
             output_filename = "~{output_basename}.final.related_samples.remove",
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     output{

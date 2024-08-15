@@ -65,7 +65,7 @@ workflow smartpca_ancestry_wf{
         Int ld_step_size = 2000
         Float ld_maf_cutoff = 0.01
         Float ld_r2_threshold = 0.5
-        File ld_exclude_regions = "s3://rti-common/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg19.bed"
+        File ld_exclude_regions
 
         ## Smartpca parameters
         String altnormstyle = "YES"
@@ -78,8 +78,8 @@ workflow smartpca_ancestry_wf{
         String midpoint_formula = "median"
         
         # Resources
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
         Int plink_ref_cpu = 1
         Int plink_ref_mem_gb = 2
         Int plink_dataset_cpu = 1
@@ -104,8 +104,8 @@ workflow smartpca_ancestry_wf{
             ancestry_pop_type = ancestry_pop_type,
             ancestries = ancestries_to_include,
             output_filename = "ref_samples.tsv",
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Add pop ids to reference fam file
@@ -114,8 +114,8 @@ workflow smartpca_ancestry_wf{
             dataset_fam_in = dataset_fam,
             ref_fam_in = ref_fam,
             ref_pop_xref = get_ref_samples.ref_samples,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
     
     scatter(chr_index in range(22)){
@@ -135,8 +135,8 @@ workflow smartpca_ancestry_wf{
                 output_basename = "ref_chr~{chr}",
                 cpu = plink_ref_cpu,
                 mem_gb = plink_ref_mem_gb,
-                container_source = container_source,
-            ecr_account_id = ecr_account_id
+                image_source = image_source,
+            ecr_repo = ecr_repo
         }
 
         # Split dataset by chr
@@ -151,8 +151,8 @@ workflow smartpca_ancestry_wf{
                 output_basename = "~{dataset_short_name}_chr~{chr}",
                 cpu = plink_dataset_cpu,
                 mem_gb = plink_dataset_mem_gb,
-                container_source = container_source,
-            ecr_account_id = ecr_account_id
+                image_source = image_source,
+            ecr_repo = ecr_repo
         }
 
         if(do_id_conversion){
@@ -177,8 +177,8 @@ workflow smartpca_ancestry_wf{
                     output_filename = "~{dataset_short_name}_chr~{chr}_~{genome_build_code}_idsbim",
                     cpu = convert_variant_ids_cpu,
                     mem_gb = convert_variant_ids_cpu,
-                    container_source = container_source,
-            ecr_account_id = ecr_account_id
+                    image_source = image_source,
+            ecr_repo = ecr_repo
             }
         }
 
@@ -190,8 +190,8 @@ workflow smartpca_ancestry_wf{
                 ref_bim = split_ref_by_chr.bim_out,
                 dataset_bim = post_id_conversion_dataset_bim,
                 output_filename = "variants_chr~{chr}",
-                container_source = container_source,
-            ecr_account_id = ecr_account_id
+                image_source = image_source,
+            ecr_repo = ecr_repo
         }
 
         # Extract variants from dataset
@@ -204,8 +204,8 @@ workflow smartpca_ancestry_wf{
                 output_basename = "~{dataset_short_name}_chr~{chr}_smartpca_snps",
                 cpu = plink_dataset_cpu,
                 mem_gb = plink_dataset_mem_gb,
-                container_source = container_source,
-            ecr_account_id = ecr_account_id
+                image_source = image_source,
+            ecr_repo = ecr_repo
         }
 
         # Subset SNPs and samples from ref dataset to get overlapping SNPs from desired ancestries
@@ -218,8 +218,8 @@ workflow smartpca_ancestry_wf{
                 output_basename = "ref_chr~{chr}_smartpca_snps",
                 cpu = plink_ref_cpu,
                 mem_gb = plink_ref_mem_gb,
-                container_source = container_source,
-            ecr_account_id = ecr_account_id
+                image_source = image_source,
+            ecr_repo = ecr_repo
         }
 
         # Check to see if there are any merge conflicts that require strand-flipping
@@ -236,8 +236,8 @@ workflow smartpca_ancestry_wf{
                 output_basename = "ref_~{dataset_short_name}_chr~{chr}_merge_conflicts",
                 cpu = plink_merged_chr_cpu,
                 mem_gb = plink_merged_chr_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Flip ref SNPs if there are merge conflicts
@@ -253,8 +253,8 @@ workflow smartpca_ancestry_wf{
                     flip = get_merge_conflicts.missnp_out,
                     cpu = plink_merged_chr_cpu,
                     mem_gb = plink_merged_chr_mem_gb,
-                    container_source = container_source,
-                    ecr_account_id = ecr_account_id
+                    image_source = image_source,
+                    ecr_repo = ecr_repo
             }
 
         }
@@ -273,8 +273,8 @@ workflow smartpca_ancestry_wf{
                 output_basename = "ref_~{dataset_short_name}_chr~{chr}",
                 cpu = plink_merged_chr_cpu,
                 mem_gb = plink_merged_chr_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # LD prune
@@ -292,8 +292,8 @@ workflow smartpca_ancestry_wf{
                 maf = ld_maf_cutoff,
                 cpu = plink_merged_chr_cpu,
                 mem_gb = plink_merged_chr_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
     }
@@ -308,8 +308,8 @@ workflow smartpca_ancestry_wf{
             output_basename = "ref_~{dataset_short_name}_ldpruned",
             cpu = plink_merged_cpu,
             mem_gb = plink_merged_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Assign dummy IDs in bim and fam files to avoid smartpca error associated with long IDs; replace pop IDs with pop names
@@ -319,8 +319,8 @@ workflow smartpca_ancestry_wf{
             fam_in = merge_chrs.fam_out,
             pop_id_xref = get_ref_samples.ref_pop_id_xref,
             dataset_name = dataset_short_name,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
     
     # Run smartpca
@@ -337,8 +337,8 @@ workflow smartpca_ancestry_wf{
             numthreads = smartpca_cpu,
             cpu = smartpca_cpu,
             mem_gb = smartpca_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     call process_smartpca_results{
@@ -349,8 +349,8 @@ workflow smartpca_ancestry_wf{
             fam_id_xref = prepare_smartpca_input_files.fam_id_xref,
             bim_id_xref = prepare_smartpca_input_files.bim_id_xref,
             output_basename = dataset_short_name,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     call ANCESTRY.assign_ancestry_mahalanobis {
@@ -365,8 +365,8 @@ workflow smartpca_ancestry_wf{
             midpoint_formula = midpoint_formula,
             cpu = assign_ancestry_cpu,
             mem_gb = assign_ancestry_mem_gb,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Order keep files to be same order as input ancestry groups
@@ -374,8 +374,8 @@ workflow smartpca_ancestry_wf{
         input:
             ancestry_keep_files_in = assign_ancestry_mahalanobis.dataset_ancestry_keep_lists,
             ancestries = ancestries_to_include,
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     output{
@@ -392,6 +392,7 @@ workflow smartpca_ancestry_wf{
         Array[File] dataset_ancestry_assignments_plots = assign_ancestry_mahalanobis.dataset_ancestry_assignments_plots
         Array[File] dataset_ancestry_outliers_plots = assign_ancestry_mahalanobis.dataset_ancestry_outliers_plots
         Array[File] dataset_ancestry_keep_lists = order_by_ancestry.ancestry_keep_files_out
+        Array[String] ancestry_labels = ancestries_to_include
     }
 
 }
@@ -406,11 +407,11 @@ task get_ref_samples{
         String output_filename
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 2
 
@@ -472,11 +473,11 @@ task add_pop_ids_to_fam_files {
         File ref_pop_xref
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 2
 
@@ -547,11 +548,11 @@ task get_variants{
         String output_filename
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 4
         Int mem_gb = 8
 
@@ -612,11 +613,11 @@ task prepare_smartpca_input_files {
         File pop_id_xref
         String dataset_name
         
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem = 2
 
@@ -703,11 +704,11 @@ task process_smartpca_results {
         File fam_id_xref
         String output_basename
 
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem = 2
 
@@ -776,11 +777,11 @@ task order_by_ancestry {
         Array[String] ancestries
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
-        Int? ecr_account_id
-        String ecr = "~{ecr_account_id}.dkr.ecr.us-east-1.amazonaws.com/ubuntu:22.04_19478ce7fc2ff"
-        String container_source = "docker"
-        String container_image = if(container_source == "docker") then docker else ecr
+        String docker_image = "ubuntu:22.04@sha256:19478ce7fc2ffbce89df29fea5725a8d12e57de52eb9ea570890dc5852aac1ac"
+        String ecr_image = "rtibiocloud/ubuntu:22.04_19478ce7fc2ff"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem = 2
 

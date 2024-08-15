@@ -28,8 +28,8 @@ workflow normalize_sex_chr_wf{
         Int plink_mem_gb
 
         # Container
-        String container_source = "docker"
-        Int? ecr_account_id
+        String image_source = "docker"
+        String? ecr_repo
 
     }
 
@@ -38,8 +38,8 @@ workflow normalize_sex_chr_wf{
         input:
             input_array = expected_chrs,
             query = "23",
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
 
     }
 
@@ -48,8 +48,8 @@ workflow normalize_sex_chr_wf{
         input:
             input_array = expected_chrs,
             query = "25",
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Check to see whether current bim sex chr is split into PAR/NONPAR
@@ -57,8 +57,8 @@ workflow normalize_sex_chr_wf{
         input:
             bim_in = bim_in,
             chr = "25",
-            container_source = container_source,
-            ecr_account_id = ecr_account_id
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
 
     # Split sex chr if it needs splitting
@@ -78,8 +78,8 @@ workflow normalize_sex_chr_wf{
                 split_no_fail = no_fail,
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
@@ -98,8 +98,8 @@ workflow normalize_sex_chr_wf{
                 merge_no_fail = no_fail,
                 cpu = plink_cpu,
                 mem_gb = plink_mem_gb,
-                container_source = container_source,
-                ecr_account_id = ecr_account_id
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
     }
 
