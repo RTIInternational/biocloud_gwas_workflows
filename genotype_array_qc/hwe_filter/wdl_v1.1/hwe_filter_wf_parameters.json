@@ -1,0 +1,65 @@
+{
+	"bed_in": {
+		"description": "-"
+	},
+	"bim_in": {
+		"description": "-"
+	},
+	"fam_in": {
+		"description": "-"
+	},
+	"output_basename": {
+		"description": "-"
+	},
+	"hwe_filter_pvalue": {
+		"description": "-"
+	},
+	"hwe_mode": {
+		"description": "-",
+        "optional": true
+	},
+	"nonfounders": {
+		"description": "-",
+        "optional": true
+	},
+	"chrs": {
+		"description": "-",
+        "optional": true
+	},
+	"keep_samples": {
+		"description": "-",
+        "optional": true
+	},
+	"related_samples": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_chr_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_chr_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_filter_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_filter_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"expected_chrs": {
+		"description": "-",
+        "optional": true
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": true
+	}
+}

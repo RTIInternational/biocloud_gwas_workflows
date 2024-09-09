@@ -49,7 +49,7 @@ task restore_pedigree_ids{
     >>>
 
     runtime {
-        docker: docker
+        docker: container_image
         cpu: cpu
         memory: "~{mem_gb} GB"
     }

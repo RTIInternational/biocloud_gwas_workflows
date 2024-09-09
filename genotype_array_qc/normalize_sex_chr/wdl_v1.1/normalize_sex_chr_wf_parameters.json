@@ -1,0 +1,42 @@
+{
+	"bed_in": {
+		"description": "-"
+	},
+	"bim_in": {
+		"description": "-"
+	},
+	"fam_in": {
+		"description": "-"
+	},
+	"keep_samples": {
+		"description": "-",
+        "optional": true
+	},
+	"expected_chrs": {
+		"description": "-"
+	},
+	"output_basename": {
+		"description": "-"
+	},
+	"build_code": {
+		"description": "-"
+	},
+	"no_fail": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_cpu": {
+		"description": "-"
+	},
+	"plink_mem_gb": {
+		"description": "-"
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": true
+	}
+}

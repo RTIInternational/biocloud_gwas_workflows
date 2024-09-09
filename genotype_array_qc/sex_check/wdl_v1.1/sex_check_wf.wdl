@@ -223,7 +223,7 @@ task format_phenotype_file{
     >>>
 
     runtime {
-        docker: docker
+        docker: container_image
         cpu: cpu
         memory: "~{mem_gb} GB"
     }
@@ -255,7 +255,7 @@ task count_chr_x_variants{
     >>>
 
     runtime {
-        docker: docker
+        docker: container_image
         cpu: cpu
         memory: "~{mem_gb} GB"
     }
@@ -288,7 +288,7 @@ task create_empty_file{
     >>>
 
     runtime {
-        docker: docker
+        docker: container_image
         cpu: cpu
         memory: "~{mem_gb} GB"
     }

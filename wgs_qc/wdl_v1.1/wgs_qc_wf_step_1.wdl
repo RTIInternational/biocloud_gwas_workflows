@@ -356,65 +356,12 @@ workflow wgs_qc_wf_step_1{
         input:
             file1 = init_snp_list.output_file,
             file2 = post_id_conversion_snp_list.output_file,
-            option = -23,
+            option = "-23",
             output_filename = "~{output_basename}_dups_variants.txt",
             cpu = plink_cpu,
             mem_gb = plink_mem_gb,
             image_source = image_source,
             ecr_repo = ecr_repo
-    }
-
-    # Get counts
-    call UTILS.line_count as variant_count_initial{
-        input:
-            input_file = merge_init_bims.output_file,
-            cpu = line_count_cpu,
-            mem_gb = line_count_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.line_count as variant_count_duplicates{
-        input:
-            input_file = duplicate_snps.output_file,
-            cpu = line_count_cpu,
-            mem_gb = line_count_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.line_count as variant_count_no_duplicates{
-        input:
-            input_file = merge_post_id_conversion_bims.output_file,
-            cpu = line_count_cpu,
-            mem_gb = line_count_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.line_count as sample_count_initial{
-        input:
-            input_file = all_snps_chr_convert_vcf_to_bfile.fam_out[0],
-            cpu = line_count_cpu,
-            mem_gb = line_count_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.line_count as sample_count_batch{
-        input:
-            input_file = all_snps_chr_select_samples.fam_out[0],
-            cpu = line_count_cpu,
-            mem_gb = line_count_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    scatter(ancestry_index in range(length(smartpca_ancestry_wf.ancestry_labels))){
-        String ancestry_label = smartpca_ancestry_wf.ancestry_labels[ancestry_index]
-        call UTILS.line_count as sample_ancestry_count{
-            input:
-                input_file = smartpca_ancestry_wf.dataset_ancestry_keep_lists[ancestry_index],
-                cpu = line_count_cpu,
-                mem_gb = line_count_mem_gb,
-                image_source = image_source,
-                ecr_repo = ecr_repo
-        }
     }
 
     # Create JSON files with arguments for step 2 of WF
@@ -487,16 +434,6 @@ workflow wgs_qc_wf_step_1{
         # Step 2 args
         Array[File] step_2_args_jsons = write_step_2_args_to_json.step_2_args_json
 
-        # Filter count metrics
-        COUNTS counts_summary = COUNTS {
-            variant_count_initial: variant_count_initial.count,
-            variant_count_duplicates: variant_count_duplicates.count,
-            variant_count_no_duplicates: variant_count_no_duplicates.count,
-            sample_count_initial: sample_count_initial.count,
-            sample_count_batch: sample_count_batch.count,
-            sample_count_ancestry: zip(ancestry_label, sample_ancestry_count.count)
-        }
-
         # Genotypes
         Array[File] full_beds = all_snps_chr_remove_duplicates.bed_out
         Array[File] full_bims = all_snps_chr_remove_duplicates.bim_out
@@ -504,6 +441,13 @@ workflow wgs_qc_wf_step_1{
         File pruned_bed = ref_snps_post_id_conversion.bed_out
         File pruned_bim = ref_snps_post_id_conversion.bim_out
         File pruned_fam = ref_snps_post_id_conversion.fam_out
+
+        # Intermediate files for counts
+        File variants_initial = merge_init_bims.output_file
+        File variants_duplicates = duplicate_snps.output_file
+        File variants_no_duplicates = merge_post_id_conversion_bims.output_file
+        File samples_initial = all_snps_chr_convert_vcf_to_bfile.fam_out[0]
+        File samples_batch = all_snps_chr_select_samples.fam_out[0]
 
         # Outputs from ancestry assignment workflow
         File ancestry_wf_evec = smartpca_ancestry_wf.evec
