@@ -101,7 +101,9 @@ workflow sex_check_wf{
     # Count number of chrX variants
     call count_chr_x_variants{
         input:
-            bim = normalize_sex_chr_wf.bim_out
+            bim = normalize_sex_chr_wf.bim_out,
+            image_source = image_source,
+            ecr_repo = ecr_repo
     }
     Int chr_x_variant_count = count_chr_x_variants.chr_x_variant_count
 

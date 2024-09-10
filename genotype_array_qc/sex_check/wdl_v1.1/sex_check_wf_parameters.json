@@ -1,0 +1,107 @@
+{
+	"bed_in": {
+		"description": "-"
+	},
+	"bim_in": {
+		"description": "-"
+	},
+	"fam_in": {
+		"description": "-"
+	},
+	"phenotype_file": {
+		"description": "-"
+	},
+	"output_basename": {
+		"description": "-"
+	},
+	"header_rows": {
+		"description": "-"
+	},
+	"fid_col": {
+		"description": "-"
+	},
+	"iid_col": {
+		"description": "-"
+	},
+	"sex_col": {
+		"description": "-"
+	},
+	"delimiter": {
+		"description": "-"
+	},
+	"build_code": {
+		"description": "-"
+	},
+	"no_fail": {
+		"description": "-"
+	},
+	"ld_exclude_regions": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_type": {
+		"description": "-",
+        "optional": true
+	},
+	"window_size": {
+		"description": "-"
+	},
+	"step_size": {
+		"description": "-"
+	},
+	"r2_threshold": {
+		"description": "-"
+	},
+	"min_ld_maf": {
+		"description": "-",
+        "optional": true
+	},
+	"window_size_unit": {
+		"description": "-",
+        "optional": true
+	},
+	"x_chr_mode": {
+		"description": "-",
+        "optional": true
+	},
+	"female_max_f": {
+		"description": "-",
+        "optional": true
+	},
+	"male_min_f": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"plink_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"sex_check_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"sex_check_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": false
+	}
+}
