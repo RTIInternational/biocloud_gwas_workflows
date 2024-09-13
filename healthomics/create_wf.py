@@ -3,66 +3,82 @@ import boto3
 import json
 from datetime import datetime
 import os
-from zipfile import ZipFile
+from pathlib import Path
+import zipfile
 
 # Get arguments
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--working_dir',
-    help='Directory for temporary files',
+    help = 'Directory for temporary files',
     type = str,
     required = True
 )
 parser.add_argument(
     '--repo_dir',
-    help='Location of repository containing workflow',
+    help = 'Location of repository containing workflow',
     type = str,
     required = True
 )
 parser.add_argument(
     '--zip_include',
-    help='Filters for repoository files to include in the repository zip file',
+    help = 'Filters for repoository files to include in the repository zip file',
     type = str,
-    nargs = '*',
     required = True
 )
 parser.add_argument(
     '--s3_access_key',
-    help='Access key for S3 bucket',
+    help = 'Access key for S3 bucket',
     type = str,
     required = True
 )
 parser.add_argument(
     '--s3_secret_access_key',
-    help='Secret access key for S3 bucket',
+    help = 'Secret access key for S3 bucket',
     type = str,
     required = True
 )
 parser.add_argument(
-    '--target_dir',
-    help='Directory to copy files to',
+    '--wf_parameters',
+    help = 'JSON containing workflow parameters',
     type = str,
     required = True
 )
 parser.add_argument(
-    '--downloaded_samples',
-    help='File containing list of previously samples - these samples are ignored in the source bucket',
+    '--wf_main_wdl',
+    help = 'Main wdl file for workflow',
     type = str,
     required = True
 )
 parser.add_argument(
-    '--download_limit',
-    help='Max number of samples to download',
+    '--wf_name',
+    help = 'Name of wf to be created',
+    type = str,
+    required = True
+)
+parser.add_argument(
+    '--wf_description',
+    help = 'Description of wf to be created',
+    type = str,
+    required = True
+)
+parser.add_argument(
+    '--wf_engine',
+    help = 'Engine to use for workflow',
+    type = str,
+    default = 'WDL',
+    choices = ['WDL', 'NEXTFLOW', 'CWL'],
+    required = False
+)
+parser.add_argument(
+    '--wf_storage_capacity',
+    help = 'Storage capacity for workflow',
     type = int,
-    default = 1000,
+    default = 2000,
+    choices = range(100001),
     required = False
 )
-parser.add_argument(
-    '--samples_to_download',
-    help='(Optional) List of files to download',
-    type = str,
-    required = False
-)
+
 args = parser.parse_args()
 
 # Create working directory if doesn't exist
@@ -71,41 +87,31 @@ os.system("mkdir -p {}".format(working_dir))
 
 # Zip repo
 repo_name = os.path.basename(args.repo_dir)
-with ZipFile("{}{}.zip".format(working_dir, repo_name), 'w', zipfile.ZIP_DEFLATED) as myzip:
-    
-    myzip.write('testtext.txt')
+zip_file = "{}{}.zip".format(working_dir, repo_name)
+wdl_files = [str(p) for p in list(Path(args.repo_dir).rglob("*.wdl"))]
+with zipfile.ZipFile(zip_file, 'w', zipfile.ZIP_DEFLATED) as myzip:
+    for file in wdl_files:
+        if args.zip_include in file:
+            myzip.write(file, os.path.basename(file))
 
-# Zip repo
-try:
-    cmd = [
-
-    ]
-    result = subprocess.run(
-        cmd,
-        text=True,
-        check=True,
-        capture_output=True
-    )
-except subprocess.CalledProcessError as e:
-    result = e
-
+# Create Healthomics session
 session = boto3.Session(aws_access_key_id=args.s3_access_key, aws_secret_access_key=args.s3_secret_access_key)
 omics = session.client('omics')
 
-with open('/home/ngaddis/data/temp/wgs_qc.zip', 'rb') as f:
+with open(zip_file, 'rb') as f:
     wf_def = f.read()
 
-with open('/home/ngaddis/git/biocloud_gwas_workflows/wgs_qc/wdl_v1.1/wgs_qc_wf_step_2_parameters.json') as f:
+with open(args.wf_parameters) as f:
     wf_params = json.load(f)
 
-request_id = 'wgs_qc_step_2_' + str(datetime.now().timestamp())
+request_id = args.wf_name + str(datetime.now().timestamp())
 response = omics.create_workflow(
-    name='wgs_qc_step_2',
-    description='Step 2 of WGS QC',
-    engine='WDL',
+    name=args.wf_name,
+    description=args.wf_description,
+    engine=args.wf_engine,
     definitionZip=wf_def,
-    main='wgs_qc_wf_step_2.wdl',
+    main=args.wf_main_wdl,
     parameterTemplate=wf_params,
-    storageCapacity=2000,
+    storageCapacity=args.wf_storage_capacity,
     requestId=request_id
 )
