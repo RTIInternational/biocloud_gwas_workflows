@@ -10,9 +10,9 @@
     "smartpca_ancestry_wf.ref_fam": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/all_phase3_unique_grch38_dbsnp_b153.fam",
     "smartpca_ancestry_wf.ref_psam": "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/plink/phase3_orig.psam",
     "smartpca_ancestry_wf.genome_build_code": "GRCh38",
-    "smartpca_ancestry_wf.ancestries_to_include": ["GBR", "FIN", "IBS", "TSI", "CEU"],
-    "smartpca_ancestry_wf.ancestries_display_names": ["British", "Finnish", "Spanish", "Tuscan", "CEPH"],
-    "smartpca_ancestry_wf.ancestry_pop_type": "POP",
+    "smartpca_ancestry_wf.ancestries_to_include": ["AFR", "AMR", "EAS", "EUR", "SAS"],
+    "smartpca_ancestry_wf.ancestries_display_names": ["African", "American Admixed", "East Asian", "European", "South Asian"],
+    "smartpca_ancestry_wf.ancestry_pop_type": "SUPERPOP",
     "smartpca_ancestry_wf.id_conversion_ref_files": [
         "s3://rti-common/variants/b153/GRCh38/id_conversion//variant_lookup_chr1.tsv.gz",
         "s3://rti-common/variants/b153/GRCh38/id_conversion//variant_lookup_chr2.tsv.gz",
