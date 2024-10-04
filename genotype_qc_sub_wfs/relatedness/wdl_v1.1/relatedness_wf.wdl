@@ -5,60 +5,6 @@ import "flashpca.wdl" as PCA
 import "ld_prune_wf.wdl" as LD
 import "king_kinship_wf.wdl" as KING
 
-task restore_pedigree_ids{
-
-    input {
-
-        File id_list_in
-        File id_map
-        String output_filename
-
-        # Runtime environment
-        String docker_image = "rtibiocloud/tsv-utils:v2.2.0_5141a72"
-        String ecr_image = "rtibiocloud/tsv-utils:v2.2.0_5141a72"
-        String? ecr_repo
-        String image_source = "docker"
-        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
-        Int cpu = 1
-        Int mem_gb = 1
-
-    }
-
-    command <<<
-        set -e
-
-        # Get number of records in file without pedigree
-        input_id_lines=$(wc -l ~{id_list_in} | cut -d" " -f1)
-
-        # Subset original ids in id_map based on ids in no_ped_lines
-        tsv-join --filter-file ~{id_list_in} \
-            --key-fields 1,2 \
-            --delimiter " " \
-            ~{id_map} | \
-            cut -d" " -f3,4 > ~{output_filename}
-
-        # Count number of records in mapped output file
-        mapped_lines=$(wc -l ~{output_filename} | cut -d" " -f1)
-
-        # Throw error if any ids didn't map
-        if [ "$input_id_lines" -ne "$mapped_lines" ];
-        then
-            echo "Mapping error! Input id list contains $input_id_lines samples but mapped output contains $mapped_lines"
-            exit 1
-        fi
-    >>>
-
-    runtime {
-        docker: container_image
-        cpu: cpu
-        memory: "~{mem_gb} GB"
-    }
-
-    output {
-        File id_list_out = "~{output_filename}"
-    }
-}
-
 workflow relatedness_wf{
 
     input {
@@ -71,7 +17,7 @@ workflow relatedness_wf{
         # QC Filtering cutoffs
         Float hwe_pvalue
         String? hwe_mode
-        Float max_missing_site_rate
+        Float max_variant_missing_call_rate
         Int qc_cpu = 1
         Int qc_mem_gb = 2
 
@@ -135,7 +81,7 @@ workflow relatedness_wf{
             bim_in = bim_in,
             fam_in = remove_fam_pedigree.fam_out,
             output_basename = "~{output_basename}.qc",
-            geno = max_missing_site_rate,
+            geno = max_variant_missing_call_rate,
             hwe_pvalue = hwe_pvalue,
             hwe_mode = hwe_mode,
             cpu = qc_cpu,
@@ -192,8 +138,6 @@ workflow relatedness_wf{
             output_basename = "~{output_basename}.rd1.king",
             king_split_cpu = king_cpu_per_split,
             king_split_mem_gb = king_mem_gb_per_split,
-            plink_cpu = qc_cpu,
-            plink_mem_gb = qc_mem_gb,
             image_source = image_source,
             ecr_repo = ecr_repo
 
@@ -209,7 +153,7 @@ workflow relatedness_wf{
                 fam_in = merge_beds.fam_out,
                 output_basename = "~{output_basename}.round1.unrelated",
                 remove_samples = round1_get_relateds.related_samples,
-                geno = max_missing_site_rate,
+                geno = max_variant_missing_call_rate,
                 hwe_pvalue = hwe_pvalue,
                 hwe_mode = hwe_mode,
                 cpu = qc_cpu,
@@ -225,7 +169,7 @@ workflow relatedness_wf{
                 bim_in = remove_round1_relateds.bim_out,
                 fam_in = remove_round1_relateds.fam_out,
                 output_basename = "~{output_basename}.round1.unrelated.qc",
-                geno = max_missing_site_rate,
+                geno = max_variant_missing_call_rate,
                 hwe_pvalue = hwe_pvalue,
                 hwe_mode = hwe_mode,
                 cpu = qc_cpu,
@@ -326,8 +270,6 @@ workflow relatedness_wf{
             output_basename = "~{output_basename}.final.king",
             king_split_cpu = king_cpu_per_split,
             king_split_mem_gb = king_mem_gb_per_split,
-            plink_cpu = qc_cpu,
-            plink_mem_gb = qc_mem_gb,
             image_source = image_source,
             ecr_repo = ecr_repo
 
@@ -351,4 +293,58 @@ workflow relatedness_wf{
         File kinship_id_map = remove_fam_pedigree.id_map_out
     }
 
+}
+
+task restore_pedigree_ids{
+
+    input {
+
+        File id_list_in
+        File id_map
+        String output_filename
+
+        # Runtime environment
+        String docker_image = "rtibiocloud/tsv-utils:v2.2.0_5141a72"
+        String ecr_image = "rtibiocloud/tsv-utils:v2.2.0_5141a72"
+        String? ecr_repo
+        String image_source = "docker"
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
+        Int cpu = 1
+        Int mem_gb = 1
+
+    }
+
+    command <<<
+        set -e
+
+        # Get number of records in file without pedigree
+        input_id_lines=$(wc -l ~{id_list_in} | cut -d" " -f1)
+
+        # Subset original ids in id_map based on ids in no_ped_lines
+        tsv-join --filter-file ~{id_list_in} \
+            --key-fields 1,2 \
+            --delimiter " " \
+            ~{id_map} | \
+            cut -d" " -f3,4 > ~{output_filename}
+
+        # Count number of records in mapped output file
+        mapped_lines=$(wc -l ~{output_filename} | cut -d" " -f1)
+
+        # Throw error if any ids didn't map
+        if [ "$input_id_lines" -ne "$mapped_lines" ];
+        then
+            echo "Mapping error! Input id list contains $input_id_lines samples but mapped output contains $mapped_lines"
+            exit 1
+        fi
+    >>>
+
+    runtime {
+        docker: container_image
+        cpu: cpu
+        memory: "~{mem_gb} GB"
+    }
+
+    output {
+        File id_list_out = "~{output_filename}"
+    }
 }

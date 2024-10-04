@@ -4,8 +4,7 @@ import "plink.wdl" as PLINK
 import "king.wdl" as KING
 import "split_utils.wdl" as SPLIT
 import "utils.wdl" as UTILS
-import "collect_large_file_list_wf.wdl" as COLLECT
-import "tsv_utils.wdl" as TSV
+import "rti-tsv-utils.wdl" as TSV
 
 workflow king_kinship_wf{
 
@@ -21,9 +20,6 @@ workflow king_kinship_wf{
 
         # Number of subsets to make for splitting
         Int num_splits = 4
-
-        Int plink_cpu = 1
-        Int plink_mem_gb = 2
 
         Int king_split_cpu = 2
         Int king_split_mem_gb = 4
@@ -65,8 +61,8 @@ workflow king_kinship_wf{
                 fam_in = fam_in,
                 keep_samples = cut.output_file,
                 output_basename = "~{output_basename}.split.~{split_index}",
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb,
+                cpu = king_split_cpu,
+                mem_gb = king_split_mem_gb,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -117,33 +113,19 @@ workflow king_kinship_wf{
         }
 
         # Flatten to get all files in a 1-D array
-        call UTILS.flatten_string_array{
-            input:
-                array=[select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output],
-                image_source = image_source,
-                ecr_repo = ecr_repo
-        }
-
-        # Zip into single tarball for tsv-concat
-        call COLLECT.collect_large_file_list_wf as collect_kinships{
-            input:
-                input_files = flatten_string_array.flat_array,
-                output_dir_name = "~{output_basename}_kinships",
-                image_source = image_source,
-                ecr_repo = ecr_repo
-        }
+        Array[File] kinship_output_files = flatten([select_all(pairwise_kinships.kinship_output), subset_kinships.kinship_output])
 
         # Concat all kinship files (preserving header) into single kinship file
         call TSV.tsv_append as cat_kinships{
             input:
-                tsv_inputs_tarball = collect_kinships.output_dir,
-                output_filename = "~{output_basename}.merged.kinship.kin0",
+                input_files = kinship_output_files,
+                output_prefix = "~{output_basename}.merged.kinship.kin0",
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
     }
 
-    File king_kinship = select_first([cat_kinships.tsv_output, subset_kinships.kinship_output[0]])
+    File king_kinship = select_first([cat_kinships.out_tsv, subset_kinships.kinship_output[0]])
     # Prune resulting kinship file to generate minimal set of related individuals
     call KING.prune_related_samples{
         input:

@@ -1,0 +1,14 @@
+{
+    "workflows": [
+        "genotype_qc_sub_wfs/ld_pruning/wdl_v1.1/ld_prune_wf.wdl"
+
+    ],
+    "wdl_tools": [
+        "biocloud_wdl_tools/assign_ancestry_mahalanobis/wdl_v1.1/assign_ancestry_mahalanobis.wdl",
+        "biocloud_wdl_tools/convert_variant_ids/wdl_v1.1/convert_variant_ids.wdl",
+        "biocloud_wdl_tools/plink/wdl_v1.1/plink.wdl",
+        "biocloud_wdl_tools/smartpca/wdl_v1.1/smartpca.wdl",
+        "biocloud_wdl_tools/utils/wdl_v1.1/utils.wdl"
+    ],
+    "structs": []
+}

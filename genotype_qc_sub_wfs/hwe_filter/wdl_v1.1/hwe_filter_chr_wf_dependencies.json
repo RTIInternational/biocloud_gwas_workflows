@@ -1,0 +1,9 @@
+{
+    "workflows": [
+        "genotype_qc_sub_wfs/normalize_sex_chr/wdl_v1.1/normalize_sex_chr_wf.wdl"
+    ],
+    "wdl_tools": [
+        "biocloud_wdl_tools/plink/wdl_v1.1/plink.wdl"
+    ],
+    "structs": []
+}

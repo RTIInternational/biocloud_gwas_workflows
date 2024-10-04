@@ -1,0 +1,7 @@
+{
+    "workflows": [
+        "genotype_qc_sub_wfs/ld_pruning/wdl_v1.1/ld_prune_wf.wdl"
+    ],
+    "wdl_tools": [],
+    "structs": []
+}

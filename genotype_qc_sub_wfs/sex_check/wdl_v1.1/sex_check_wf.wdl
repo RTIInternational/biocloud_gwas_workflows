@@ -253,7 +253,7 @@ task count_chr_x_variants{
     }
 
     command <<<
-        grep -P "^(23|25)" ~{bim} | wc -l | cut -d" " -f1
+        grep -P "^(23|25)" ~{bim} | wc -l | cut -d" " -f1 > "count.txt"
     >>>
 
     runtime {
@@ -263,7 +263,7 @@ task count_chr_x_variants{
     }
 
     output {
-        Int chr_x_variant_count = read_int(stdout())
+        Int chr_x_variant_count = read_int("count.txt")
     }
 }
 

@@ -5,7 +5,7 @@ import "hwe_filter_chr_wf.wdl" as HWE
 import "relatedness_wf.wdl" as REL
 import "sex_check_wf.wdl" as SEX
 import "utils.wdl" as UTILS
-# import "normalize_sex_chr_wf.wdl" as NORM
+import "wgs_qc_wf_step_2_structs.wdl" as STRUCTS
 
 workflow wgs_qc_ancestry_wf_step_2{
 
@@ -23,8 +23,12 @@ workflow wgs_qc_ancestry_wf_step_2{
         Array[String] chrs
         String genome_build_code
 
+        # Initial counts
+        Int variant_init_count
+        Int sample_init_count
+
         # Variant filtering cutoffs
-        Float max_missing_site_rate = 0.03
+        Float max_variant_missing_call_rate = 0.03
         Float hwe_filter_pvalue = 0.0001
 
         # LD-Filtering parameters for subworkflows (smartpca_ancestry, relatedness, sex-check)
@@ -35,8 +39,8 @@ workflow wgs_qc_ancestry_wf_step_2{
         Float ld_r2_threshold = 0.5
         Float ld_maf_cutoff = 0.01
 
-        # # Sample filter cutoffs
-        Float max_sample_missing_rate = 0.03
+        # Sample filter cutoffs
+        Float max_sample_missing_call_rate = 0.03
         Float min_sample_he = -0.2
         Float max_sample_he = 0.5
 
@@ -62,35 +66,38 @@ workflow wgs_qc_ancestry_wf_step_2{
         Float ancestral_pca_loading_step_size = 0.001
         Float max_ancestral_pca_loading_cutoff = 0.01
 
-        # General CPU/Mem for basically any PLINK task that runs on the whole dataset
-        Int plink_cpu = 1
-        Int plink_mem_gb = 2
-
-        # General CPU/MEM for basically any PLINK task that runs on a single chr
-        Int plink_chr_cpu = 1
-        Int plink_chr_mem_gb = 2
-
-        # General CPU/MEM for jobs that merge bed files either by chr or sample
-        Int merge_bed_cpu = 4
-        Int merge_bed_mem_gb = 8
-
-        # Speicific tasks where resource limits may need to be adjusted for larger/smaller inputs
-        Int sex_check_cpu = 4
-        Int sex_check_mem_gb = 8
-        Int king_cpu_per_split = 4
-        Int king_mem_gb_per_split = 8
-        Int pca_cpu = 4
-        Int pca_mem_gb = 8
-
         # Container
         String image_source = "docker"
         String? ecr_repo
     
     }
 
+    # Get multipliers
+    Int variant_init_multiplier = floor((variant_init_count / 75000000) + 1)
+    Int sample_init_multiplier = floor((sample_init_count / 750) + 1)
+    call UTILS.wc as sample_ancestry_init_count {
+        input:
+            input_file = ancestry_samples,
+            image_source = image_source,
+            ecr_repo = ecr_repo
+    }
+    Int sample_ancestry_multiplier = floor((sample_ancestry_init_count.num_lines / 7500) + 1)
+    
     scatter(i in range(length(chrs))) {
 
         String chr = "~{chrs[i]}"
+
+        # Get variant multiplier
+        call UTILS.wc as variant_count_chr {
+            input:
+                input_file = complete_bims[i],
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+        Int variant_multiplier_chr = floor((variant_count_chr.num_lines / 7500000) + 1)
+
+        Int combined_init_multiplier_chr = sample_init_multiplier * variant_multiplier_chr
+        Int combined_ancestry_multiplier_chr = sample_ancestry_multiplier * variant_multiplier_chr
 
         # Partition data by ancestry and apply SNP call rate filter
         call PLINK.make_bed as all_snps_chr_subset_ancestry{
@@ -100,10 +107,10 @@ workflow wgs_qc_ancestry_wf_step_2{
                 fam_in = complete_fams[i],
                 output_basename = "~{output_basename}_chr~{chr}_snp_miss",
                 keep_samples = ancestry_samples,
-                geno = max_missing_site_rate,
+                geno = max_variant_missing_call_rate,
                 allow_no_sex = true,
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb,
+                cpu = 1,
+                mem_gb = 2 * combined_init_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -117,8 +124,8 @@ workflow wgs_qc_ancestry_wf_step_2{
                 set_hh_missing = true,
                 allow_no_sex = true,
                 output_basename = "~{output_basename}_chr~{chr}_snp_miss_het_hap_missing",
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb,
+                cpu = 1,
+                mem_gb = 4 * combined_ancestry_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -143,6 +150,9 @@ workflow wgs_qc_ancestry_wf_step_2{
             ecr_repo = ecr_repo
     }
 
+    # Get combined multiplier
+    Int combined_ancestry_multiplier = sample_ancestry_multiplier * variant_init_multiplier
+
     # Extract ancestry variants that pass SNP QC from ref SNP set
     call PLINK.make_bed as ref_snps_post_snp_qc{
         input:
@@ -153,8 +163,8 @@ workflow wgs_qc_ancestry_wf_step_2{
             keep_samples = ancestry_samples,
             allow_no_sex = true,
             output_basename = "~{output_basename}_post_snp_qc_ref_snps",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
+            cpu = 1 * combined_ancestry_multiplier,
+            mem_gb = 4 * combined_ancestry_multiplier,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -166,11 +176,11 @@ workflow wgs_qc_ancestry_wf_step_2{
             bim_in = ref_snps_post_snp_qc.bim_out,
             fam_in = ref_snps_post_snp_qc.fam_out,
             autosome = true,
-            mind = max_sample_missing_rate,
+            mind = max_sample_missing_call_rate,
             allow_no_sex = true,
             output_basename = "~{output_basename}_post_snp_qc_ref_snps_sample_miss",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
+            cpu = floor((0.5 * combined_ancestry_multiplier) + 1),
+            mem_gb = 3 * combined_ancestry_multiplier,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -184,8 +194,8 @@ workflow wgs_qc_ancestry_wf_step_2{
             output_basename = "~{output_basename}_post_snp_qc_ref_snps_sample_miss_het",
             min_he = min_sample_he,
             max_he = max_sample_he,
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
+            cpu = floor((0.5 * combined_ancestry_multiplier) + 1),
+            mem_gb = 5 * combined_ancestry_multiplier,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -200,8 +210,8 @@ workflow wgs_qc_ancestry_wf_step_2{
                 remove_samples = get_excess_homo_samples.excess_homos,
                 allow_no_sex = true,
                 output_basename = "~{output_basename}_post_snp_qc_ref_snps_sample_miss_het",
-                cpu = plink_cpu,
-                mem_gb = plink_mem_gb,
+                cpu = floor((0.5 * combined_ancestry_multiplier) + 1),
+                mem_gb = 3 * combined_ancestry_multiplier,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -227,23 +237,23 @@ workflow wgs_qc_ancestry_wf_step_2{
             ancestral_pca_loading_step_size = ancestral_pca_loading_step_size,
             max_ancestral_pca_loading_cutoff = max_ancestral_pca_loading_cutoff,
             hwe_pvalue = hwe_filter_pvalue,
-            max_missing_site_rate = max_missing_site_rate,
+            max_variant_missing_call_rate = max_variant_missing_call_rate,
             ld_exclude_regions = ld_exclude_regions,
             ld_type = ld_type,
             window_size = ld_window_size,
             step_size = ld_step_size,
             r2_threshold = ld_r2_threshold,
             min_ld_maf = ld_maf_cutoff,
-            king_cpu_per_split = king_cpu_per_split,
-            king_mem_gb_per_split = king_mem_gb_per_split,
-            pca_cpu = pca_cpu,
-            pca_mem_gb = pca_mem_gb,
-            qc_cpu = plink_cpu,
-            qc_mem_gb = plink_mem_gb,
-            ld_cpu = plink_chr_cpu,
-            ld_mem_gb = plink_chr_mem_gb,
-            merge_bed_cpu = merge_bed_cpu,
-            merge_bed_mem_gb = merge_bed_mem_gb,
+            king_cpu_per_split = 1 * combined_ancestry_multiplier,
+            king_mem_gb_per_split = 4 * combined_ancestry_multiplier,
+            pca_cpu = 1 * combined_ancestry_multiplier,
+            pca_mem_gb = 16 * combined_ancestry_multiplier,
+            qc_cpu = 1 * combined_ancestry_multiplier,
+            qc_mem_gb = 4 * combined_ancestry_multiplier,
+            ld_cpu = 1 * combined_ancestry_multiplier,
+            ld_mem_gb = 4 * combined_ancestry_multiplier,
+            merge_bed_cpu = 1 * combined_ancestry_multiplier,
+            merge_bed_mem_gb = 4 * combined_ancestry_multiplier,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -271,12 +281,12 @@ workflow wgs_qc_ancestry_wf_step_2{
             min_ld_maf = ld_maf_cutoff,
             build_code = genome_build_code,
             no_fail = true,
-            ld_cpu = plink_chr_cpu,
-            ld_mem_gb = plink_chr_mem_gb,
-            sex_check_cpu = sex_check_cpu,
-            sex_check_mem_gb = sex_check_mem_gb,
-            plink_cpu = plink_cpu,
-            plink_mem_gb = plink_mem_gb,
+            ld_cpu = 1 * combined_ancestry_multiplier,
+            ld_mem_gb = 4 * combined_ancestry_multiplier,
+            sex_check_cpu = 1 * combined_ancestry_multiplier,
+            sex_check_mem_gb = 4 * combined_ancestry_multiplier,
+            plink_cpu = 1 * combined_ancestry_multiplier,
+            plink_mem_gb = 5 * combined_ancestry_multiplier,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -320,17 +330,17 @@ workflow wgs_qc_ancestry_wf_step_2{
                 bed_in = all_snps_chr_het_hap_to_missing.bed_out[i],
                 bim_in = all_snps_chr_het_hap_to_missing.bim_out[i],
                 fam_in = all_snps_chr_het_hap_to_missing.fam_out[i],
-                output_basename = "~{output_basename}_chr~{hwe_chr}_snp_miss_het_hap_missing_het_hwe",
+                output_basename = "~{output_basename}_chr~{hwe_chr}_final_basic_qc",
                 chr = "~{hwe_chr}",
                 build_code = genome_build_code,
                 hwe_filter_pvalue = hwe_filter_pvalue,
                 nonfounders = true,
                 related_samples = relatedness_wf.related_samples,
                 keep_samples = ref_snps_post_sample_qc_fam,
-                plink_filter_cpu = plink_cpu,
-                plink_filter_mem_gb = plink_mem_gb,
-                plink_chr_cpu = plink_chr_cpu,
-                plink_chr_mem_gb = plink_chr_mem_gb,
+                plink_filter_cpu = 1 * combined_ancestry_multiplier_chr[i],
+                plink_filter_mem_gb = 4 * combined_ancestry_multiplier_chr[i],
+                plink_chr_cpu = 1 * combined_ancestry_multiplier_chr[i],
+                plink_chr_mem_gb = 4 * combined_ancestry_multiplier_chr[i],
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -346,9 +356,9 @@ workflow wgs_qc_ancestry_wf_step_2{
                         bim_in = all_snps_chr_hwe_filter.bim_out,
                         fam_in = all_snps_chr_hwe_filter.fam_out,
                         remove_samples = final_filter,
-                        output_basename = "~{output_basename}_chr~{hwe_chr}_post_snp_qc_post_sample_qc",
-                        cpu = plink_cpu,
-                        mem_gb = plink_mem_gb,
+                        output_basename = "~{output_basename}_chr~{hwe_chr}_final_full_qc",
+                        cpu = 1 * combined_ancestry_multiplier_chr[i],
+                        mem_gb = 4 * combined_ancestry_multiplier_chr[i],
                         image_source = image_source,
                         ecr_repo = ecr_repo
                 }
@@ -362,148 +372,203 @@ workflow wgs_qc_ancestry_wf_step_2{
 
     }
     
-    # Merge bims for counts
-    call UTILS.cat as merge_init_bims{
-        input:
-            input_files = complete_bims,
-            output_filename = "~{output_basename}_init.bim",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.cat as merge_passed_snp_call_rate_bims{
-        input:
-            input_files = all_snps_chr_subset_ancestry.bim_out,
-            output_filename = "~{output_basename}_post_snp_qc.bim",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.cat as merge_final_bims{
-        input:
-            input_files = all_snps_chr_hwe_filter.bim_out,
-            output_filename = "~{output_basename}_final.bim",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
+    # Merge chr bims
+    Array[Pair[Array[File], String]] bim_sets_to_merge = [
+        (complete_bims, "~{output_basename}_init.bim"),
+        (all_snps_chr_subset_ancestry.bim_out, "~{output_basename}_post_snp_qc.bim"),
+        (all_snps_chr_hwe_filter.bim_out, "~{output_basename}_final.bim")
+    ]
+    scatter(bims_to_merge in bim_sets_to_merge) {
+        call UTILS.cat as merge_bims{
+            input:
+                input_files = bims_to_merge.left,
+                output_filename = bims_to_merge.right,
+                mem_gb = 2 * combined_ancestry_multiplier,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
     }
 
     # Get SNP lists
-    call UTILS.cut as init_snp_list{
-        input:
-            input_file = merge_init_bims.output_file,
-            args =  "-f 2",
-            output_filename = "~{output_basename}_init_variants.txt",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.cut as passed_snp_call_rate_list{
-        input:
-            input_file = merge_passed_snp_call_rate_bims.output_file,
-            args =  "-f 2",
-            output_filename = "~{output_basename}_passed_call_rate_variants.txt",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.cut as final_snp_list{
-        input:
-            input_file = merge_final_bims.output_file,
-            args =  "-f 2",
-            output_filename = "~{output_basename}_final_variants.txt",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
+    Array[Pair[File, String]] bims_for_snp_lists = [
+        (merge_bims.output_file[0], "~{output_basename}_init_variants.txt"),
+        (merge_bims.output_file[1], "~{output_basename}_passed_call_rate_variants.txt"),
+        (merge_bims.output_file[2], "~{output_basename}_final_variants.txt")
+    ]
+    scatter(bim_for_snp_list in bims_for_snp_lists) {
+        call UTILS.cut as snp_list{
+            input:
+                input_file = bim_for_snp_list.left,
+                args =  "-f 2",
+                output_filename = bim_for_snp_list.right,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
     }
 
     # Get lists of removed SNPs
-    call UTILS.comm as low_call_rate_snps{
-        input:
-            file1 = init_snp_list.output_file,
-            file2 = passed_snp_call_rate_list.output_file,
-            option = "-23",
-            output_filename = "~{output_basename}_low_call_rate_variants.txt",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
+    Array[Pair[Array[File], String]] files_for_snp_comm = [
+        ([snp_list.output_file[0], snp_list.output_file[1]], "~{output_basename}_low_call_rate_variants.txt"),
+        ([snp_list.output_file[1], snp_list.output_file[0]], "~{output_basename}_failed_hwe_variants.txt")
+    ]
+    scatter(file_for_snp_comm in files_for_snp_comm) {
+        call UTILS.comm as snp_comm{
+            input:
+                file1 = file_for_snp_comm.left[0],
+                file2 = file_for_snp_comm.left[1],
+                option = "-23",
+                output_filename = file_for_snp_comm.right,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
     }
-    call UTILS.comm as failed_hwe_snps{
-        input:
-            file1 = passed_snp_call_rate_list.output_file,
-            file2 = final_snp_list.output_file,
-            option = "-23",
-            output_filename = "~{output_basename}_failed_hwe_variants.txt",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
+
+    # Get SNP counts
+    Array[File] files_for_snp_counts = [
+        snp_list.output_file[0],
+        snp_list.output_file[2],
+        snp_comm.output_file[0],
+        snp_comm.output_file[1]
+    ]
+    scatter(file_for_snp_count in files_for_snp_counts) {
+        call UTILS.wc as snp_count {
+            input:
+                input_file = file_for_snp_count,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
     }
 
     # Get lists of removed samples
-    call UTILS.comm as low_call_rate_samples{
-        input:
-            file1 = filtered_fam,
-            file2 = ref_snps_filter_low_called_samples.fam_out,
-            option = "-23",
-            output_filename = "~{output_basename}_low_call_rate_samples.tsv",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.comm as excess_homozygosity_samples{
-        input:
-            file1 = ref_snps_filter_low_called_samples.fam_out,
-            file2 = ref_snps_post_sample_qc_fam,
-            option = "-23",
-            output_filename = "~{output_basename}_excess_homozygosity_samples.tsv",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
+    Array[Pair[Array[File], String]] files_for_sample_comm = [
+        ([ref_snps_post_snp_qc.fam_out, ref_snps_filter_low_called_samples.fam_out], "~{output_basename}_samples_low_call_rate.fam"),
+        ([ref_snps_filter_low_called_samples.fam_out, ref_snps_post_sample_qc_fam], "~{output_basename}_samples_excess_homozygosity.fam")
+    ]
+    scatter(file_for_sample_comm in files_for_sample_comm) {
+        call UTILS.comm as sample_comm{
+            input:
+                file1 = file_for_sample_comm.left[0],
+                file2 = file_for_sample_comm.left[1],
+                option = "-23",
+                output_filename = file_for_sample_comm.right,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
     }
 
+    # Get sample lists
+    Array[Pair[File, String]] fams_for_sample_lists = [
+        (ref_snps_post_snp_qc.fam_out, "~{output_basename}_samples_initial.tsv"),
+        (final_qc_merge_fam_by_chr[0], "~{output_basename}_samples_final_full_qc.tsv"),
+        (all_snps_chr_hwe_filter.fam_out[0], "~{output_basename}_samples_final_basic_qc.tsv"),
+        (sample_comm.output_file[0], "~{output_basename}_samples_low_call_rate.tsv"),
+        (sample_comm.output_file[1], "~{output_basename}_samples_excess_homozygosity.tsv")
+    ]
+    scatter(fam_for_sample_list in fams_for_sample_lists) {
+        call UTILS.cut as sample_list{
+            input:
+                input_file = fam_for_sample_list.left,
+                args =  "-f 1,2",
+                output_filename = fam_for_sample_list.right,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+    }
+
+    # Rename sample files
+    Array[Pair[File, String]] sample_lists_to_rename = [
+        (relatedness_wf.related_samples, "~{output_basename}_samples_related.tsv"),
+        (sex_check_wf.samples_to_remove, "~{output_basename}_samples_failed_sex_check.tsv")
+    ]
+    scatter(sample_list_to_rename in sample_lists_to_rename) {
+        call UTILS.rename_file as sample_rename{
+            input:
+                input_file = sample_list_to_rename.left,
+                output_filename = sample_list_to_rename.right,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+    }
+
+    # Get samples counts
+    Array[File] files_for_sample_counts = [
+        sample_list.output_file[0],
+        sample_list.output_file[1],
+        sample_list.output_file[2],
+        sample_list.output_file[3],
+        sample_list.output_file[4],
+        sample_rename.output_file[0],
+        sample_rename.output_file[1]
+    ]
+    scatter(file_for_sample_count in files_for_sample_counts) {
+        call UTILS.wc as sample_count {
+            input:
+                input_file = file_for_sample_count,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+    }
 
     output{
 
         # Fully filtered qc beds that have been through all filters
-        Array[File] final_qc_beds_by_chr = final_qc_merge_bed_by_chr
-        Array[File] final_qc_bims_by_chr = final_qc_merge_bim_by_chr
-        Array[File] final_qc_fams_by_chr = final_qc_merge_fam_by_chr
+        FULL_QC_GENOTYPE_FILES full_qc_genotype_files = FULL_QC_GENOTYPE_FILES {
+            beds: final_qc_merge_bed_by_chr,
+            bims: final_qc_merge_bim_by_chr,
+            fams: final_qc_merge_fam_by_chr
+        }
 
         # QC files that have gone through basic site/sample filter but no kinship/sex filters
         # Can be used later if you don't want to use kinship/sex-discrepancy filtered datasets
-        Array[File] basic_qc_beds_by_chr = all_snps_chr_hwe_filter.bed_out
-        Array[File] basic_qc_bims_by_chr = all_snps_chr_hwe_filter.bim_out
-        Array[File] basic_qc_fams_by_chr = all_snps_chr_hwe_filter.fam_out
+        BASIC_QC_GENOTYPE_FILES basic_qc_genotype_files = BASIC_QC_GENOTYPE_FILES {
+            beds: all_snps_chr_hwe_filter.bed_out,
+            bims: all_snps_chr_hwe_filter.bim_out,
+            fams: all_snps_chr_hwe_filter.fam_out
+        }
 
-        # Intermediate files for counts
-        File variants_initial = init_snp_list.output_file
-        File variants_final_bim = final_snp_list.output_file
-        File variants_low_call_rate = low_call_rate_snps.output_file
-        File variants_failed_hwe = failed_hwe_snps.output_file
-        File samples_initial = filtered_fam
-        File samples_final_basic = all_snps_chr_hwe_filter.fam_out[0]
-        File samples_final = final_qc_merge_fam_by_chr[0]
-        File samples_low_call_rate = low_call_rate_samples.output_file
-        File samples_excess_homozygosity = excess_homozygosity_samples.output_file
-        File samples_related = relatedness_wf.related_samples
-        File samples_failed_sex_check = sex_check_wf.samples_to_remove
+        # Variant lists
+        VARIANT_LISTS variant_lists = VARIANT_LISTS {
+            initial: snp_list.output_file[0],
+            final: snp_list.output_file[2],
+            low_call_rate: snp_comm.output_file[0],
+            failed_hwe: snp_comm.output_file[1]
+        }
 
-        # Kinship estimation outputs for each ancestry
-        File annotated_kinships = relatedness_wf.annotated_kinship_output
-        # Kinship id maps for each ancestry bc annotated kinship results have dummy family ids
-        File kinship_id_maps =  relatedness_wf.kinship_id_map
+        # Sample lists
+        SAMPLE_LISTS sample_lists = SAMPLE_LISTS {
+            initial: sample_list.output_file[0],
+            final_full_qc: sample_list.output_file[1],
+            final_basic_qc: sample_list.output_file[2],
+            low_call_rate: sample_list.output_file[3],
+            excess_homozygosity: sample_list.output_file[4],
+            related: sample_rename.output_file[0],
+            failed_sex_check: sample_rename.output_file[1]
+        }
 
-        # Sex discrepancy outputs for each ancestry
-        File sex_check_report= sex_check_wf.plink_sex_check_output
+        # Counts
+        COUNTS counts = COUNTS {
+            variant_initial: snp_count.num_lines[0],
+            variant_final: snp_count.num_lines[1],
+            variant_low_call_rate: snp_count.num_lines[2],
+            variant_failed_hwe: snp_count.num_lines[3],
+            sample_initial: sample_count.num_lines[0],
+            sample_final_full_qc: sample_count.num_lines[1],
+            sample_final_basic_qc: sample_count.num_lines[2],
+            sample_low_call_rate: sample_count.num_lines[3],
+            sample_excess_homozygosity: sample_count.num_lines[4],
+            sample_related: sample_count.num_lines[5],
+            sample_failed_sex_check: sample_count.num_lines[6]
+        }
+
+        # Relatedness wf outputs
+        RELATEDNESS_WF_OUTPUTS relatedness_wf_outputs = RELATEDNESS_WF_OUTPUTS {
+            annotated_kinships: relatedness_wf.annotated_kinship_output,
+            kinship_id_maps: relatedness_wf.kinship_id_map
+        }
+
+        # Sex check wf outputs
+        SEX_CHECK_WF_OUTPUTS sex_check_wf_outputs = SEX_CHECK_WF_OUTPUTS {
+            sex_check_report: sex_check_wf.plink_sex_check_output
+        }
     }
 }

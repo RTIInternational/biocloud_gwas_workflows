@@ -1,0 +1,14 @@
+{
+    "workflows": [
+        "genotype_qc_sub_wfs/hwe_filter/wdl_v1.1/hwe_filter_chr_wf.wdl",
+        "genotype_qc_sub_wfs/relatedness/wdl_v1.1/relatedness_wf.wdl",
+        "genotype_qc_sub_wfs/sex_check/wdl_v1.1/sex_check_wf.wdl"
+    ],
+    "wdl_tools": [
+        "biocloud_wdl_tools/plink/wdl_v1.1/plink.wdl",
+        "biocloud_wdl_tools/utils/wdl_v1.1/utils.wdl"
+    ],
+    "structs": [
+        "wgs_qc/wdl_v1.1/wgs_qc_wf_step_2_structs.wdl"
+    ]
+}

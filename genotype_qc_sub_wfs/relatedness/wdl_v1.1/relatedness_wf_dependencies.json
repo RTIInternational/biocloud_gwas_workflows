@@ -1,0 +1,11 @@
+{
+    "workflows": [
+        "genotype_qc_sub_wfs/relatedness/wdl_v1.1/king_kinship_wf.wdl",
+        "genotype_qc_sub_wfs/ld_pruning/wdl_v1.1/ld_prune_wf.wdl"
+    ],
+    "wdl_tools": [
+        "biocloud_wdl_tools/flashpca/wdl_v1.1/flashpca.wdl",
+        "biocloud_wdl_tools/plink/wdl_v1.1/plink.wdl"
+    ],
+    "structs": []
+}

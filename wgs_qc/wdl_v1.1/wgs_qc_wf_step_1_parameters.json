@@ -24,34 +24,6 @@
 	"id_conversion_ref_files": {
 		"description": "-"
 	},
-	"id_conversion_in_sep": {
-		"description": "-",
-        "optional": true
-	},
-	"id_conversion_in_missing_allele": {
-		"description": "-",
-        "optional": true
-	},
-	"id_conversion_in_deletion_allele": {
-		"description": "-",
-        "optional": true
-	},
-	"id_conversion_ref_deletion_allele": {
-		"description": "-",
-        "optional": true
-	},
-	"id_conversion_in_chunk_size": {
-		"description": "-",
-        "optional": true
-	},
-	"id_conversion_ref_chunk_size": {
-		"description": "-",
-        "optional": true
-	},
-	"id_conversion_rescue_rsids": {
-		"description": "-",
-        "optional": true
-	},
 	"ref_variant_list": {
 		"description": "-"
 	},
@@ -83,7 +55,7 @@
 		"description": "-",
         "optional": true
 	},
-	"max_sample_missing_rate": {
+	"max_sample_missing_call_rate": {
 		"description": "-",
         "optional": true
 	},
@@ -95,7 +67,7 @@
 		"description": "-",
         "optional": true
 	},
-	"max_missing_site_rate": {
+	"max_variant_missing_call_rate": {
 		"description": "-",
         "optional": true
 	},
@@ -196,70 +168,6 @@
         "optional": true
 	},
 	"max_ancestral_pca_loading_cutoff": {
-		"description": "-",
-        "optional": true
-	},
-	"plink_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"plink_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"plink_chr_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"plink_chr_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"merge_bed_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"merge_bed_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"id_conversion_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"id_conversion_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"sex_check_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"sex_check_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"king_cpu_per_split": {
-		"description": "-",
-        "optional": true
-	},
-	"king_mem_gb_per_split": {
-		"description": "-",
-        "optional": true
-	},
-	"pca_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"pca_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"assign_ancestry_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"assign_ancestry_mem_gb": {
 		"description": "-",
         "optional": true
 	},

@@ -1,11 +1,11 @@
 version 1.1
 
-import "plink.wdl" as PLINK
 import "ld_prune_wf.wdl" as LD
-import "convert_variant_ids.wdl" as IDCONVERT
-import "utils.wdl" as UTILS
-import "smartpca.wdl" as SMARTPCA
 import "assign_ancestry_mahalanobis.wdl" as ANCESTRY
+import "convert_variant_ids.wdl" as IDCONVERT
+import "plink.wdl" as PLINK
+import "smartpca.wdl" as SMARTPCA
+import "utils.wdl" as UTILS
 
 workflow smartpca_ancestry_wf{
 
@@ -30,7 +30,7 @@ workflow smartpca_ancestry_wf{
 
         ## ID Conversion
         Boolean do_id_conversion = true
-        Array[File] id_conversion_ref_files
+        Array[File] id_conversion_ref_files = []
         String? id_conversion_in_sep
         String? id_conversion_in_missing_allele
         String? id_conversion_in_deletion_allele
@@ -38,26 +38,6 @@ workflow smartpca_ancestry_wf{
         Int? id_conversion_in_chunk_size
         Int? id_conversion_ref_chunk_size
         Boolean? id_conversion_rescue_rsids
-
-        # String ancestry_pop_type = "POP"
-        # All populations
-        ## Array[String] ancestries_to_include = ["ASW", "ACB", "ESN", "GWD", "LWK", "MSL", "YRI", "CLM", "MXL", "PEL", "PUR", "CDX", "CHB", "JPT", "KHV", "CHS", "GBR", "FIN", "IBS", "TSI", "CEU", "BEB", "GIH", "ITU", "PJL", "STU"]
-        ## Array[String] ancestries_display_names = ["African-American SW", "African-Caribbean", "Esan", "Gambian", "Luhya", "Mende", "Yoruba", "Colombian", "Mexican-American", "Peruvian", "Puerto Rican", "Dai Chinese", "Han Chinese", "Japanese", "Kinh Vietnamese", "Southern Han Chinese", "British", "Finnish", "Spanish", "Tuscan", "CEPH", "Bengali", "Gujarati", "Indian", "Punjabi", "Sri Lankan"]
-        # African
-        ## Array[String] ancestries_to_include = ["ASW", "ACB", "ESN", "GWD", "LWK", "MSL", "YRI"]
-        ## Array[String] ancestries_display_names = ["African-American SW", "African-Caribbean", "Esan", "Gambian", "Luhya", "Mende", "Yoruba"]
-        # American Admixed
-        ## Array[String] ancestries_to_include = ["CLM", "MXL", "PEL", "PUR"]
-        ## Array[String] ancestries_display_names = ["Colombian", "Mexican-American", "Peruvian", "Puerto Rican"]
-        # East Asian
-        ## Array[String] ancestries_to_include = ["CDX", "CHB", "JPT", "KHV", "CHS"]
-        ## Array[String] ancestries_display_names = ["Dai Chinese", "Han Chinese", "Japanese", "Kinh Vietnamese", "Southern Han Chinese"]
-        # European
-        ## Array[String] ancestries_to_include = ["GBR", "FIN", "IBS", "TSI", "CEU"]
-        ## Array[String] ancestries_display_names = ["British", "Finnish", "Spanish", "Tuscan", "CEPH"]
-        # South Asian
-        ## Array[String] ancestries_to_include = ["BEB", "GIH", "ITU", "PJL", "STU"]
-        ## Array[String] ancestries_display_names = ["Bengali", "Gujarati", "Indian", "Punjabi", "Sri Lankan"]
 
         ## LD pruning parameters
         String ld_type = "indep-pairwise"
@@ -80,22 +60,44 @@ workflow smartpca_ancestry_wf{
         # Resources
         String image_source = "docker"
         String? ecr_repo
-        Int plink_ref_cpu = 1
-        Int plink_ref_mem_gb = 2
-        Int plink_dataset_cpu = 1
-        Int plink_dataset_mem_gb = 2
-        Int plink_merged_cpu = plink_ref_cpu + plink_dataset_cpu
-        Int plink_merged_mem_gb = plink_ref_mem_gb + plink_dataset_mem_gb
-        Int plink_merged_chr_cpu = plink_ref_cpu + plink_dataset_cpu
-        Int plink_merged_chr_mem_gb = plink_ref_mem_gb + plink_dataset_mem_gb
-        Int convert_variant_ids_cpu=1
-        Int convert_variant_ids_mem_gb = 2
-        Int smartpca_cpu = 8
-        Int smartpca_mem_gb = 16
-        Int assign_ancestry_cpu = 8
-        Int assign_ancestry_mem_gb = 16
 
     }
+
+    # Get sample counts for dataset and ref
+    Array[File] files_for_sample_counts = [
+        ref_fam,
+        dataset_fam
+    ]
+    scatter(i in range(length(files_for_sample_counts))) {
+        call UTILS.wc as sample_count {
+            input:
+                input_file = files_for_sample_counts[i],
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+    }
+
+    # Get variant counts for dataset and ref
+    Array[File] files_for_snp_counts = [
+        ref_bim,
+        dataset_bim
+    ]
+    scatter(i in range(length(files_for_snp_counts))) {
+        call UTILS.wc as snp_count {
+            input:
+                input_file = files_for_snp_counts[i],
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+    }
+
+    Int ref_sample_multiplier = floor((sample_count.num_lines[0] / 2000) + 1)
+    Int ref_snp_multiplier = floor((snp_count.num_lines[0] / 12000000) + 1)
+    Int ref_mem_multiplier = ref_sample_multiplier * ref_snp_multiplier
+    Int dataset_sample_multiplier = floor((sample_count.num_lines[1] / 2000) + 1)
+    Int dataset_snp_multiplier = floor((snp_count.num_lines[1] / 12000000) + 1)
+    Int dataset_mem_multiplier = dataset_sample_multiplier * dataset_snp_multiplier
+    Int merged_mem_multiplier = ref_mem_multiplier + dataset_mem_multiplier
 
     # Get keep list of reference samples for specified ancestries
     call get_ref_samples{
@@ -133,10 +135,10 @@ workflow smartpca_ancestry_wf{
                 snps_only_type = 'just-acgt',
                 chr = chr,
                 output_basename = "ref_chr~{chr}",
-                cpu = plink_ref_cpu,
-                mem_gb = plink_ref_mem_gb,
+                cpu = 2,
+                mem_gb = 2 * ref_mem_multiplier,
                 image_source = image_source,
-            ecr_repo = ecr_repo
+                ecr_repo = ecr_repo
         }
 
         # Split dataset by chr
@@ -149,10 +151,10 @@ workflow smartpca_ancestry_wf{
                 snps_only_type = 'just-acgt',
                 chr = chr,
                 output_basename = "~{dataset_short_name}_chr~{chr}",
-                cpu = plink_dataset_cpu,
-                mem_gb = plink_dataset_mem_gb,
+                cpu = 2,
+                mem_gb = 2 * dataset_mem_multiplier,
                 image_source = image_source,
-            ecr_repo = ecr_repo
+                ecr_repo = ecr_repo
         }
 
         if(do_id_conversion){
@@ -174,11 +176,11 @@ workflow smartpca_ancestry_wf{
                     ref = id_conversion_ref_files[chr_index],
                     ref_deletion_allele = ".",
                     ref_chunk_size = 1000000,
-                    output_filename = "~{dataset_short_name}_chr~{chr}_~{genome_build_code}_idsbim",
-                    cpu = convert_variant_ids_cpu,
-                    mem_gb = convert_variant_ids_cpu,
+                    output_filename = "~{dataset_short_name}_chr~{chr}_~{genome_build_code}_ids.bim",
+                    cpu = 2,
+                    mem_gb = 4,
                     image_source = image_source,
-            ecr_repo = ecr_repo
+                    ecr_repo = ecr_repo
             }
         }
 
@@ -191,7 +193,43 @@ workflow smartpca_ancestry_wf{
                 dataset_bim = post_id_conversion_dataset_bim,
                 output_filename = "variants_chr~{chr}",
                 image_source = image_source,
-            ecr_repo = ecr_repo
+                ecr_repo = ecr_repo
+        }
+
+        # Get variant counts for dataset and ref
+        Array[File] files_for_snp_counts_chr = [
+            split_ref_by_chr.bim_out,
+            post_id_conversion_dataset_bim
+        ]
+        scatter(i in range(length(files_for_snp_counts))) {
+            call UTILS.wc as snp_count_chr {
+                input:
+                    input_file = files_for_snp_counts_chr[i],
+                    image_source = image_source,
+                    ecr_repo = ecr_repo
+            }
+        }
+
+        Int ref_sample_multiplier_chr = floor((sample_count.num_lines[0] / 2000) + 1)
+        Int ref_snp_multiplier_chr = floor((snp_count_chr.num_lines[0] / 12000000) + 1)
+        Int ref_mem_multiplier_chr = ref_sample_multiplier_chr * ref_snp_multiplier_chr
+        Int dataset_sample_multiplier_chr = floor((sample_count.num_lines[1] / 2000) + 1)
+        Int dataset_snp_multiplier_chr = floor((snp_count_chr.num_lines[1] / 12000000) + 1)
+        Int dataset_mem_multiplier_chr = dataset_sample_multiplier_chr * dataset_snp_multiplier_chr
+        Int merged_mem_multiplier_chr = ref_mem_multiplier_chr + dataset_mem_multiplier_chr
+
+        # Subset SNPs and samples from ref dataset to get overlapping SNPs from desired ancestries
+        call PLINK.make_bed as subset_ref{
+            input:
+                bed_in = split_ref_by_chr.bed_out,
+                bim_in = split_ref_by_chr.bim_out,
+                fam_in = split_ref_by_chr.fam_out,
+                extract = get_variants.variant_ids,
+                output_basename = "ref_chr~{chr}_smartpca_snps",
+                cpu = 2,
+                mem_gb = 1 * ref_mem_multiplier_chr,
+                image_source = image_source,
+                ecr_repo = ecr_repo
         }
 
         # Extract variants from dataset
@@ -202,25 +240,12 @@ workflow smartpca_ancestry_wf{
                 fam_in = split_dataset_by_chr.fam_out,
                 extract = get_variants.variant_ids,
                 output_basename = "~{dataset_short_name}_chr~{chr}_smartpca_snps",
-                cpu = plink_dataset_cpu,
-                mem_gb = plink_dataset_mem_gb,
+                cpu = 2,
+                mem_gb = 1 * dataset_mem_multiplier_chr,
                 image_source = image_source,
-            ecr_repo = ecr_repo
+                ecr_repo = ecr_repo
         }
 
-        # Subset SNPs and samples from ref dataset to get overlapping SNPs from desired ancestries
-        call PLINK.make_bed as subset_ref{
-            input:
-                bed_in = split_ref_by_chr.bed_out,
-                bim_in = split_ref_by_chr.bim_out,
-                fam_in = split_ref_by_chr.fam_out,
-                extract = get_variants.variant_ids,
-                output_basename = "ref_chr~{chr}_smartpca_snps",
-                cpu = plink_ref_cpu,
-                mem_gb = plink_ref_mem_gb,
-                image_source = image_source,
-            ecr_repo = ecr_repo
-        }
 
         # Check to see if there are any merge conflicts that require strand-flipping
         call PLINK.merge_two_beds as get_merge_conflicts{
@@ -234,8 +259,8 @@ workflow smartpca_ancestry_wf{
                 merge_mode = 7,
                 ignore_errors = true,
                 output_basename = "ref_~{dataset_short_name}_chr~{chr}_merge_conflicts",
-                cpu = plink_merged_chr_cpu,
-                mem_gb = plink_merged_chr_mem_gb,
+                cpu = 2,
+                mem_gb = 1 * merged_mem_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -251,8 +276,8 @@ workflow smartpca_ancestry_wf{
                     fam_in = subset_ref.fam_out,
                     output_basename = "ref_flipped_chr~{chr}",
                     flip = get_merge_conflicts.missnp_out,
-                    cpu = plink_merged_chr_cpu,
-                    mem_gb = plink_merged_chr_mem_gb,
+                    cpu = 2,
+                    mem_gb = 1 * merged_mem_multiplier_chr,
                     image_source = image_source,
                     ecr_repo = ecr_repo
             }
@@ -271,8 +296,8 @@ workflow smartpca_ancestry_wf{
                 ignore_errors = false,
                 allow_no_sex = true,
                 output_basename = "ref_~{dataset_short_name}_chr~{chr}",
-                cpu = plink_merged_chr_cpu,
-                mem_gb = plink_merged_chr_mem_gb,
+                cpu = 2,
+                mem_gb = 1 * merged_mem_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -290,8 +315,8 @@ workflow smartpca_ancestry_wf{
                 step_size = ld_step_size,
                 r2_threshold = ld_r2_threshold,
                 maf = ld_maf_cutoff,
-                cpu = plink_merged_chr_cpu,
-                mem_gb = plink_merged_chr_mem_gb,
+                cpu = 4,
+                mem_gb = 2 * merged_mem_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -306,8 +331,8 @@ workflow smartpca_ancestry_wf{
             fam_in = ld_prune.fam_out,
             allow_no_sex = true,
             output_basename = "ref_~{dataset_short_name}_ldpruned",
-            cpu = plink_merged_cpu,
-            mem_gb = plink_merged_mem_gb,
+            cpu = 2,
+            mem_gb = 1 * merged_mem_multiplier,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -334,9 +359,9 @@ workflow smartpca_ancestry_wf{
             numoutevec = numoutevec,
             numoutlieriter = numoutlieriter,
             poplist = ancestries_to_include,
-            numthreads = smartpca_cpu,
-            cpu = smartpca_cpu,
-            mem_gb = smartpca_mem_gb,
+            numthreads = 8,
+            cpu = 8,
+            mem_gb = 2 * merged_mem_multiplier,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -363,8 +388,8 @@ workflow smartpca_ancestry_wf{
             ref_pops_legend_labels = ancestries_display_names,
             use_pcs_count = use_pcs_count,
             midpoint_formula = midpoint_formula,
-            cpu = assign_ancestry_cpu,
-            mem_gb = assign_ancestry_mem_gb,
+            cpu = 8,
+            mem_gb = 8,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -553,8 +578,8 @@ task get_variants{
         String? ecr_repo
         String image_source = "docker"
         String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
-        Int cpu = 4
-        Int mem_gb = 8
+        Int cpu = 1
+        Int mem_gb = 2
 
     }
 
@@ -793,11 +818,11 @@ task order_by_ancestry {
         # Loop through each ancestry and output filenames with the ancestry prefix
         for ancestry in ~{sep=" " ancestries}; do
             grep -i $ancestry ~{write_lines(ancestry_keep_files_in)}
-        done
+        done > "ordered_ancestry.txt"
     >>>
 
     output {
-        Array[String] ancestry_keep_files_out = read_lines(stdout())
+        Array[String] ancestry_keep_files_out = read_lines("ordered_ancestry.txt")
     }
 
     runtime {

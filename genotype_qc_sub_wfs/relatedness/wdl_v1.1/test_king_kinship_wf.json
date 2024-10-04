@@ -1,0 +1,7 @@
+{
+  "bed_in": "s3://rti-nida-iomics-oa-healthomics-output/5218145/out/pruned_bed/aric_baylor_topmed_phase2_ref_snps.bed",
+  "bim_in": "s3://rti-nida-iomics-oa-healthomics-output/5218145/out/pruned_bim/aric_baylor_topmed_phase2_ref_snps.bim",
+  "fam_in": "s3://rti-nida-iomics-oa-healthomics-output/5218145/out/pruned_fam/aric_baylor_topmed_phase2_ref_snps.fam",
+  "output_basename": "test_king",
+  "degree": 3
+}

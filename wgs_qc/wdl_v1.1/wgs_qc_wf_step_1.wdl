@@ -6,7 +6,7 @@ import "remove_duplicate_variants_wf.wdl" as DUPLICATES
 import "smartpca_ancestry_wf.wdl" as ANCESTRY
 import "utils.wdl" as UTILS
 import "tsv_utils.wdl" as TSV_UTILS
-import "structs.wdl" as STRUCTS
+import "wgs_qc_wf_step_1_structs.wdl" as STRUCTS
 
 workflow wgs_qc_wf_step_1{
 
@@ -21,15 +21,8 @@ workflow wgs_qc_wf_step_1{
         Array[String] chrs
         String genome_build_code
 
-        #### Parameters for id conversion
+        # Ref files for ID conversion
         Array[File] id_conversion_ref_files
-        String? id_conversion_in_sep
-        String? id_conversion_in_missing_allele
-        String? id_conversion_in_deletion_allele
-        String? id_conversion_ref_deletion_allele
-        Int? id_conversion_in_chunk_size
-        Int? id_conversion_ref_chunk_size
-        Boolean? id_conversion_rescue_rsids
 
         # List of variants to use for ancestry and subject level QC
         File ref_variant_list
@@ -45,12 +38,12 @@ workflow wgs_qc_wf_step_1{
         Int ancestry_std_dev_cutoff = 3
 
         # Sample filter cutoffs
-        Float max_sample_missing_rate = 0.03
+        Float max_sample_missing_call_rate = 0.03
         Float min_sample_he = -0.2
         Float max_sample_he = 0.5
 
         # Variant filtering cutoffs
-        Float max_missing_site_rate = 0.03
+        Float max_variant_missing_call_rate = 0.03
         Float hwe_filter_pvalue = 0.0001
 
         # LD-Filtering parameters for subworkflows (smartpca_ancestry, relatedness, sex-check)
@@ -92,36 +85,6 @@ workflow wgs_qc_wf_step_1{
         Int min_kinship_snps = 10000
         Float ancestral_pca_loading_step_size = 0.001
         Float max_ancestral_pca_loading_cutoff = 0.01
-
-        # Resources for various modules
-
-        # General CPU/Mem for basically any PLINK task that runs on the whole dataset
-        Int plink_cpu = 1
-        Int plink_mem_gb = 2
-
-        # General CPU/MEM for basically any PLINK task that runs on a single chr
-        Int plink_chr_cpu = 1
-        Int plink_chr_mem_gb = 2
-
-        # General CPU/MEM for jobs that merge bed files either by chr or sample
-        Int merge_bed_cpu = 4
-        Int merge_bed_mem_gb = 8
-
-        # Resource for converting ids on each chr
-        Int id_conversion_cpu = 1
-        Int id_conversion_mem_gb = 4
-
-        # Speicific tasks where resource limits may need to be adjusted for larger/smaller inputs
-        Int sex_check_cpu = 4
-        Int sex_check_mem_gb = 8
-        Int king_cpu_per_split = 4
-        Int king_mem_gb_per_split = 8
-        Int pca_cpu = 4
-        Int pca_mem_gb = 8
-        Int assign_ancestry_cpu = 4
-        Int assign_ancestry_mem_gb = 8
-        Int line_count_cpu = 1
-        Int line_count_mem_gb = 4
 
         # Container
         String image_source = "docker"
@@ -167,16 +130,38 @@ workflow wgs_qc_wf_step_1{
 
         String chr = "~{chrs[i]}"
 
+        Int vcf_multiplier = floor((size(vcfs[i], "GB") / 5) + 1)
+        
         # Convert vcf to plink bfile
         call PLINK.convert_vcf_to_bed as all_snps_chr_convert_vcf_to_bfile{
             input:
                 vcf_in = vcfs[i],
                 output_basename = "~{output_basename}_chr~{chr}",
-                cpu = plink_chr_cpu,
-                mem_gb = plink_chr_mem_gb,
+                cpu = 4 * vcf_multiplier,
+                mem_gb = 8 * vcf_multiplier,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
+
+        # Get initial sample count
+        call UTILS.wc as sample_init_count {
+            input:
+                input_file = keep,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+        Int sample_multiplier_chr = floor((sample_init_count.num_lines / 750) + 1)
+
+        # Get initial variant count
+        call UTILS.wc as variant_init_count {
+            input:
+                input_file = all_snps_chr_convert_vcf_to_bfile.bim_out,
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+        Int variant_multiplier_chr = floor((variant_init_count.num_lines / 7500000) + 1)
+
+        Int combined_multiplier_chr = sample_multiplier_chr * variant_multiplier_chr
 
         # Extract batch samples and update sex
         call PLINK.make_bed as all_snps_chr_select_samples{
@@ -187,8 +172,8 @@ workflow wgs_qc_wf_step_1{
                 keep_samples = keep,
                 update_sex = create_sex_update_file.tsv_output,
                 output_basename = "~{output_basename}_chr~{chr}_batch_samples",
-                cpu = plink_chr_cpu,
-                mem_gb = plink_chr_mem_gb,
+                cpu = floor((0.5 * combined_multiplier_chr) + 1),
+                mem_gb = 1 * combined_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -207,8 +192,7 @@ workflow wgs_qc_wf_step_1{
             input:
                 fam_in = remove_fam_pheno.fam_out,
                 output_basename = "~{output_basename}_chr~{chr}_no_pheno_make_founders",
-                cpu = plink_chr_cpu,
-                mem_gb = plink_chr_mem_gb,
+                mem_gb = 1 * sample_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -220,15 +204,10 @@ workflow wgs_qc_wf_step_1{
                 ref_file = id_conversion_ref_files[i],
                 chr = chr,
                 output_basename = "~{output_basename}_chr~{chr}_convert_ids.bim",
-                in_sep = id_conversion_in_sep,
-                in_missing_allele = id_conversion_in_missing_allele,
-                in_deletion_allele = id_conversion_in_deletion_allele,
-                ref_deletion_allele = id_conversion_ref_deletion_allele,
-                in_chunk_size = id_conversion_in_chunk_size,
-                ref_chunk_size = id_conversion_ref_chunk_size,
-                rescue_rsids = id_conversion_rescue_rsids,
-                convert_cpu = id_conversion_cpu,
-                convert_mem_gb = id_conversion_mem_gb,
+                in_chunk_size = 50000,
+                ref_chunk_size = 1000000,
+                convert_cpu = 2,
+                convert_mem_gb = 4,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -240,10 +219,7 @@ workflow wgs_qc_wf_step_1{
                 bim_in = all_snps_chr_convert_variant_ids.bim_out,
                 fam_in = make_founders.fam_out,
                 output_basename = "~{output_basename}_chr~{chr}_no_dups",
-                label_duplicate_variants_cpu = id_conversion_cpu,
-                label_duplicate_variants_mem_gb = id_conversion_mem_gb,
-                plink_cpu = plink_chr_cpu,
-                plink_mem_gb = plink_chr_mem_gb,
+                plink_mem_gb = 1 * combined_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
@@ -256,13 +232,22 @@ workflow wgs_qc_wf_step_1{
                 fam_in = all_snps_chr_remove_duplicates.fam_out,
                 extract = ref_variant_list,
                 output_basename = "~{output_basename}_chr~{chr}_ref_snps",
-                cpu = plink_chr_cpu,
-                mem_gb = plink_chr_mem_gb,
+                cpu = floor((0.25 * combined_multiplier_chr) + 1),
+                mem_gb = floor((0.5 * combined_multiplier_chr) + 1),
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
 
     }
+
+    # Get multiplier for whole genome
+    call UTILS.sum_ints as sum_variant_multipliers{
+        input:
+            ints = variant_multiplier_chr,
+            image_source = image_source,
+            ecr_repo = ecr_repo
+    }
+    Int combined_multiplier = sample_multiplier_chr[0] * sum_variant_multipliers.sum
 
     # Merge chromosomes for ref panel variants
     call PLINK.merge_beds as ref_snps_post_id_conversion{
@@ -271,8 +256,8 @@ workflow wgs_qc_wf_step_1{
             bim_in = ref_snps_chr_extract_variants.bim_out,
             fam_in = ref_snps_chr_extract_variants.fam_out,
             output_basename = "~{output_basename}_ref_snps",
-            cpu = merge_bed_cpu,
-            mem_gb = merge_bed_mem_gb,
+            cpu = floor((combined_multiplier / 50) + 1),
+            mem_gb = floor((combined_multiplier / 2) + 1),
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -293,102 +278,201 @@ workflow wgs_qc_wf_step_1{
             ancestries_to_include = ancestries_to_include,
             ancestries_display_names = ancestries_display_names,
             do_id_conversion = false,
-            id_conversion_ref_files = id_conversion_ref_files,
             ld_exclude_regions = ld_exclude_regions,
-            plink_ref_cpu = plink_cpu,
-            plink_ref_mem_gb = plink_mem_gb,
-            plink_dataset_cpu = plink_cpu,
-            plink_dataset_mem_gb = plink_mem_gb,
-            convert_variant_ids_cpu = id_conversion_cpu,
-            convert_variant_ids_mem_gb = id_conversion_mem_gb,
-            smartpca_cpu = pca_cpu,
-            smartpca_mem_gb = pca_mem_gb,
-            assign_ancestry_cpu = assign_ancestry_cpu,
-            assign_ancestry_mem_gb = assign_ancestry_mem_gb,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
 
-    # Merge bims for counts
-    call UTILS.cat as merge_init_bims{
-        input:
-            input_files = all_snps_chr_convert_vcf_to_bfile.bim_out,
-            output_filename = "~{output_basename}.bim",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.cat as merge_post_id_conversion_bims{
-        input:
-            input_files = all_snps_chr_remove_duplicates.bim_out,
-            output_filename = "~{output_basename}_no_dups.bim",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
+    # Merge chr bims
+    Array[Array[File]] bims_to_merge = [
+        all_snps_chr_convert_variant_ids.bim_out,
+        all_snps_chr_remove_duplicates.bim_out
+    ]
+    Array[String] merged_bim_filenames = [
+        "~{output_basename}_init.bim",
+        "~{output_basename}_no_dups.bim"
+    ]
+    scatter(i in range(length(bims_to_merge))) {
+        call UTILS.cat as merge_bims{
+            input:
+                input_files = bims_to_merge[i],
+                output_filename = merged_bim_filenames[i],
+                mem_gb = floor((sum_variant_multipliers.sum / 5) + 1),
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
     }
 
     # Get SNP lists
-    call UTILS.cut as init_snp_list{
-        input:
-            input_file = merge_init_bims.output_file,
-            args =  "-f 2",
-            output_filename = "~{output_basename}_variants.txt",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
-    }
-    call UTILS.cut as post_id_conversion_snp_list{
-        input:
-            input_file = merge_post_id_conversion_bims.output_file,
-            args =  "-f 2",
-            output_filename = "~{output_basename}_no_dups_variants.txt",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
-            image_source = image_source,
-            ecr_repo = ecr_repo
+    Array[File] bims_for_snp_lists = [
+        merge_bims.output_file[0],
+        merge_bims.output_file[1]
+    ]
+    Array[String] snp_list_filenames = [
+        "~{output_basename}_variants_initial.txt",
+        "~{output_basename}_variants_final.txt",
+    ]
+    scatter(i in range(length(bims_for_snp_lists))) {
+        call UTILS.cut as snp_list{
+            input:
+                input_file = bims_for_snp_lists[i],
+                args =  "-f 2",
+                output_filename = snp_list_filenames[i],
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
     }
 
     # Get list of duplicate SNPs
     call UTILS.comm as duplicate_snps{
         input:
-            file1 = init_snp_list.output_file,
-            file2 = post_id_conversion_snp_list.output_file,
+            file1 = snp_list.output_file[0],
+            file2 = snp_list.output_file[1],
             option = "-23",
-            output_filename = "~{output_basename}_dups_variants.txt",
-            cpu = plink_cpu,
-            mem_gb = plink_mem_gb,
+            output_filename = "~{output_basename}_variants_duplicates.txt",
             image_source = image_source,
             ecr_repo = ecr_repo
     }
 
-    # Create JSON files with arguments for step 2 of WF
-    scatter(ancestry_index in range(length(smartpca_ancestry_wf.ancestry_labels))){
+    # Get SNP counts
+    Array[File] files_for_snp_counts = [
+        snp_list.output_file[0],
+        snp_list.output_file[1],
+        duplicate_snps.output_file
+    ]
+    scatter(i in range(length(files_for_snp_counts))) {
+        call UTILS.wc as snp_count {
+            input:
+                input_file = files_for_snp_counts[i],
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+    }
 
-        String ancestry = smartpca_ancestry_wf.ancestry_labels[ancestry_index]
-        STEP_2_ARGS step_2_args = STEP_2_ARGS {
-            ancestry: ancestry,
+    # Get sample lists
+    Array[File] fams_for_sample_lists = [
+        all_snps_chr_convert_vcf_to_bfile.fam_out[0],
+        all_snps_chr_select_samples.fam_out[0]
+    ]
+    Array[String] sample_list_filenames = [
+        "~{output_basename}_samples_initial.tsv",
+        "~{output_basename}_samples_final.tsv"
+    ]
+    scatter(i in range(length(fams_for_sample_lists))) {
+        call UTILS.cut as sample_list{
+            input:
+                input_file = fams_for_sample_lists[i],
+                args =  "-f 1,2",
+                output_filename = sample_list_filenames[i],
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+    }
+    Array[Pair[String, File]] ancestry_samples = zip(smartpca_ancestry_wf.ancestry_labels, smartpca_ancestry_wf.dataset_ancestry_keep_lists)
+
+    # Get sample counts
+    Array[File] files_for_sample_counts = [
+        sample_list.output_file[0],
+        sample_list.output_file[1]
+    ]
+    scatter(i in range(length(files_for_sample_counts))) {
+        call UTILS.wc as sample_count {
+            input:
+                input_file = files_for_sample_counts[i],
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+    }
+    scatter(i in range(length(smartpca_ancestry_wf.dataset_ancestry_keep_lists))) {
+        call UTILS.wc as ancestry_sample_count {
+            input:
+                input_file = smartpca_ancestry_wf.dataset_ancestry_keep_lists[i],
+                image_source = image_source,
+                ecr_repo = ecr_repo
+        }
+    }
+    Array[Pair[String, Int]] ancestry_sample_counts = zip(smartpca_ancestry_wf.ancestry_labels, ancestry_sample_count.num_lines)
+
+    output{
+
+        # Genotypes
+        GENOTYPE_FILES genotype_files = GENOTYPE_FILES {
+            beds: all_snps_chr_remove_duplicates.bed_out,
+            bims: all_snps_chr_remove_duplicates.bim_out,
+            fams: all_snps_chr_remove_duplicates.fam_out
+        }
+
+        # Pruned genotypes
+        PRUNED_GENOTYPE_FILES pruned_genotype_files = PRUNED_GENOTYPE_FILES {
+            bed: ref_snps_post_id_conversion.bed_out,
+            bim: ref_snps_post_id_conversion.bim_out,
+            fam: ref_snps_post_id_conversion.fam_out
+        }
+
+        # Variant lists
+        VARIANT_LISTS variant_lists = VARIANT_LISTS {
+            initial: snp_list.output_file[0],
+            final: snp_list.output_file[1],
+            duplicates: duplicate_snps.output_file
+        }
+
+        # Sample lists
+        SAMPLE_LISTS sample_lists = SAMPLE_LISTS {
+            initial: sample_list.output_file[0],
+            final: sample_list.output_file[1],
+            ancestries: ancestry_samples
+        }
+
+        # Counts
+        COUNTS counts = COUNTS {
+            variant_initial: snp_count.num_lines[0],
+            variant_final: snp_count.num_lines[1],
+            variant_duplicates: snp_count.num_lines[2],
+            sample_initial: sample_count.num_lines[0],
+            sample_final: sample_count.num_lines[1],
+            sample_ancestries: ancestry_sample_counts
+        }
+
+        # Outputs from ancestry assignment workflow
+        ANCESTRY_WF_OUTPUTS ancestry_wf_outputs = ANCESTRY_WF_OUTPUTS {
+            dataset_ancestry_labels: smartpca_ancestry_wf.ancestry_labels,
+            dataset_ancestry_keep_lists: smartpca_ancestry_wf.dataset_ancestry_keep_lists,
+            dataset_ancestry_assignments: smartpca_ancestry_wf.dataset_ancestry_assignments,
+            dataset_ancestry_assignments_summary: smartpca_ancestry_wf.dataset_ancestry_assignments_summary,
+            dataset_ancestry_assignments_plots: smartpca_ancestry_wf.dataset_ancestry_assignments_plots,
+            evec: smartpca_ancestry_wf.evec,
+            eval: smartpca_ancestry_wf.eval,
+            snpweight: smartpca_ancestry_wf.snpweight,
+            log: smartpca_ancestry_wf.smartpca_log,
+            ref_dropped_samples: smartpca_ancestry_wf.ref_dropped_samples,
+            ref_raw_ancestry_assignments: smartpca_ancestry_wf.ref_raw_ancestry_assignments,
+            ref_raw_ancestry_assignments_summary: smartpca_ancestry_wf.ref_raw_ancestry_assignments_summary,
+            pre_processing_pc_plots: smartpca_ancestry_wf.pre_processing_pc_plots,
+            dataset_ancestry_outliers_plots: smartpca_ancestry_wf.dataset_ancestry_outliers_plots
+        }
+
+        # Step 2 parameters
+        STEP_2_PARAMETERS step_2_parameters = STEP_2_PARAMETERS {
             complete_beds: all_snps_chr_remove_duplicates.bed_out,
             complete_bims: all_snps_chr_remove_duplicates.bim_out,
             complete_fams: all_snps_chr_remove_duplicates.fam_out,
             filtered_bed: ref_snps_post_id_conversion.bed_out,
             filtered_bim: ref_snps_post_id_conversion.bim_out,
             filtered_fam: ref_snps_post_id_conversion.fam_out,
-            ancestry_samples: smartpca_ancestry_wf.dataset_ancestry_keep_lists[ancestry_index],
-            output_basename: "~{output_basename}_~{ancestry}",
+            output_basename: output_basename,
             chrs: chrs,
             genome_build_code: genome_build_code,
-            max_missing_site_rate: max_missing_site_rate,
-            hwe_filter_pvalue: hwe_filter_pvalue,
+            variant_init_count: snp_count.num_lines[1],
+            sample_init_count: sample_count.num_lines[1],
             ld_exclude_regions: ld_exclude_regions,
             ld_type: ld_type,
             ld_window_size: ld_window_size,
             ld_step_size: ld_step_size,
             ld_r2_threshold: ld_r2_threshold,
             ld_maf_cutoff: ld_maf_cutoff,
-            max_sample_missing_rate: max_sample_missing_rate,
+            max_variant_missing_call_rate: max_variant_missing_call_rate,
+            hwe_filter_pvalue: hwe_filter_pvalue,
+            max_sample_missing_call_rate: max_sample_missing_call_rate,
             min_sample_he: min_sample_he,
             max_sample_he: max_sample_he,
             filter_related_samples: filter_related_samples,
@@ -403,112 +487,10 @@ workflow wgs_qc_wf_step_1{
             min_kinship_snps: min_kinship_snps,
             ancestral_pca_loading_step_size: ancestral_pca_loading_step_size,
             max_ancestral_pca_loading_cutoff: max_ancestral_pca_loading_cutoff,
-            plink_cpu: plink_cpu,
-            plink_mem_gb: plink_mem_gb,
-            plink_chr_cpu: plink_chr_cpu,
-            plink_chr_mem_gb: plink_chr_mem_gb,
-            merge_bed_cpu: merge_bed_cpu,
-            merge_bed_mem_gb: merge_bed_mem_gb,
-            sex_check_cpu: sex_check_cpu,
-            sex_check_mem_gb: sex_check_mem_gb,
-            king_cpu_per_split: king_cpu_per_split,
-            king_mem_gb_per_split: king_mem_gb_per_split,
-            pca_cpu: pca_cpu,
-            pca_mem_gb: pca_mem_gb,
             image_source: image_source,
             ecr_repo: ecr_repo
         }
 
-        call write_step_2_args_to_json {
-            input:
-                json_file = "~{output_basename}_~{ancestry}_step_2_args.json",
-                step_2_args = step_2_args,
-                image_source = image_source,
-                ecr_repo = ecr_repo
-        }
-
-    }
-
-    output{
-
-        # Step 2 args
-        Array[File] step_2_args_jsons = write_step_2_args_to_json.step_2_args_json
-
-        # Genotypes
-        Array[File] full_beds = all_snps_chr_remove_duplicates.bed_out
-        Array[File] full_bims = all_snps_chr_remove_duplicates.bim_out
-        Array[File] full_fams = all_snps_chr_remove_duplicates.fam_out
-        File pruned_bed = ref_snps_post_id_conversion.bed_out
-        File pruned_bim = ref_snps_post_id_conversion.bim_out
-        File pruned_fam = ref_snps_post_id_conversion.fam_out
-
-        # Intermediate files for counts
-        File variants_initial = merge_init_bims.output_file
-        File variants_duplicates = duplicate_snps.output_file
-        File variants_no_duplicates = merge_post_id_conversion_bims.output_file
-        File samples_initial = all_snps_chr_convert_vcf_to_bfile.fam_out[0]
-        File samples_batch = all_snps_chr_select_samples.fam_out[0]
-
-        # Outputs from ancestry assignment workflow
-        File ancestry_wf_evec = smartpca_ancestry_wf.evec
-        File ancestry_wf_eval = smartpca_ancestry_wf.eval
-        File ancestry_wf_snpweight = smartpca_ancestry_wf.snpweight
-        File ancestry_wf_log = smartpca_ancestry_wf.smartpca_log
-        Array[File] ancestry_wf_pre_processing_pc_plots  = smartpca_ancestry_wf.pre_processing_pc_plots
-        File ancestry_wf_ref_dropped_samples  = smartpca_ancestry_wf.ref_dropped_samples
-        File ancestry_wf_ref_raw_ancestry_assignments = smartpca_ancestry_wf.ref_raw_ancestry_assignments
-        File ancestry_wf_ref_raw_ancestry_assignments_summary = smartpca_ancestry_wf.ref_raw_ancestry_assignments_summary
-        File ancestry_wf_dataset_ancestry_assignments = smartpca_ancestry_wf.dataset_ancestry_assignments
-        File ancestry_wf_dataset_ancestry_assignments_summary = smartpca_ancestry_wf.dataset_ancestry_assignments_summary
-        Array[File] ancestry_wf_dataset_ancestry_assignments_plots = smartpca_ancestry_wf.dataset_ancestry_assignments_plots
-        Array[File] ancestry_wf_dataset_ancestry_outliers_plots = smartpca_ancestry_wf.dataset_ancestry_outliers_plots
-        Array[File] ancestry_wf_dataset_ancestry_keep_lists = smartpca_ancestry_wf.dataset_ancestry_keep_lists
-
-    }
-}
-
-
-task write_step_2_args_to_json{
-
-    input{
-
-        String json_file
-        STEP_2_ARGS step_2_args
-        
-        # Runtime environment
-        String docker_image = "python:3.11.9-slim-bookworm"
-        String ecr_image = "rtibiocloud/python:3.11.9-slim-bookworm"
-        String? ecr_repo
-        String image_source = "docker"
-        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
-        Int cpu = 1
-        Int mem_gb = 1
-
-    }
-
-    command <<<
-        python <<CODE
-
-        import json
-        
-        with open("~{write_json(step_2_args)}") as f:
-            test_struct = json.load(f)
-        
-        with open("~{json_file}", "w") as f:
-            json.dump(test_struct, f)
-        
-        CODE
-    >>>
-
-
-    runtime {
-        docker: container_image
-        cpu: cpu
-        memory: "~{mem_gb} GB"
-    }
-
-    output {
-        File step_2_args_json = "~{json_file}"
     }
 
 }

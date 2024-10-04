@@ -1,0 +1,15 @@
+{
+    "workflows": [
+        "id_conversion/convert_variant_ids_bfile/wdl_v1.1/convert_variant_ids_bfile_chr_wf.wdl",
+        "genotype_filtering/remove_duplicate_variants/wdl_v1.1/remove_duplicate_variants_wf.wdl",
+        "ancestral_similarity/smartpca/wdl_v1.1/smartpca_ancestry_wf.wdl"
+    ],
+    "wdl_tools": [
+        "biocloud_wdl_tools/plink/wdl_v1.1/plink.wdl",
+        "biocloud_wdl_tools/tsv_utils/wdl_v1.1/tsv_utils.wdl",
+        "biocloud_wdl_tools/utils/wdl_v1.1/utils.wdl"
+    ],
+    "structs": [
+        "wgs_qc/wdl_v1.1/wgs_qc_wf_step_1_structs.wdl"
+    ]
+}

@@ -1,0 +1,91 @@
+{
+	"dataset_bed": {
+		"description": "-"
+	},
+	"dataset_bim": {
+		"description": "-"
+	},
+	"dataset_fam": {
+		"description": "-"
+	},
+	"dataset_short_name": {
+		"description": "-"
+	},
+	"dataset_display_name": {
+		"description": "-"
+	},
+	"ref_bed": {
+		"description": "-"
+	},
+	"ref_bim": {
+		"description": "-"
+	},
+	"ref_fam": {
+		"description": "-"
+	},
+	"ref_psam": {
+		"description": "-"
+	},
+	"ancestry_pop_type": {
+		"description": "-",
+        "optional": true
+	},
+	"ancestries_to_include": {
+		"description": "-",
+        "optional": true
+	},
+	"ancestries_display_names": {
+		"description": "-",
+        "optional": true
+	},
+	"genome_build_code": {
+		"description": "-",
+        "optional": true
+	},
+	"do_id_conversion": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_ref_files": {
+		"description": "-"
+	},
+	"id_conversion_in_sep": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_in_missing_allele": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_in_deletion_allele": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_ref_deletion_allele": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_in_chunk_size": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_ref_chunk_size": {
+		"description": "-",
+        "optional": true
+	},
+	"id_conversion_rescue_rsids": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_exclude_regions": {
+		"description": "-"
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": false
+	}
+}

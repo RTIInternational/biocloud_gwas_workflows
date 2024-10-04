@@ -29,13 +29,11 @@
 	"genome_build_code": {
 		"description": "-"
 	},
-	"max_missing_site_rate": {
-		"description": "-",
-        "optional": true
+	"variant_init_count": {
+		"description": "-"
 	},
-	"hwe_filter_pvalue": {
-		"description": "-",
-        "optional": true
+	"sample_init_count": {
+		"description": "-"
 	},
 	"ld_exclude_regions": {
 		"description": "-",
@@ -61,7 +59,15 @@
 		"description": "-",
         "optional": true
 	},
-	"max_sample_missing_rate": {
+	"max_variant_missing_call_rate": {
+		"description": "-",
+        "optional": true
+	},
+	"hwe_filter_pvalue": {
+		"description": "-",
+        "optional": true
+	},
+	"max_sample_missing_call_rate": {
 		"description": "-",
         "optional": true
 	},
@@ -118,54 +124,6 @@
         "optional": true
 	},
 	"max_ancestral_pca_loading_cutoff": {
-		"description": "-",
-        "optional": true
-	},
-	"plink_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"plink_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"plink_chr_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"plink_chr_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"merge_bed_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"merge_bed_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"sex_check_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"sex_check_mem_gb": {
-		"description": "-",
-        "optional": true
-	},
-	"king_cpu_per_split": {
-		"description": "-",
-        "optional": true
-	},
-	"king_mem_gb_per_split": {
-		"description": "-",
-        "optional": true
-	},
-	"pca_cpu": {
-		"description": "-",
-        "optional": true
-	},
-	"pca_mem_gb": {
 		"description": "-",
         "optional": true
 	},
