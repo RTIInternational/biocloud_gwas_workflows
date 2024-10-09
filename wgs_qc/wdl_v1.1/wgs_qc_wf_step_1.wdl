@@ -173,7 +173,7 @@ workflow wgs_qc_wf_step_1{
                 update_sex = create_sex_update_file.tsv_output,
                 output_basename = "~{output_basename}_chr~{chr}_batch_samples",
                 cpu = floor((0.5 * combined_multiplier_chr) + 1),
-                mem_gb = 1 * combined_multiplier_chr,
+                mem_gb = 2 * combined_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
