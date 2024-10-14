@@ -30,6 +30,10 @@
 		"description": "-",
         "optional": true
 	},
+	"in_header_as_text": {
+		"description": "-",
+        "optional": true
+	},
 	"in_sep": {
 		"description": "-",
         "optional": true

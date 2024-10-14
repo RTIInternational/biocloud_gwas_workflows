@@ -10,7 +10,7 @@ workflow convert_variant_ids_wf{
         Array[File] ref_files
         Array[String] chrs
         Array[File] input_files
-        Array[File] output_files
+        Array[String] output_files
         Int in_id_col
         Int in_chr_col
         Int in_pos_col
@@ -19,6 +19,7 @@ workflow convert_variant_ids_wf{
 
         # Optional parameters
         Int? in_header
+        Boolean? in_header_as_text
         String? in_sep
         String? in_missing_allele
         String? in_deletion_allele
@@ -52,6 +53,7 @@ workflow convert_variant_ids_wf{
                 in_a1_col = in_a1_col,
                 in_a2_col = in_a2_col,
                 in_header = in_header,
+                in_header_as_text = in_header_as_text,
                 in_sep = in_sep,
                 in_missing_allele = in_missing_allele,
                 in_deletion_allele = in_deletion_allele,
