@@ -77,8 +77,52 @@
 		"description": "-",
         "optional": true
 	},
+	"ld_type": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_window_size": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_step_size": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_maf_cutoff": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_r2_threshold": {
+		"description": "-",
+        "optional": true
+	},
 	"ld_exclude_regions": {
 		"description": "-"
+	},
+	"altnormstyle": {
+		"description": "-",
+        "optional": true
+	},
+	"numoutevec": {
+		"description": "-",
+        "optional": true
+	},
+	"numoutlieriter": {
+		"description": "-",
+        "optional": true
+	},
+	"pc_count": {
+		"description": "-",
+        "optional": true
+	},
+	"use_pcs_count": {
+		"description": "-",
+        "optional": true
+	},
+	"midpoint_formula": {
+		"description": "-",
+        "optional": true
 	},
 	"image_source": {
 		"description": "-",
