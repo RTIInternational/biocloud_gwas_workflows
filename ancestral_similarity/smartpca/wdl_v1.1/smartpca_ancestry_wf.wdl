@@ -297,7 +297,7 @@ workflow smartpca_ancestry_wf{
                 allow_no_sex = true,
                 output_basename = "ref_~{dataset_short_name}_chr~{chr}",
                 cpu = 2,
-                mem_gb = 1 * merged_mem_multiplier_chr,
+                mem_gb = 2 * merged_mem_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
