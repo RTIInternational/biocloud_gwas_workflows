@@ -1,0 +1,25 @@
+{
+	"bed_in": {
+		"description": "-"
+	},
+	"bim_in": {
+		"description": "-"
+	},
+	"fam_in": {
+		"description": "-"
+	},
+	"cov_eigenvec": {
+		"description": "-"
+	},
+	"output_basename": {
+		"description": "-"
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": false
+	}
+}
