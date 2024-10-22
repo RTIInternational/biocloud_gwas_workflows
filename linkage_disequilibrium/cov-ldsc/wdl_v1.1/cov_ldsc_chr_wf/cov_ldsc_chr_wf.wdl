@@ -24,7 +24,6 @@ workflow cov_ldsc_chr_wf{
             image_source = image_source,
             ecr_repo = ecr_repo
     }
-    Int sample_mem_multiplier = floor((sample_count.num_lines / 500) + 1)
 
     # Get variant count
     call UTILS.wc as variant_count {
@@ -33,7 +32,6 @@ workflow cov_ldsc_chr_wf{
             image_source = image_source,
             ecr_repo = ecr_repo
     }
-    Int variant_mem_multiplier = floor((variant_count.num_lines / 5000000) + 1)
 
     call COV_LDSC.cov_ldsc {
         input:
@@ -43,7 +41,7 @@ workflow cov_ldsc_chr_wf{
             cov_eigenvec = cov_eigenvec,
             output_basename = output_basename,
             cpu = 2,
-            mem_gb = 4 * sample_mem_multiplier * variant_mem_multiplier,
+            mem_gb = (32 * sample_count.num_lines * variant_count.num_lines) / 1200000000,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
