@@ -33,6 +33,9 @@ workflow cov_ldsc_chr_wf{
             ecr_repo = ecr_repo
     }
 
+    Int mem_gb = floor((sample_count.num_lines * variant_count.num_lines) / 60000000)
+    Int cpu = floor(mem_gb / 8)
+
     call COV_LDSC.cov_ldsc {
         input:
             bed_in = bed_in,
@@ -40,8 +43,8 @@ workflow cov_ldsc_chr_wf{
             fam_in = fam_in,
             cov_eigenvec = cov_eigenvec,
             output_basename = output_basename,
-            cpu = 2,
-            mem_gb = (32 * sample_count.num_lines * variant_count.num_lines) / 1200000000,
+            cpu = cpu,
+            mem_gb = mem_gb,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
