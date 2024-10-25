@@ -14,6 +14,14 @@
 	"output_basename": {
 		"description": "-"
 	},
+	"manual_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"manual_cpu": {
+		"description": "-",
+        "optional": true
+	},
 	"image_source": {
 		"description": "-",
         "optional": true

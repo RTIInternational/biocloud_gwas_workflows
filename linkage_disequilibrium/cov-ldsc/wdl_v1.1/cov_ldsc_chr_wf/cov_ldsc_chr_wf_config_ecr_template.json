@@ -1,0 +1,9 @@
+{
+    "bed_in": "<INPUT_PREFIX>.bed",
+    "bim_in": "<INPUT_PREFIX>.bim",
+    "fam_in": "<INPUT_PREFIX>.fam",
+    "cov_eigenvec": "<EVEC>",
+    "output_basename": "<OUTPUT_BASENAME>",
+    "image_source": "ecr",
+    "ecr_repo": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com"
+}

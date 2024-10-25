@@ -12,7 +12,11 @@ workflow cov_ldsc_chr_wf{
         File cov_eigenvec
         String output_basename
 
-         # Container
+        # Optional manual override for resources
+        Int? manual_mem_gb = None
+        Int? manual_cpu = None
+
+        # Container
         String image_source = "docker"
         String? ecr_repo
     }
@@ -33,8 +37,11 @@ workflow cov_ldsc_chr_wf{
             ecr_repo = ecr_repo
     }
 
-    Int mem_gb = floor((sample_count.num_lines * variant_count.num_lines) / 60000000)
-    Int cpu = floor(mem_gb / 8)
+    Int calculated_mem_gb = floor((sample_count.num_lines * variant_count.num_lines) / 60000000)
+    Int calculated_cpu = floor(calculated_mem_gb / 8)
+    
+    Int mem_gb = select_first([manual_mem_gb, calculated_mem_gb])
+    Int cpu = select_first([manual_cpu, calculated_cpu])
 
     call COV_LDSC.cov_ldsc {
         input:
