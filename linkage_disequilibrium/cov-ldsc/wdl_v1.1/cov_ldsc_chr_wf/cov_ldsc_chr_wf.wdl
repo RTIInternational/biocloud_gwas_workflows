@@ -37,8 +37,8 @@ workflow cov_ldsc_chr_wf{
             ecr_repo = ecr_repo
     }
 
-    Int calculated_mem_gb = floor((sample_count.num_lines * variant_count.num_lines) / 60000000)
-    Int calculated_cpu = floor(calculated_mem_gb / 8)
+    Int calculated_mem_gb = floor((sample_count.num_lines * variant_count.num_lines) / 60000000) + 1
+    Int calculated_cpu = floor(calculated_mem_gb / 8) + 1
     
     Int mem_gb = select_first([manual_mem_gb, calculated_mem_gb])
     Int cpu = select_first([manual_cpu, calculated_cpu])
