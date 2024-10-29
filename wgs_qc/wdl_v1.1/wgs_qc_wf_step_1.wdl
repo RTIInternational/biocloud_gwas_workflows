@@ -219,7 +219,7 @@ workflow wgs_qc_wf_step_1{
                 bim_in = all_snps_chr_convert_variant_ids.bim_out,
                 fam_in = make_founders.fam_out,
                 output_basename = "~{output_basename}_chr~{chr}_no_dups",
-                plink_mem_gb = 1 * combined_multiplier_chr,
+                plink_mem_gb = 2 * combined_multiplier_chr,
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
