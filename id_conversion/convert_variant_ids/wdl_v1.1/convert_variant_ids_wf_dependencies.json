@@ -1,7 +1,7 @@
 {
     "workflows": [],
     "wdl_tools": [
-        "biocloud_wdl_tools/convert_variant_ids/wdl_v1.0/convert_variant_ids.wdl"
+        "biocloud_wdl_tools/convert_variant_ids/wdl_v1.1/convert_variant_ids.wdl"
     ],
     "structs": []
 }
