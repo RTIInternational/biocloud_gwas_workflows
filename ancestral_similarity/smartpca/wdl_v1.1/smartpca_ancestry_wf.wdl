@@ -453,6 +453,7 @@ task get_ref_samples{
             psam=ref.psam
         fi
 
+        ancestry_col=$(head -n 1 ~{ancestry_psam} | perl -ane 'for($i=0; $i<@F; $i++) { if (uc($F[$i]) eq "'~{ancestry_pop_type}'") { print $i; last; }}')
         perl -lane '
             use warnings;
             BEGIN {
@@ -467,10 +468,9 @@ task get_ref_samples{
                 open(XREF, ">ancestry_id_xref.tsv");
                 print XREF "$_\t$ancestries{$_}" for (keys %ancestries);
                 close XREF;
-                $col = ("'~{ancestry_pop_type}'" eq "SUPERPOP") ? 2 : 3;
             }
-            if (exists($ancestries{$F[$col]})) {
-                print join("\t","0",$F[0],$ancestries{$F[$col]});
+            if (exists($ancestries{$F['$ancestry_col']})) {
+                print join("\t","0",$F[0],$ancestries{$F['$ancestry_col']});
             }
         ' $psam > ~{output_filename}
 
