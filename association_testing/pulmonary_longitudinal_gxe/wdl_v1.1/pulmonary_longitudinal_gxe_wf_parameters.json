@@ -1,0 +1,42 @@
+{
+	"file_bgens": {
+		"description": "-"
+	},
+	"file_bgis": {
+		"description": "-"
+	},
+	"file_sample": {
+		"description": "-"
+	},
+	"file_pheno": {
+		"description": "-"
+	},
+	"ancestry": {
+		"description": "-"
+	},
+	"pheno": {
+		"description": "-"
+	},
+	"omega3": {
+		"description": "-"
+	},
+	"file_out_prefix": {
+		"description": "-"
+	},
+	"cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": false
+	}
+}

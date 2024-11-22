@@ -1,0 +1,8 @@
+{
+    "workflows": [],
+    "wdl_tools": [
+        "biocloud_wdl_tools/pulmonary_longitudinal_gxe/wdl_v1.1/pulmonary_longitudinal_gxe.wdl",
+        "biocloud_wdl_tools/rti-tsv-utils/wdl_v1.1/rti-tsv-utils.wdl"
+    ],
+    "structs": []
+}
