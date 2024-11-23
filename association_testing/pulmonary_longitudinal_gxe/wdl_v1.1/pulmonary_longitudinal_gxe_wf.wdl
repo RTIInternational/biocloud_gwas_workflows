@@ -14,8 +14,8 @@ workflow pulmonary_longitudinal_gxe_wf{
         String ancestry
         String pheno
         String omega3
-        Int? chunk_size
         String file_out_prefix
+        Int? nchunks
         
         # Resources
         Int cpu = 2
@@ -37,6 +37,7 @@ workflow pulmonary_longitudinal_gxe_wf{
                 pheno = pheno,
                 omega3 = omega3,
                 file_out_prefix = "~{file_out_prefix}_~{i}",
+                nchunks = nchunks,
                 cpu = cpu,
                 mem_gb = mem_gb,
                 image_source = image_source,
@@ -54,7 +55,8 @@ workflow pulmonary_longitudinal_gxe_wf{
     }
 
     output{
-        Array[File] gxe_results = cat_gxe_results.out_tsv
+        File gxe_results = cat_gxe_results.out_tsv
+        Array[File] gxe_logs = run_gxe.log
     }
 
 }

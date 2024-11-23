@@ -23,6 +23,10 @@
 	"file_out_prefix": {
 		"description": "-"
 	},
+	"nchunks": {
+		"description": "-",
+        "optional": true
+	},
 	"cpu": {
 		"description": "-",
         "optional": true
