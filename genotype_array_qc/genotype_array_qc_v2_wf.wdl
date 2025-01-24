@@ -216,6 +216,8 @@ workflow genotype_array_qc_wf{
             ancestry_pop_type = ancestry_pop_type,
             ancestries_to_include = ancestries_to_include,
             ancestries_display_names = ancestries_display_names,
+            do_id_conversion = false,
+            id_conversion_ref_files = id_conversion_ref_files,
             ld_exclude_regions = ld_exclude_regions,
             plink_dataset_cpu = plink_cpu,
             plink_dataset_mem_gb = plink_mem_gb,

@@ -13,7 +13,7 @@ workflow remove_duplicate_variants_wf{
     Int plink_cpu = 1
     Int plink_mem_gb = 2
 
-    String container_source
+    String container_source = "docker"
 
     # Append suffixes to duplicate variants
     call label_duplicate_variants{
