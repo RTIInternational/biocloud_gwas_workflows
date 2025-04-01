@@ -7,7 +7,7 @@ import "plink.wdl" as PLINK
 import "smartpca.wdl" as SMARTPCA
 import "utils.wdl" as UTILS
 
-workflow smartpca_ancestry_wf{
+workflow mahalanobis_ancestry_wf{
 
     input {
 

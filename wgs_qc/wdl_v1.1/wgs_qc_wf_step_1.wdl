@@ -3,7 +3,7 @@ version 1.1
 import "convert_variant_ids_bfile_chr_wf.wdl" as IDCONVERT
 import "plink.wdl" as PLINK
 import "remove_duplicate_variants_wf.wdl" as DUPLICATES
-import "smartpca_ancestry_wf.wdl" as ANCESTRY
+import "mahalanobis_ancestry_wf.wdl" as ANCESTRY
 import "utils.wdl" as UTILS
 import "tsv_utils.wdl" as TSV_UTILS
 import "wgs_qc_wf_step_1_structs.wdl" as STRUCTS
