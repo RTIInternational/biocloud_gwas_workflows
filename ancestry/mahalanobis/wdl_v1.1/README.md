@@ -18,10 +18,10 @@ docker run -ti \
     -e aws_secret_access_key=$aws_secret_access_key \
     -e aws_region_name=$aws_region_name \
     -e repo_dir=$repo_dir \
-    -e main=$repo_dir/ancestry/mahalanobis/wdl_v1.1/smartpca_ancestry_wf.wdl \
-    -e parameter_template=$repo_dir/ancestry/mahalanobis/wdl_v1.1/smartpca_ancestry_wf_parameters.json \
+    -e main=$repo_dir/ancestry/mahalanobis/wdl_v1.1/mahalanobis_ancestry_wf.wdl \
+    -e parameter_template=$repo_dir/ancestry/mahalanobis/wdl_v1.1/mahalanobis_ancestry_wf_parameters.json \
     -e name="mahalanobis_ancestry_wf" \
-    -e description="Workflow for calculatin the ancestral similarity of samples to reference populations based on Mahalanobis distance." \
+    -e description="Workflow for calculating the ancestral similarity of samples to reference populations based on Mahalanobis distance." \
     -e engine=WDL \
     -e storage_capacity=2000 \
     --rm rtibiocloud/healthomics_tools:v1.0_f456174
