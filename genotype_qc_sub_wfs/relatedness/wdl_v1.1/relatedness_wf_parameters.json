@@ -1,0 +1,136 @@
+{
+	"bed_in": {
+		"description": "-"
+	},
+	"bim_in": {
+		"description": "-"
+	},
+	"fam_in": {
+		"description": "-"
+	},
+	"hwe_pvalue": {
+		"description": "-"
+	},
+	"hwe_mode": {
+		"description": "-",
+        "optional": true
+	},
+	"max_variant_missing_call_rate": {
+		"description": "-"
+	},
+	"qc_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"qc_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_exclude_regions": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_type": {
+		"description": "-"
+	},
+	"ld_window_size": {
+		"description": "-"
+	},
+	"ld_step_size": {
+		"description": "-"
+	},
+	"ld_r2_threshold": {
+		"description": "-"
+	},
+	"ld_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"ld_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"min_ld_maf": {
+		"description": "-"
+	},
+	"merge_bed_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"merge_bed_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"degree": {
+		"description": "-",
+        "optional": true
+	},
+	"num_king_splits": {
+		"description": "-",
+        "optional": true
+	},
+	"king_cpu_per_split": {
+		"description": "-",
+        "optional": true
+	},
+	"king_mem_gb_per_split": {
+		"description": "-",
+        "optional": true
+	},
+	"pca_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"pca_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"num_pcs_to_analyze": {
+		"description": "-",
+        "optional": true
+	},
+	"pca_standx": {
+		"description": "-",
+        "optional": true
+	},
+	"pca_seed": {
+		"description": "-",
+        "optional": true
+	},
+	"pca_batch": {
+		"description": "-",
+        "optional": true
+	},
+	"pca_blocksize": {
+		"description": "-",
+        "optional": true
+	},
+	"ancestral_pca_loading_cutoff": {
+		"description": "-",
+        "optional": true
+	},
+	"max_kinship_snps": {
+		"description": "-",
+        "optional": true
+	},
+	"min_kinship_snps": {
+		"description": "-",
+        "optional": true
+	},
+	"ancestral_pca_loading_step_size": {
+		"description": "-",
+        "optional": true
+	},
+	"max_ancestral_pca_loading_cutoff": {
+		"description": "-",
+        "optional": true
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": true
+	}
+}

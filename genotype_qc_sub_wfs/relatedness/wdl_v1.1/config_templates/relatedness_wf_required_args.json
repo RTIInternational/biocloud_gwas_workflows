@@ -1,0 +1,16 @@
+{
+    "bed_in": "<BED_IN>",
+    "bim_in": "<BIM_IN>",
+    "fam_in": "<FAM_IN>",
+    "hwe_pvalue": "<HWE_PVALUE>",
+    "max_variant_missing_call_rate": "<MAX_VARIANT_MISSING_CALL_RATE>",
+    "ld_exclude_regions": "<LD_EXCLUDE_REGIONS>",
+    "ld_type": "<LD_TYPE>",
+    "ld_window_size": "<LD_WINDOW_SIZE>",
+    "ld_step_size": "<LD_STEP_SIZE>",
+    "ld_r2_threshold": "<LD_R2_THRESHOLD>",
+    "min_ld_maf": "<MIN_LD_MAF>",
+    "merge_bed_cpu": "<MERGE_BED_CPU>",
+    "merge_bed_mem_gb": "<MERGE_BED_MEM_GB>",
+    "ecr_repo": "ECR_REPO"
+}
