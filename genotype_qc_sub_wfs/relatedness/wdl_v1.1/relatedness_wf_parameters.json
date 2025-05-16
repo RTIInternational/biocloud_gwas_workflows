@@ -1,22 +1,31 @@
 {
 	"bed_in": {
-		"description": "-"
+		"description": "-",
+		"optional": false
 	},
 	"bim_in": {
-		"description": "-"
+		"description": "-",
+		"optional": false
 	},
 	"fam_in": {
-		"description": "-"
+		"description": "-",
+		"optional": false
+	},
+	"output_basename": {
+		"description": "-",
+		"optional": false
 	},
 	"hwe_pvalue": {
-		"description": "-"
+		"description": "-",
+		"optional": false
 	},
 	"hwe_mode": {
 		"description": "-",
         "optional": true
 	},
 	"max_variant_missing_call_rate": {
-		"description": "-"
+		"description": "-",
+		"optional": false
 	},
 	"qc_cpu": {
 		"description": "-",
@@ -31,16 +40,24 @@
         "optional": true
 	},
 	"ld_type": {
-		"description": "-"
+		"description": "-",
+		"optional": false
 	},
-	"ld_window_size": {
-		"description": "-"
+	"window_size": {
+		"description": "-",
+		"optional": false
 	},
-	"ld_step_size": {
-		"description": "-"
+	"step_size": {
+		"description": "-",
+		"optional": false
 	},
-	"ld_r2_threshold": {
-		"description": "-"
+	"r2_threshold": {
+		"description": "-",
+		"optional": false
+	},
+	"min_ld_maf": {
+		"description": "-",
+		"optional": false
 	},
 	"ld_cpu": {
 		"description": "-",
@@ -49,9 +66,6 @@
 	"ld_mem_gb": {
 		"description": "-",
         "optional": true
-	},
-	"min_ld_maf": {
-		"description": "-"
 	},
 	"merge_bed_cpu": {
 		"description": "-",
