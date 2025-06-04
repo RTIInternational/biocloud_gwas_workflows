@@ -6,7 +6,7 @@
     "hwe_pvalue": 0.0001,
     "max_variant_missing_call_rate": 0.03,
     "ld_exclude_regions": "<LD_EXCLUDE_REGIONS>",
-    "ld_type": "indep-pairphase",
+    "ld_type": "indep-pairwise",
     "window_size": "20000",
     "step_size": "2000",
     "r2_threshold": "0.5",

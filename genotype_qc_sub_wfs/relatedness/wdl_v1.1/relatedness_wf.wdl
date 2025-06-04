@@ -23,7 +23,7 @@ workflow relatedness_wf{
 
         # LD params
         File? ld_exclude_regions
-        String ld_type
+        String ld_type = "indep-pairwise"
         Int window_size
         Int step_size
         Float r2_threshold
