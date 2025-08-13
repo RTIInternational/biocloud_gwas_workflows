@@ -1,0 +1,31 @@
+{
+	"bed_in": {
+		"description": "-"
+	},
+	"bim_in": {
+		"description": "-"
+	},
+	"fam_in": {
+		"description": "-"
+	},
+	"label_duplicate_variants_cpu": {
+		"description": "-"
+	},
+	"label_duplicate_variants_mem_gb": {
+		"description": "-"
+	},
+	"plink_cpu": {
+		"description": "-"
+	},
+	"plink_mem_gb": {
+		"description": "-"
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": false
+	}
+}

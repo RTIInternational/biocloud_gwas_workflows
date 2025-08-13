@@ -1,0 +1,11 @@
+{
+	"bed_in": "<INPUT_PREFIX>.bed",
+	"bim_in": "<INPUT_PREFIX>.bim",
+	"fam_in": "<INPUT_PREFIX>.bed",
+	"label_duplicate_variants_cpu": <LABEL_DUP_VAR_CPU>,
+	"label_duplicate_variants_mem_gb": <LABEL_DUP_VAR_MEM_GB>,
+	"plink_cpu": <PLINK_CPU>,
+	"plink_mem_gb": <PLINK_MEM_GB>,
+	"image_source": "<IMAGE_SOURCE>",
+	"ecr_repo": "<ECR_REPO>"
+}
