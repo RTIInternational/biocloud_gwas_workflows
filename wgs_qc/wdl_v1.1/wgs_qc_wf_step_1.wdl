@@ -27,7 +27,7 @@ workflow wgs_qc_wf_step_1{
         # List of variants to use for ancestry and subject level QC
         File ref_variant_list
 
-        # smartpca_ancestry_wf parameters
+        # mahalanobis_ancestry_wf parameters
         File ancestry_ref_bed
         File ancestry_ref_bim
         File ancestry_ref_fam
@@ -263,7 +263,7 @@ workflow wgs_qc_wf_step_1{
     }
 
     # Smartpca ancestry WF to partition by ancestry
-    call ANCESTRY.smartpca_ancestry_wf{
+    call ANCESTRY.mahalanobis_ancestry_wf{
         input:
             dataset_bed = ref_snps_post_id_conversion.bed_out,
             dataset_bim = ref_snps_post_id_conversion.bim_out,
@@ -368,7 +368,7 @@ workflow wgs_qc_wf_step_1{
                 ecr_repo = ecr_repo
         }
     }
-    Array[Pair[String, File]] ancestry_samples = zip(smartpca_ancestry_wf.ancestry_labels, smartpca_ancestry_wf.dataset_ancestry_keep_lists)
+    Array[Pair[String, File]] ancestry_samples = zip(mahalanobis_ancestry_wf.ancestry_labels, mahalanobis_ancestry_wf.dataset_ancestry_keep_lists)
 
     # Get sample counts
     Array[File] files_for_sample_counts = [
@@ -383,15 +383,15 @@ workflow wgs_qc_wf_step_1{
                 ecr_repo = ecr_repo
         }
     }
-    scatter(i in range(length(smartpca_ancestry_wf.dataset_ancestry_keep_lists))) {
+    scatter(i in range(length(mahalanobis_ancestry_wf.dataset_ancestry_keep_lists))) {
         call UTILS.wc as ancestry_sample_count {
             input:
-                input_file = smartpca_ancestry_wf.dataset_ancestry_keep_lists[i],
+                input_file = mahalanobis_ancestry_wf.dataset_ancestry_keep_lists[i],
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
     }
-    Array[Pair[String, Int]] ancestry_sample_counts = zip(smartpca_ancestry_wf.ancestry_labels, ancestry_sample_count.num_lines)
+    Array[Pair[String, Int]] ancestry_sample_counts = zip(mahalanobis_ancestry_wf.ancestry_labels, ancestry_sample_count.num_lines)
 
     output{
 
@@ -435,20 +435,20 @@ workflow wgs_qc_wf_step_1{
 
         # Outputs from ancestry assignment workflow
         ANCESTRY_WF_OUTPUTS ancestry_wf_outputs = ANCESTRY_WF_OUTPUTS {
-            dataset_ancestry_labels: smartpca_ancestry_wf.ancestry_labels,
-            dataset_ancestry_keep_lists: smartpca_ancestry_wf.dataset_ancestry_keep_lists,
-            dataset_ancestry_assignments: smartpca_ancestry_wf.dataset_ancestry_assignments,
-            dataset_ancestry_assignments_summary: smartpca_ancestry_wf.dataset_ancestry_assignments_summary,
-            dataset_ancestry_assignments_plots: smartpca_ancestry_wf.dataset_ancestry_assignments_plots,
-            evec: smartpca_ancestry_wf.evec,
-            eval: smartpca_ancestry_wf.eval,
-            snpweight: smartpca_ancestry_wf.snpweight,
-            log: smartpca_ancestry_wf.smartpca_log,
-            ref_dropped_samples: smartpca_ancestry_wf.ref_dropped_samples,
-            ref_raw_ancestry_assignments: smartpca_ancestry_wf.ref_raw_ancestry_assignments,
-            ref_raw_ancestry_assignments_summary: smartpca_ancestry_wf.ref_raw_ancestry_assignments_summary,
-            pre_processing_pc_plots: smartpca_ancestry_wf.pre_processing_pc_plots,
-            dataset_ancestry_outliers_plots: smartpca_ancestry_wf.dataset_ancestry_outliers_plots
+            dataset_ancestry_labels: mahalanobis_ancestry_wf.ancestry_labels,
+            dataset_ancestry_keep_lists: mahalanobis_ancestry_wf.dataset_ancestry_keep_lists,
+            dataset_ancestry_assignments: mahalanobis_ancestry_wf.dataset_ancestry_assignments,
+            dataset_ancestry_assignments_summary: mahalanobis_ancestry_wf.dataset_ancestry_assignments_summary,
+            dataset_ancestry_assignments_plots: mahalanobis_ancestry_wf.dataset_ancestry_assignments_plots,
+            evec: mahalanobis_ancestry_wf.evec,
+            eval: mahalanobis_ancestry_wf.eval,
+            snpweight: mahalanobis_ancestry_wf.snpweight,
+            log: mahalanobis_ancestry_wf.smartpca_log,
+            ref_dropped_samples: mahalanobis_ancestry_wf.ref_dropped_samples,
+            ref_raw_ancestry_assignments: mahalanobis_ancestry_wf.ref_raw_ancestry_assignments,
+            ref_raw_ancestry_assignments_summary: mahalanobis_ancestry_wf.ref_raw_ancestry_assignments_summary,
+            pre_processing_pc_plots: mahalanobis_ancestry_wf.pre_processing_pc_plots,
+            dataset_ancestry_outliers_plots: mahalanobis_ancestry_wf.dataset_ancestry_outliers_plots
         }
 
         # Step 2 parameters
