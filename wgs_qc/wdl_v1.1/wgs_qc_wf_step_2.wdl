@@ -169,14 +169,29 @@ workflow wgs_qc_ancestry_wf_step_2{
             ecr_repo = ecr_repo
     }
 
-    # Filter samples based on call rate (autosomes)
-    call PLINK.make_bed as ref_snps_filter_low_called_samples{
+    # Get samples to keep based on call rate based on autosomes
+    call PLINK.make_bed as ref_snps_get_low_called_samples{
         input:
             bed_in = ref_snps_post_snp_qc.bed_out,
             bim_in = ref_snps_post_snp_qc.bim_out,
             fam_in = ref_snps_post_snp_qc.fam_out,
             autosome = true,
             mind = max_sample_missing_call_rate,
+            allow_no_sex = true,
+            output_basename = "~{output_basename}_post_snp_qc_ref_snps_sample_miss",
+            cpu = floor((0.5 * combined_ancestry_multiplier) + 1),
+            mem_gb = 3 * combined_ancestry_multiplier,
+            image_source = image_source,
+            ecr_repo = ecr_repo
+    }
+
+    # Keep samples that pass call rate filter
+    call PLINK.make_bed as ref_snps_filter_low_called_samples{
+        input:
+            bed_in = ref_snps_post_snp_qc.bed_out,
+            bim_in = ref_snps_post_snp_qc.bim_out,
+            fam_in = ref_snps_post_snp_qc.fam_out,
+            keep_samples = ref_snps_get_low_called_samples.fam_out,
             allow_no_sex = true,
             output_basename = "~{output_basename}_post_snp_qc_ref_snps_sample_miss",
             cpu = floor((0.5 * combined_ancestry_multiplier) + 1),
