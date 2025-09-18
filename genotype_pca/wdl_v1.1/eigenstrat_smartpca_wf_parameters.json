@@ -1,0 +1,38 @@
+{
+	"study_name": {
+		"description": "-",
+		"optional": false
+	},
+	"ancestry": {
+		"description": "-",
+		"optional": false
+	},
+	"bedfile": {
+		"description": "-",
+		"optional": false
+	},
+	"bimfile": {
+		"description": "-",
+		"optional": false
+	},
+	"famfile": {
+		"description": "-",
+		"optional": false
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+		"optional": true
+	},
+	"cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"mem_gb": {
+		"description": "-",
+        "optional": true
+	}
+}

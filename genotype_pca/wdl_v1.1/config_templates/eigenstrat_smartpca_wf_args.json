@@ -1,0 +1,11 @@
+{
+    "study_name": "<STUDY_NAME>",
+    "ancestry": "<ANCESTRY>",
+    "bedfile": "<BEDFILE>",
+    "bimfile": "<BIMFILE>",
+    "famfile": "<FAMFILE>",
+    "image_source": "ecr",
+    "ecr_repo": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com",
+    "cpu": 1,
+    "mem_gb": 2
+}
