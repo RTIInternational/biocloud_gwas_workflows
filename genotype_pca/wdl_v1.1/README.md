@@ -173,6 +173,7 @@ To use this WDL workflow, follow these steps:
    - `bedfile`: Genotype data in BED format (on S3).
    - `bimfile`: Variant information in BIM format (on S3).
    - `famfile`: Sample information in FAM format (on S3).
+   - `reference_file`: File containing regions of high LD.
    - Modify any other desired parameters, such as the Docker images and resource allocation (CPU and memory).
 2. Execute the workflow using AWS Healthomics
 ``` bash
