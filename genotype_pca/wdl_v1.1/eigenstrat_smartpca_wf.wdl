@@ -1,3 +1,5 @@
+version 1.1
+
 workflow eigenstrat_smartpca{
 
     input {
