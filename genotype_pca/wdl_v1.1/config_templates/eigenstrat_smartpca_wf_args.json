@@ -4,6 +4,7 @@
     "bedfile": "<BEDFILE>",
     "bimfile": "<BIMFILE>",
     "famfile": "<FAMFILE>",
+    "reference_file": "<REFERENCE_FILE>",
     "image_source": "ecr",
     "ecr_repo": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com",
     "cpu": 1,
