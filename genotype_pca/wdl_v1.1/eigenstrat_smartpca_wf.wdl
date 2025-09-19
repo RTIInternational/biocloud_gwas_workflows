@@ -106,9 +106,6 @@ workflow eigenstrat_smartpca{
 
     output {
         File evec = run_smartpca.evec
-        File eval = run_smartpca.eval
-        File snpweight = run_smartpca.snpweight
-        File log = run_smartpca.log
     }
 }
 
@@ -502,9 +499,6 @@ task run_smartpca {
     output {
 
         File evec = "~{study_name}_~{ancestry}_ld_pruned.pca.evec"
-        File eval = "~{study_name}_~{ancestry}_ld_pruned.eval"
-        File snpweight = "~{study_name}_~{ancestry}_ld_pruned.snpweight"
-        File log = "~{study_name}_~{ancestry}_ld_pruned.pca.log"
 
     }
 
