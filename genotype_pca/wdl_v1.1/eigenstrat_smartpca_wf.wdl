@@ -131,33 +131,35 @@ task locate_high_ld_regions {
     }
 
     command <<<
+        set -eo pipefail
 
-      python - <<EOF
-      reference_file = "${reference_file}"
-      bim_file = "${bimfile}"
-      output_file = "snps_to_remove_in_high_ld_regions.txt"
 
-      regions = []
-      with open(reference_file) as ref_file:
-          next(ref_file)  # Skip header
-          for line in ref_file:
-              chrom, start, end = line.strip().split()
-              regions.append((chrom, int(start), int(end)))
+        python - <<EOF
+        reference_file = "~{reference_file}"
+        bim_file = "~{bimfile}"
+        output_file = "snps_to_remove_in_high_ld_regions.txt"
 
-      with open(bim_file) as bim_file, open(output_file, 'w') as out_file:
-          for line in bim_file:
-              columns = line.strip().split()
-              chrom = columns[0]
-              snp = columns[1]
-              pos = int(columns[3])
+        regions = []
+        with open(reference_file) as ref_file:
+            next(ref_file)  # Skip header
+            for line in ref_file:
+                chrom, start, end = line.strip().split()
+                regions.append((chrom, int(start), int(end)))
 
-              # Check each region to find a match
-              for region in regions:
-                  if chrom == region[0]:
-                      if region[1] < pos <= region[2]:
-                          # Write SNP to the output file
-                          out_file.write(snp + "\n")
-      EOF
+        with open(bim_file) as bim_file, open(output_file, 'w') as out_file:
+            for line in bim_file:
+                columns = line.strip().split()
+                chrom = columns[0]
+                snp = columns[1]
+                pos = int(columns[3])
+
+                # Check each region to find a match
+                for region in regions:
+                    if chrom == region[0]:
+                        if region[1] < pos <= region[2]:
+                            # Write SNP to the output file
+                            out_file.write(snp + "\n")
+        EOF
     >>>
 
     output {
@@ -167,7 +169,7 @@ task locate_high_ld_regions {
     runtime {
         docker: container_image
         cpu: cpu
-        memory: "${mem_gb} GB"
+        memory: "~{mem_gb} GB"
     }
 
     parameter_meta {
@@ -205,26 +207,28 @@ task remove_high_ld_regions {
     String mem_gb = 2
 
     command <<<
+        set -eo pipefail
+
         plink \
             --noweb \
-            --bed ${bedfile} \
-            --bim ${bimfile} \
-            --fam ${famfile} \
-            --exclude ${high_ld_regions} \
+            --bed ~{bedfile} \
+            --bim ~{bimfile} \
+            --fam ~{famfile} \
+            --exclude ~{high_ld_regions} \
             --make-bed \
-            --out ${study_name}_${ancestry}_genotypes_high_ld_regions_removed
+            --out ~{study_name}_~{ancestry}_genotypes_high_ld_regions_removed
     >>>
 
     output {
-        File output_bed = "${study_name}_${ancestry}_genotypes_high_ld_regions_removed.bed"
-        File output_bim = "${study_name}_${ancestry}_genotypes_high_ld_regions_removed.bim"
-        File output_fam = "${study_name}_${ancestry}_genotypes_high_ld_regions_removed.fam"
+        File output_bed = "~{study_name}_~{ancestry}_genotypes_high_ld_regions_removed.bed"
+        File output_bim = "~{study_name}_~{ancestry}_genotypes_high_ld_regions_removed.bim"
+        File output_fam = "~{study_name}_~{ancestry}_genotypes_high_ld_regions_removed.fam"
     }
 
     runtime {
         docker: container_image
         cpu: cpu
-        memory: "${mem_gb} GB"
+        memory: "~{mem_gb} GB"
     }
 
     parameter_meta {
@@ -265,16 +269,18 @@ task ld_pruning {
     String mem_gb = 2
 
     command <<<
+        set -eo pipefail
+
         # --indep-pairwise <window size>['kb'] <step size (variant ct)> <r^2 threshold>
         for chr in {1..22}; do
             plink \
                 --noweb \
-                --bed ${bedfile} \
-                --bim ${bimfile} \
-                --fam ${famfile} \
+                --bed ~{bedfile} \
+                --bim ~{bimfile} \
+                --fam ~{famfile} \
                 --indep-pairwise 1500 150 0.2 \
                 --chr $chr \
-                --out ${study_name}_${ancestry}_genotypes_high_ld_regions_removed_ld_pruned_chr$chr
+                --out ~{study_name}_~{ancestry}_genotypes_high_ld_regions_removed_ld_pruned_chr$chr
         done
     >>>
 
@@ -285,7 +291,7 @@ task ld_pruning {
     runtime {
         docker: container_image
         cpu: cpu
-        memory: "${mem_gb} GB"
+        memory: "~{mem_gb} GB"
     }
 
     parameter_meta {
@@ -320,7 +326,9 @@ task merge_pruned {
     String mem_gb = 2
 
     command <<<
-        cat ${sep=" " pruned_files} > "chr_all_ld_pruned.prune.in"
+        set -eo pipefail
+
+        cat ~{sep=" " pruned_files} > "chr_all_ld_pruned.prune.in"
     >>>
 
     output {
@@ -330,7 +338,7 @@ task merge_pruned {
     runtime {
         docker: container_image
         cpu: cpu
-        memory: "${mem_gb} GB"
+        memory: "~{mem_gb} GB"
     }
 
     parameter_meta {
@@ -368,26 +376,28 @@ task extract_ld_variants {
     String mem_gb = 2
 
     command <<<
+        set -eo pipefail
+
         plink \
             --noweb \
-            --bed ${bedfile} \
-            --bim ${bimfile} \
-            --fam ${famfile} \
-            --extract ${combined_variants} \
+            --bed ~{bedfile} \
+            --bim ~{bimfile} \
+            --fam ~{famfile} \
+            --extract ~{combined_variants} \
             --make-bed \
-            --out ${study_name}_${ancestry}_genotypes_high_ld_regions_removed_ld_pruned
+            --out ~{study_name}_~{ancestry}_genotypes_high_ld_regions_removed_ld_pruned
     >>>
 
     output {
-        File output_bed = "${study_name}_${ancestry}_genotypes_high_ld_regions_removed_ld_pruned.bed"
-        File output_bim = "${study_name}_${ancestry}_genotypes_high_ld_regions_removed_ld_pruned.bim"
-        File output_fam = "${study_name}_${ancestry}_genotypes_high_ld_regions_removed_ld_pruned.fam"
+        File output_bed = "~{study_name}_~{ancestry}_genotypes_high_ld_regions_removed_ld_pruned.bed"
+        File output_bim = "~{study_name}_~{ancestry}_genotypes_high_ld_regions_removed_ld_pruned.bim"
+        File output_fam = "~{study_name}_~{ancestry}_genotypes_high_ld_regions_removed_ld_pruned.fam"
     }
 
     runtime {
         docker: container_image
         cpu: cpu
-        memory: "${mem_gb} GB"
+        memory: "~{mem_gb} GB"
     }
 
     parameter_meta {
@@ -423,9 +433,11 @@ task rename_bimfam {
     String mem_gb = 2
 
     command <<<
+        set -eo pipefail
+
         ## Rename BIM/FAM file IDs.
-        awk '{$2="ID_"NR; print $0}' ${bimfile} > "ids_renamed.bim"
-        awk '{$1="ID_"NR; $2="ID_"NR; print $0}' ${famfile} > "ids_renamed.fam"
+        awk '{$2="ID_"NR; print $0}' ~{bimfile} > "ids_renamed.bim"
+        awk '{$1="ID_"NR; $2="ID_"NR; print $0}' ~{famfile} > "ids_renamed.fam"
     >>>
 
     output {
@@ -436,7 +448,7 @@ task rename_bimfam {
     runtime {
         docker: container_image
         cpu: cpu
-        memory: "${mem_gb} GB"
+        memory: "~{mem_gb} GB"
     }
 
     parameter_meta {
@@ -474,31 +486,32 @@ task run_smartpca {
     String mem_gb
 
     command <<<
+        set -eo pipefail
 
         /opt/EIG-6.1.4/bin/smartpca.perl \
-            -i ${bedfile} \
-            -a ${bimfile} \
-            -b ${famfile} \
-            -o ${study_name}_${ancestry}_ld_pruned.pca \
-            -p ${study_name}_${ancestry}_ld_pruned.plot \
-            -e ${study_name}_${ancestry}_ld_pruned.eval \
-            -l ${study_name}_${ancestry}_ld_pruned.pca.log \
+            -i ~{bedfile} \
+            -a ~{bimfile} \
+            -b ~{famfile} \
+            -o ~{study_name}_~{ancestry}_ld_pruned.pca \
+            -p ~{study_name}_~{ancestry}_ld_pruned.plot \
+            -e ~{study_name}_~{ancestry}_ld_pruned.eval \
+            -l ~{study_name}_~{ancestry}_ld_pruned.pca.log \
             -m 0
     >>>
 
     output {
 
-        File evec = "${study_name}_${ancestry}_ld_pruned.pca.evec"
-        File eval = "${study_name}_${ancestry}_ld_pruned.eval"
-        File snpweight = "${study_name}_${ancestry}_ld_pruned.snpweight"
-        File log = "${study_name}_${ancestry}_ld_pruned.pca.log"
+        File evec = "~{study_name}_~{ancestry}_ld_pruned.pca.evec"
+        File eval = "~{study_name}_~{ancestry}_ld_pruned.eval"
+        File snpweight = "~{study_name}_~{ancestry}_ld_pruned.snpweight"
+        File log = "~{study_name}_~{ancestry}_ld_pruned.pca.log"
 
     }
 
     runtime {
         docker: container_image
         cpu: cpu
-        memory: "${mem_gb} GB"
+        memory: "~{mem_gb} GB"
     }
 
     parameter_meta {
