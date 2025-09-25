@@ -1,7 +1,8 @@
 {
 	"bed_in": "<INPUT_PREFIX>.bed",
 	"bim_in": "<INPUT_PREFIX>.bim",
-	"fam_in": "<INPUT_PREFIX>.bed",
+	"fam_in": "<INPUT_PREFIX>.fam",
+	"output_basename": "<OUTPUT_PREFIX>",
 	"label_duplicate_variants_cpu": <LABEL_DUP_VAR_CPU>,
 	"label_duplicate_variants_mem_gb": <LABEL_DUP_VAR_MEM_GB>,
 	"plink_cpu": <PLINK_CPU>,

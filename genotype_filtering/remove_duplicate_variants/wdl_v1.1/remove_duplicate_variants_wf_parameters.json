@@ -1,24 +1,35 @@
 {
 	"bed_in": {
-		"description": "-"
+		"description": "-",
+		"optional": false
 	},
 	"bim_in": {
-		"description": "-"
+		"description": "-",
+		"optional": false
 	},
 	"fam_in": {
-		"description": "-"
+		"description": "-",
+		"optional": false
+	},
+	"output_basename": {
+		"description": "-",
+		"optional": false
 	},
 	"label_duplicate_variants_cpu": {
-		"description": "-"
+		"description": "-",
+		"optional": true
 	},
 	"label_duplicate_variants_mem_gb": {
-		"description": "-"
+		"description": "-",
+		"optional": true
 	},
 	"plink_cpu": {
-		"description": "-"
+		"description": "-",
+		"optional": true
 	},
 	"plink_mem_gb": {
-		"description": "-"
+		"description": "-",
+		"optional": true
 	},
 	"image_source": {
 		"description": "-",
@@ -26,6 +37,6 @@
 	},
 	"ecr_repo": {
 		"description": "-",
-        "optional": false
+        "optional": true
 	}
 }
