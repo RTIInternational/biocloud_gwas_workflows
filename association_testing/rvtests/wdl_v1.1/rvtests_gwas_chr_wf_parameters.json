@@ -1,0 +1,126 @@
+{
+	"vcf_in": {
+		"description": "-",
+		"optional": false
+	},
+	"info_in": {
+		"description": "-",
+		"optional": false
+	},
+	"pheno_file": {
+		"description": "-",
+		"optional": false
+	},
+	"pheno_name": {
+		"description": "-",
+		"optional": false
+	},
+	"covar_file": {
+		"description": "-",
+		"optional": true
+	},
+	"covars": {
+		"description": "-",
+		"optional": true
+	},
+	"dosage": {
+		"description": "-",
+		"optional": true
+	},
+	"pop_maf_file": {
+		"description": "-",
+		"optional": true
+	},
+	"maf_population": {
+		"description": "-",
+		"optional": true
+	},
+	"kinship": {
+		"description": "-",
+		"optional": true
+	},
+	"xHemiKinship": {
+		"description": "-",
+		"optional": true
+	},
+	"xHemi": {
+		"description": "-",
+		"optional": true
+	},
+	"singleTestsMaybe": {
+		"description": "-",
+		"optional": true
+	},
+	"burdenTestsMaybe": {
+		"description": "-",
+		"optional": true
+	},
+	"vtTestsMaybe": {
+		"description": "-",
+		"optional": true
+	},
+	"kernelTestsMaybe": {
+		"description": "-",
+		"optional": true
+	},
+	"metaTestsMaybe": {
+		"description": "-",
+		"optional": true
+	},
+	"inverseNormal": {
+		"description": "-",
+		"optional": true
+	},
+	"useResidualAsPhenotype": {
+		"description": "-",
+		"optional": true
+	},
+	"sex": {
+		"description": "-",
+		"optional": true
+	},
+	"qtl": {
+		"description": "-",
+		"optional": true
+	},
+	"multipleAllele": {
+		"description": "-",
+		"optional": true
+	},
+	"xLabel": {
+		"description": "-",
+		"optional": true
+	},
+	"rvtests_cpu": {
+		"description": "-",
+		"optional": true
+	},
+	"rvtests_mem_gb": {
+		"description": "-",
+		"optional": true
+	},
+	"records_per_split": {
+		"description": "-",
+		"optional": true
+	},
+	"split_vcf_cpu": {
+		"description": "-",
+		"optional": true
+	},
+	"split_vcf_records": {
+		"description": "-",
+		"optional": true
+	},
+	"user_output_basename": {
+		"description": "-",
+		"optional": true
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": true
+	}
+}

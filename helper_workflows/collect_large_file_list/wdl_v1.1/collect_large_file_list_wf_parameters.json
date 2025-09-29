@@ -1,0 +1,30 @@
+{
+	"input_files": {
+		"description": "-",
+		"optional": false
+	},
+	"output_dir_name": {
+		"description": "-",
+		"optional": false
+	},
+	"chunk_size": {
+		"description": "-",
+		"optional": true
+	},
+	"collect_chunk_cpus": {
+		"description": "-",
+		"optional": true
+	},
+	"collect_chunk_mem_gb": {
+		"description": "-",
+		"optional": true
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": true
+	}
+}

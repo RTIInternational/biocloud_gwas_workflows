@@ -1,0 +1,174 @@
+{
+	"vcfs_in": {
+		"description": "-",
+		"optional": false
+	},
+	"infos_in": {
+		"description": "-",
+		"optional": false
+	},
+	"chrs": {
+		"description": "-",
+		"optional": false
+	},
+	"pheno_file": {
+		"description": "-",
+		"optional": false
+	},
+	"pheno_name": {
+		"description": "-",
+		"optional": false
+	},
+	"dosage": {
+		"description": "-",
+		"optional": false
+	},
+	"study_output_basename": {
+		"description": "-",
+		"optional": false
+	},
+	"is_continuous": {
+		"description": "-",
+		"optional": false
+	},
+	"is_related": {
+		"description": "-",
+		"optional": false
+	},
+	"pop_maf_file": {
+		"description": "-",
+		"optional": false
+	},
+	"maf_population": {
+		"description": "-",
+		"optional": false
+	},
+	"sig_alpha": {
+		"description": "-",
+		"optional": false
+	},
+	"id_ref_files": {
+		"description": "-",
+		"optional": false
+	},
+	"covar_file": {
+		"description": "-",
+		"optional": true
+	},
+	"covars": {
+		"description": "-",
+		"optional": true
+	},
+	"rsq_cutoffs": {
+		"description": "-",
+		"optional": true
+	},
+	"maf_cutoffs": {
+		"description": "-",
+		"optional": true
+	},
+	"filter_by_pop_maf": {
+		"description": "-",
+		"optional": true
+	},
+	"filter_by_sample_maf": {
+		"description": "-",
+		"optional": true
+	},
+	"in_missing_allele": {
+		"description": "-",
+		"optional": true
+	},
+	"in_deletion_allele": {
+		"description": "-",
+		"optional": true
+	},
+	"ref_deletion_allele": {
+		"description": "-",
+		"optional": true
+	},
+	"rescue_rsids": {
+		"description": "-",
+		"optional": true
+	},
+	"split_vcfs": {
+		"description": "-",
+		"optional": true
+	},
+	"records_per_split": {
+		"description": "-",
+		"optional": true
+	},
+	"split_vcf_cpu": {
+		"description": "-",
+		"optional": true
+	},
+	"rvtests_cpu_per_split": {
+		"description": "-",
+		"optional": true
+	},
+	"rvtests_mem_gb_per_split": {
+		"description": "-",
+		"optional": true
+	},
+	"kinship_xHemi": {
+		"description": "-",
+		"optional": true
+	},
+	"kinship_useBaldingNicols": {
+		"description": "-",
+		"optional": true
+	},
+	"kinship_useIBS": {
+		"description": "-",
+		"optional": true
+	},
+	"kinship_minMAF": {
+		"description": "-",
+		"optional": true
+	},
+	"kinship_minSiteQual": {
+		"description": "-",
+		"optional": true
+	},
+	"kinship_maxMiss": {
+		"description": "-",
+		"optional": true
+	},
+	"split_kinship_cpu": {
+		"description": "-",
+		"optional": true
+	},
+	"split_kinship_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"combine_kinship_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"combine_kinship_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"xHemiKinship": {
+		"description": "-",
+        "optional": true
+	},
+	"kinship": {
+		"description": "-",
+        "optional": true
+	},
+	"plot_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": true
+	}
+}

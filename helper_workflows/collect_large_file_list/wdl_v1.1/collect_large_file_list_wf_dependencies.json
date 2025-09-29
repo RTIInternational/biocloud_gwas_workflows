@@ -1,0 +1,7 @@
+{
+    "workflows": [],
+    "wdl_tools": [
+        "biocloud_wdl_tools/utils/wdl_v1.1/utils.wdl"
+    ],
+    "structs": []
+}

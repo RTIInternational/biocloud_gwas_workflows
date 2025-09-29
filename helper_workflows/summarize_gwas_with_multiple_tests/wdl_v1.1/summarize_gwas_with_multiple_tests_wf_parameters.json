@@ -1,0 +1,66 @@
+{
+	"summary_stats_input": {
+		"description": "-",
+		"optional": false
+	},
+	"output_basename": {
+		"description": "-",
+		"optional": false
+	},
+	"sig_alpha": {
+		"description": "-",
+		"optional": false
+	},
+	"min_rsq": {
+		"description": "-",
+		"optional": true
+	},
+	"sample_maf_cutoff": {
+		"description": "-",
+		"optional": true
+	},
+	"pop_maf_cutoff": {
+		"description": "-",
+		"optional": true
+	},
+	"id_colname": {
+		"description": "-",
+		"optional": true
+	},
+	"chr_colname": {
+		"description": "-",
+		"optional": true
+	},
+	"pos_colname": {
+		"description": "-",
+		"optional": true
+	},
+	"rsq_colname": {
+		"description": "-",
+		"optional": true
+	},
+	"sample_maf_colname": {
+		"description": "-",
+		"optional": true
+	},
+	"pop_maf_colname": {
+		"description": "-",
+		"optional": true
+	},
+	"pvalue_colnames": {
+		"description": "-",
+		"optional": true
+	},
+	"plot_mem_gb": {
+		"description": "-",
+		"optional": true
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": true
+	}
+}

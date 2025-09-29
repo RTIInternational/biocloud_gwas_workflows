@@ -1,0 +1,9 @@
+{
+    "workflows": [],
+    "wdl_tools": [
+        "biocloud_wdl_tools/merge_utils/wdl_v1.1/merge_utils.wdl",
+        "biocloud_wdl_tools/rvtests/wdl_v1.1/rvtests.wdl",
+        "biocloud_wdl_tools/utils/wdl_v1.1/utils.wdl"
+    ],
+    "structs": []
+}

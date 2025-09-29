@@ -1,0 +1,78 @@
+{
+	"input_vcfs": {
+		"description": "-",
+		"optional": false
+	},
+	"chrs": {
+		"description": "-",
+		"optional": false
+	},
+	"ped_file": {
+		"description": "-",
+		"optional": false
+	},
+	"output_basename": {
+		"description": "-",
+		"optional": false
+	},
+	"useBaldingNicols": {
+		"description": "-",
+		"optional": false
+	},
+	"useIBS": {
+		"description": "-",
+		"optional": false
+	},
+	"dosage": {
+		"description": "-",
+		"optional": true
+	},
+	"maxMiss": {
+		"description": "-",
+		"optional": true
+	},
+	"minMAF": {
+		"description": "-",
+        "optional": true
+	},
+	"minSiteQual": {
+		"description": "-",
+        "optional": true
+	},
+	"xHemi": {
+		"description": "-",
+        "optional": true
+	},
+	"xLabel": {
+		"description": "-",
+        "optional": true
+	},
+	"split_kinship_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"split_kinship_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"combine_kinship_cpu": {
+		"description": "-",
+        "optional": true
+	},
+	"combine_kinship_mem_gb": {
+		"description": "-",
+        "optional": true
+	},
+	"null_pedfile": {
+		"description": "-",
+        "optional": true
+	},
+	"image_source": {
+		"description": "-",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "-",
+        "optional": true
+	}
+}
