@@ -120,7 +120,7 @@
     "ref_deletion_allele": ".",
     "rescue_rsids": false,
     "split_vcfs": false,
-    "split_vcf_cpus": 8,
+    "split_vcf_cpu": 8,
     "rvtests_cpu_per_split": 16,
     "rvtests_mem_gb_per_split": 16,
     "plot_mem_gb": 32,

@@ -35,7 +35,7 @@
 		"description": "-",
 		"optional": false
 	},
-	"pop_maf_file": {
+	"pop_maf_files": {
 		"description": "-",
 		"optional": false
 	},
