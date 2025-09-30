@@ -135,7 +135,7 @@ workflow rvtests_gwas_wf{
     # Do RVTests chr workflow on each chromosome in parallel
     scatter(chr_index in range(length(vcfs_in))){
 
-        pop_maf_file = select_first([pop_maf_files[chr_index], ""])
+        String pop_maf_file = if(defined(pop_maf_files)) then pop_maf_files[chr_index] else ""
         call RVCHR.rvtests_gwas_chr_wf as rvtests{
             input:
                 vcf_in = vcfs_in[chr_index],
