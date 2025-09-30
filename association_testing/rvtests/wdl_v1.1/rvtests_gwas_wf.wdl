@@ -31,8 +31,8 @@ workflow rvtests_gwas_wf{
         Boolean is_related = false
 
         # Reference files for annotating output summary statistics wth 1000G population MAF info
-        Array[File] pop_maf_files
-        String maf_population
+        Array[File]? pop_maf_files
+        String? maf_population
 
         # Imputation quality filtering cutoffs. Final outputs will have R2 >= this value
         Array[Float]? rsq_cutoffs
@@ -134,6 +134,8 @@ workflow rvtests_gwas_wf{
 
     # Do RVTests chr workflow on each chromosome in parallel
     scatter(chr_index in range(length(vcfs_in))){
+
+        pop_maf_file = select_first([pop_maf_files[chr_index], ""])
         call RVCHR.rvtests_gwas_chr_wf as rvtests{
             input:
                 vcf_in = vcfs_in[chr_index],
@@ -143,7 +145,7 @@ workflow rvtests_gwas_wf{
                 covar_file = covar_file,
                 covars = covars,
                 dosage = dosage,
-                pop_maf_file = pop_maf_files[chr_index],
+                pop_maf_file = pop_maf_file,
                 maf_population = maf_population,
                 metaTestsMaybe = metaTestsMaybe,
                 sex = sex,
