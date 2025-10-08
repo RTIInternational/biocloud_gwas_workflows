@@ -33,7 +33,6 @@ workflow rvtests_gwas_wf{
 
         # Reference files for annotating output summary statistics wth 1000G population MAF info
         Array[File]? pop_maf_files
-        String? maf_population
 
         # Imputation quality filtering cutoffs. Final outputs will have R2 >= this value
         Array[Float]? rsq_cutoffs
@@ -149,7 +148,6 @@ workflow rvtests_gwas_wf{
                 covars = covars,
                 dosage = dosage,
                 pop_maf_file = pop_maf_file,
-                maf_population = maf_population,
                 metaTestsMaybe = metaTestsMaybe,
                 sex = sex,
                 multipleAllele = multipleAllele,

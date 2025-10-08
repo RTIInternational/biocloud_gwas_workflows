@@ -22,7 +22,6 @@ workflow rvtests_gwas_chr_wf{
 
         # For annotating with population MAF info
         File? pop_maf_file
-        String? maf_population
 
         # Optional for X chr
         File? kinship
@@ -144,7 +143,6 @@ workflow rvtests_gwas_chr_wf{
             file_in_pop_mafs = pop_maf_file,
             file_in_summary_stats_format = "rvtests",
             file_in_info_format = info_format,
-            population = maf_population,
             file_out_prefix = output_basename + ".formatted",
             image_source = image_source,
             ecr_repo = ecr_repo

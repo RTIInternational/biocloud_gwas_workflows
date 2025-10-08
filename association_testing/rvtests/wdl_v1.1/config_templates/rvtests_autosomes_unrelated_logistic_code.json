@@ -85,7 +85,6 @@
         "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/pop_mafs/<ANCESTRY>/chr21.tsv.gz",
         "s3://rti-common/ref_panels/mis/1000g/phase3/2.0.0/pop_mafs/<ANCESTRY>/chr22.tsv.gz"
     ],
-    "maf_population" : "<MAF_POPULATION>",
     "rsq_cutoffs": [0.3, 0.8],
     "sig_alpha": 0.001,
     "maf_cutoffs": [0.01],

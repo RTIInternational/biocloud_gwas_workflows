@@ -35,10 +35,6 @@
 		"description": "-",
 		"optional": true
 	},
-	"maf_population": {
-		"description": "-",
-		"optional": true
-	},
 	"kinship": {
 		"description": "-",
 		"optional": true

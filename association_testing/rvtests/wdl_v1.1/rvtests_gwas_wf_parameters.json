@@ -63,10 +63,6 @@
 		"description": "-",
 		"optional": true
 	},
-	"maf_population": {
-		"description": "-",
-		"optional": true
-	},
 	"maf_cutoffs": {
 		"description": "-",
 		"optional": true
