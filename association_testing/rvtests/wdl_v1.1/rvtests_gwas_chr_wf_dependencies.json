@@ -6,8 +6,7 @@
         "biocloud_wdl_tools/split_utils/wdl_v1.1/split_utils.wdl",
         "biocloud_wdl_tools/rvtests/wdl_v1.1/rvtests.wdl",
         "biocloud_wdl_tools/make_gwas_summary_stats/wdl_v1.1/make_gwas_summary_stats.wdl",
-        "biocloud_wdl_tools/utils/wdl_v1.1/utils.wdl",
-        "biocloud_wdl_tools/tsv_utils/wdl_v1.1/tsv_utils.wdl"
+        "biocloud_wdl_tools/rti-tsv-utils/wdl_v1.1/rti-tsv-utils.wdl"
     ],
     "structs": []
 }

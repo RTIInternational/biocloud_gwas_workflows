@@ -1,17 +1,18 @@
 version 1.1
 
 import "rvtests_gwas_chr_wf.wdl" as RVCHR
-import "collect_large_file_list_wf.wdl" as COLLECT
-import "tsv_utils.wdl" as TSV
+import "rti-tsv-utils.wdl" as TSV
 import "summarize_gwas_wf.wdl" as SUM
 import "generate_kinship_matrix_wf.wdl" as KIN
 import "convert_variant_ids.wdl" as IDCONVERT
+import "utils.wdl" as UTILS
 
 workflow rvtests_gwas_wf{
 
     input{
         Array[File] vcfs_in
         Array[File] infos_in
+        String info_format = "info"
         Array[String] chrs
         File pheno_file
         String pheno_name
@@ -135,11 +136,13 @@ workflow rvtests_gwas_wf{
     # Do RVTests chr workflow on each chromosome in parallel
     scatter(chr_index in range(length(vcfs_in))){
 
-        String pop_maf_file = if(defined(pop_maf_files)) then pop_maf_files[chr_index] else ""
+        Array[File] pop_maf_files_local = select_first([pop_maf_files, []])
+        String? pop_maf_file = if (defined(pop_maf_files)) then pop_maf_files_local[chr_index] else None
         call RVCHR.rvtests_gwas_chr_wf as rvtests{
             input:
                 vcf_in = vcfs_in[chr_index],
                 info_in = infos_in[chr_index],
+                info_format = info_format,
                 pheno_file = pheno_file,
                 pheno_name = pheno_name,
                 covar_file = covar_file,
@@ -193,19 +196,18 @@ workflow rvtests_gwas_wf{
     }
 
     # Merge chr outputs into single file
-    call COLLECT.collect_large_file_list_wf as collect_sumstats{
+    call TSV.tsv_append as cat_sumstats{
         input:
             input_files = convert_variant_ids.output_file,
-            output_dir_name = study_output_basename + "_rvtests_chr_output",
+            output_prefix = study_output_basename + ".rvtests.MetaAssoc",
             image_source = image_source,
             ecr_repo = ecr_repo
     }
 
-    # Concat all sumstats files into single sumstat file
-    call TSV.tsv_append as cat_sumstats{
+    # Zip raw summary stats for easier handling downstream
+    call UTILS.gzip as gzip_raw_sumstats{
         input:
-            tsv_inputs_tarball = collect_sumstats.output_dir,
-            output_filename = study_output_basename + ".rvtests.MetaAssoc.tsv",
+            input_file = cat_sumstats.out_tsv,
             image_source = image_source,
             ecr_repo = ecr_repo
     }
@@ -226,8 +228,8 @@ workflow rvtests_gwas_wf{
         # Generate summary of
         call SUM.summarize_gwas_wf as summarize_filtered_sumstats{
             input:
-                summary_stats_input = cat_sumstats.tsv_output,
-                output_basename = basename(cat_sumstats.tsv_output, ".tsv"),
+                summary_stats_input = cat_sumstats.out_tsv,
+                output_basename = basename(cat_sumstats.out_tsv, ".tsv"),
                 sig_alpha = sig_alpha,
                 sample_maf_cutoff = sample_maf_cutoff,
                 pop_maf_cutoff = pop_maf_cutoff,
@@ -239,9 +241,8 @@ workflow rvtests_gwas_wf{
     }
 
     output{
-        File raw_summary_stats = cat_sumstats.tsv_output
+        File raw_summary_stats = gzip_raw_sumstats.output_file
         Array[File] filtered_summary_stats = summarize_filtered_sumstats.summary_stats_output
-        Array[File] gzipped_filtered_summary_stats = summarize_filtered_sumstats.gzipped_summary_stats_output
         Array[File] sig_filtered_summary_stats = summarize_filtered_sumstats.sig_summary_stats_output
         Array[Array[File]] filtered_summary_stats_plots = summarize_filtered_sumstats.summary_plots
     }

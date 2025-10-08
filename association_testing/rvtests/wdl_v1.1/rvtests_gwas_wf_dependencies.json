@@ -1,13 +1,13 @@
 {
     "workflows": [
         "association_testing/rvtests/wdl_v1.1/rvtests_gwas_chr_wf.wdl",
-        "helper_workflows/collect_large_file_list/wdl_v1.1/collect_large_file_list_wf.wdl",
         "helper_workflows/summarize_gwas/wdl_v1.1/summarize_gwas_wf.wdl",
         "helper_workflows/generate_kinship_matrix/wdl_v1.1/generate_kinship_matrix_wf.wdl"        
     ],
     "wdl_tools": [
-        "biocloud_wdl_tools/tsv_utils/wdl_v1.1/tsv_utils.wdl",
-        "biocloud_wdl_tools/convert_variant_ids/wdl_v1.1/convert_variant_ids.wdl"
+        "biocloud_wdl_tools/rti-tsv-utils/wdl_v1.1/rti-tsv-utils.wdl",
+        "biocloud_wdl_tools/convert_variant_ids/wdl_v1.1/convert_variant_ids.wdl",
+        "biocloud_wdl_tools/utils/wdl_v1.1/utils.wdl"
     ],
     "structs": []
 }

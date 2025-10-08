@@ -27,22 +27,6 @@
 		"description": "-",
 		"optional": false
 	},
-	"is_continuous": {
-		"description": "-",
-		"optional": false
-	},
-	"is_related": {
-		"description": "-",
-		"optional": false
-	},
-	"pop_maf_files": {
-		"description": "-",
-		"optional": false
-	},
-	"maf_population": {
-		"description": "-",
-		"optional": false
-	},
 	"sig_alpha": {
 		"description": "-",
 		"optional": false
@@ -50,6 +34,18 @@
 	"id_ref_files": {
 		"description": "-",
 		"optional": false
+	},
+	"info_format": {
+		"description": "-",
+		"optional": true
+	},
+	"is_continuous": {
+		"description": "-",
+		"optional": true
+	},
+	"is_related": {
+		"description": "-",
+		"optional": true
 	},
 	"covar_file": {
 		"description": "-",
@@ -60,6 +56,14 @@
 		"optional": true
 	},
 	"rsq_cutoffs": {
+		"description": "-",
+		"optional": true
+	},
+	"pop_maf_files": {
+		"description": "-",
+		"optional": true
+	},
+	"maf_population": {
 		"description": "-",
 		"optional": true
 	},

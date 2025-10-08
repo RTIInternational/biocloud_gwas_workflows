@@ -3,9 +3,7 @@ version 1.1
 import "split_utils.wdl" as SPLIT
 import "rvtests.wdl" as RV
 import "make_gwas_summary_stats.wdl" as STAT
-import "collect_large_file_list_wf.wdl" as COLLECT
-import "utils.wdl" as UTILS
-import "tsv_utils.wdl" as TSV
+import "rti-tsv-utils.wdl" as TSV
 
 workflow rvtests_gwas_chr_wf{
 
@@ -14,6 +12,7 @@ workflow rvtests_gwas_chr_wf{
         # Input VCF and INFO files
         File vcf_in
         File info_in
+        String info_format = "info"
         File pheno_file
         String pheno_name
         File? covar_file
@@ -124,27 +123,18 @@ workflow rvtests_gwas_chr_wf{
 
     # Gather chunked RVTests output if > 1 split
     if(length(split_vcfs) > 1){
-        # Collect chunked sumstats files into single zip folder
-        call COLLECT.collect_large_file_list_wf as collect_rvtests_sumstats{
-            input:
-                input_files = strip_rvtests_headers.sumstats_out,
-                output_dir_name = output_basename + ".rvtests_output",
-                image_source = image_source,
-                ecr_repo = ecr_repo
-        }
-
         # Concat all sumstats files into single sumstat file
         call TSV.tsv_append as cat_rvtests_sumstats{
             input:
-                tsv_inputs_tarball = collect_rvtests_sumstats.output_dir,
-                output_filename = output_basename + ".rvtests.MetaAssoc.tsv",
+                input_files = strip_rvtests_headers.sumstats_out,
+                output_prefix = output_basename + ".rvtests.MetaAssoc",
                 image_source = image_source,
                 ecr_repo = ecr_repo
         }
     }
 
     # Use the combined sumstats file if >1 splits was merged, otherwise just use output from strip_headers call
-    File full_sumstats = select_first([cat_rvtests_sumstats.tsv_output, strip_rvtests_headers.sumstats_out[0]])
+    File full_sumstats = select_first([cat_rvtests_sumstats.out_tsv, strip_rvtests_headers.sumstats_out[0]])
 
     # Annotate sumstats with features from info file (R2, MAF) and pop MAF file (MAF from pop of interest)
     call STAT.make_gwas_summary_stats as annotate_sumstats{
@@ -153,6 +143,7 @@ workflow rvtests_gwas_chr_wf{
             file_in_info = info_in,
             file_in_pop_mafs = pop_maf_file,
             file_in_summary_stats_format = "rvtests",
+            file_in_info_format = info_format,
             population = maf_population,
             file_out_prefix = output_basename + ".formatted",
             image_source = image_source,
@@ -175,11 +166,11 @@ task strip_rvtests_headers{
         String output_file = output_basename + ".header_stripped.tsv"
 
         # Runtime environment
-        String docker = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
-        String ecr = "public.ecr.aws/ubuntu/ubuntu:22.04_stable"
+        String docker_image = "ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2"
+        String ecr_image = "ubuntu:22.04_19478ce7fc2ff"
         String image_source = "docker"
         String? ecr_repo
-        String container_image = if(image_source == "docker") then docker else ecr
+        String container_image = if(image_source == "docker") then docker_image else "~{ecr_repo}/~{ecr_image}"
         Int cpu = 1
         Int mem_gb = 1
 
@@ -191,7 +182,7 @@ task strip_rvtests_headers{
 
         # Unzip tsv input file if necessary
         if [[ ~{sumstats_in} =~ \.gz$ ]]; then
-            log_info "~{sumstats_in} is gzipped. Unzipping..."
+            echo "~{sumstats_in} is gzipped. Unzipping..."
             gunzip -c ~{sumstats_in} > input.txt
             input_file=input.txt
         fi
