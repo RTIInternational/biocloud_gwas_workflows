@@ -1,10 +1,10 @@
 # Rvtests GWAS Workflow
 
 Automated WDL workflow for the GWAS software [Rvtests (Rare variant tests)](http://zhanxw.github.io/rvtests/).
+[Source code](https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master/association_testing/rvtests/wdl_v1.1/)
 
-## AWS Healthomics
 
-### Start Run
+## Running in AWS Healthomics
 
 ``` bash
 # Set run parameters
@@ -35,4 +35,33 @@ docker run -ti \
     -e storage_capacity=$storage_capacity \
     --rm rtibiocloud/healthomics_tools:v2.0_290ee15
 ```
-** Parameter templates can be found [here](https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master/association_testing/rvtests/wdl_v1.1/config_templates/).
+
+## Config templates
+
+- Autosomes
+    - Unrelated
+        - Continuous
+            - [CODE](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/association_testing/rvtests/wdl_v1.1/config_templates/rvtests_autosomes_unrelated_continuous_code.json)
+            - [IOMICS](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/association_testing/rvtests/wdl_v1.1/config_templates/rvtests_autosomes_unrelated_continuous_iomics.json)
+        - Logistic
+            - [CODE](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/association_testing/rvtests/wdl_v1.1/config_templates/rvtests_autosomes_unrelated_logistic_code.json)
+            - [IOMICS](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/association_testing/rvtests/wdl_v1.1/config_templates/rvtests_autosomes_unrelated_logistic_iomics.json)
+    - Related
+        - Continuous
+            - [CODE](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/association_testing/rvtests/wdl_v1.1/config_templates/rvtests_autosomes_related_continuous_code.json)
+            - [IOMICS](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/association_testing/rvtests/wdl_v1.1/config_templates/rvtests_autosomes_related_continuous_iomics.json)
+        - Logistic
+            - [CODE](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/association_testing/rvtests/wdl_v1.1/config_templates/rvtests_autosomes_related_logistic_code.json)
+            - [IOMICS](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/association_testing/rvtests/wdl_v1.1/config_templates/rvtests_autosomes_related_logistic_iomics.json)
+
+## Source
+
+- [Main workflow](https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master/association_testing/rvtests/wdl_v1.1/rvtests_gwas_wf.wdl)
+- Sub-workflows
+    - [rvtests_gwas_chr_wf](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/association_testing/rvtests/wdl_v1.1/rvtests_gwas_chr_wf.wdl)
+    - [summarize_gwas_wf](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/helper_workflows/summarize_gwas/wdl_v1.1/summarize_gwas_wf.wdl)
+    - [generate_kinship_matrix_wf](https://github.com/RTIInternational/biocloud_gwas_workflows/blob/master/helper_workflows/generate_kinship_matrix/wdl_v1.1/generate_kinship_matrix_wf.wdl)
+- WDL tools
+    - [rti-tsv-utils](https://github.com/RTIInternational/biocloud_wdl_tools/blob/master/rti-tsv-utils/wdl_v1.1/rti-tsv-utils.wdl)
+    - [convert_variant_ids.wdl](https://github.com/RTIInternational/biocloud_wdl_tools/blob/master/convert_variant_ids/wdl_v1.1/convert_variant_ids.wdl)
+    - [utils.wdl](https://github.com/RTIInternational/biocloud_wdl_tools/blob/master/utils/wdl_v1.1/utils.wdl)
