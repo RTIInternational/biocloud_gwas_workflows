@@ -1,0 +1,43 @@
+{
+    "sum_stats_files": [
+        "s3://path/to/sum_stats_file_1.txt",
+        "s3://path/to/sum_stats_file_2.txt",
+        "s3://path/to/sum_stats_file_3.txt"
+    ],
+    "separators": ["WHITESPACE"],
+    "marker_col_names": ["VARIANT_ID"],
+    "chrom_col_names": ["CHR"],
+    "pos_col_names": ["POS"],
+    "ref_allele_col_names": ["REF"],
+    "alt_allele_col_names": ["ALT"],
+    "effect_col_names": ["ALT_EFFECT"],
+    "freq_col_names": ["ALT_AF"],
+    "pvalue_col_names": ["P"],
+    "weight_col_names": ["N"],
+    "std_err_col_names": ["SE"],
+    "sum_stats_files_labels": [
+        "AFR",
+        "EUR",
+        "AMR"
+    ],
+    "metal_out_prefix": "cross_ancestry",
+    "metal_out_suffix": "metal",
+    "scheme": "STDERR",
+    "analyze": "HETEROGENEITY",
+    "genomic_control": "ON",
+    "column_counting": "STRICT",
+    "average_freq": "ON",
+    "min_max_freq": "ON",
+    "track_positions": "ON",
+    "metal_sum_stats_join_chunk_size": 2000000,
+    "metal_sum_stats_join_cpu": 1,
+    "metal_sum_stats_join_mem_gb": 16,
+    "p_threshold": 0.001,
+    "p_filter_cpu": 1,
+    "p_filter_mem_gb": 4,
+    "metal_mem_gb": 16,
+    "plot_cpu": 1,
+    "plot_mem_gb": 16,
+    "image_source": "ecr",
+    "ecr_repo": "<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com"
+}

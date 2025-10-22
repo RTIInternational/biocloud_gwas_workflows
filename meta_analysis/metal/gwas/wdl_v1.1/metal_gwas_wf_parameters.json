@@ -1,0 +1,138 @@
+{
+	"sum_stats_files": {
+		"description": "Array of input summary statistics files to be meta-analyzed",
+		"optional": false
+	},
+	"separators": {
+		"description": "Array of column separators for each input file. Options: COMMA, TAB, WHITESPACE. If only one value provided, it will be used for all summary statistics files.",
+		"optional": false
+	},
+	"marker_col_names": {
+		"description": "Array of marker column names for each input file. If only one value provided, it will be used for all summary statistics files.",
+		"optional": false
+	},
+	"chrom_col_names": {
+		"description": "Array of chromosome column names for each input file. If only one value provided, it will be used for all summary statistics files.",
+		"optional": false
+	},
+	"pos_col_names": {
+		"description": "Array of position column names for each input file. If only one value provided, it will be used for all summary statistics files.",
+		"optional": false
+	},
+	"ref_allele_col_names": {
+		"description": "Array of reference allele column names for each input file. If only one value provided, it will be used for all summary statistics files.",
+		"optional": false
+	},
+	"alt_allele_col_names": {
+		"description": "Array of alternate allele column names for each input file. If only one value provided, it will be used for all summary statistics files.",
+		"optional": false
+	},
+	"effect_col_names": {
+		"description": "Array of effect size column names for each input file. If only one value provided, it will be used for all summary statistics files.",
+		"optional": false
+	},
+	"freq_col_names": {
+		"description": "Array of frequency column names for each input file. If only one value provided, it will be used for all summary statistics files.",
+		"optional": false
+	},
+	"pvalue_col_names": {
+		"description": "Array of p-value column names for each input file. Required if <scheme> is set to <SAMPLESIZE>. If only one value provided, it will be used for all summary statistics files.",
+		"optional": true
+	},
+	"weight_col_names": {
+		"description": "Array of weight column names for each input file. Required if <scheme> is set to <SAMPLESIZE>. If only one value provided, it will be used for all summary statistics files.",
+		"optional": true
+	},
+	"std_err_col_names": {
+		"description": "Array of standard error column names for each input file. Required if <scheme> is set to <STDERR>. If only one value provided, it will be used for all summary statistics files.",
+		"optional": true
+	},
+	"metal_out_prefix": {
+		"description": "Prefix for METAL output files",
+		"optional": false
+	},
+	"metal_out_suffix": {
+		"description": "Suffix for METAL output files. Default is 'metal'.",
+		"optional": true
+	},
+	"scheme": {
+		"description": "Scheme for meta-analysis. Options: STDERR, SAMPLESIZE. Default is 'STDERR'.",
+		"optional": true
+	},
+	"analyze": {
+		"description": "Set to 'HETEROGENEITY' to include heterogeneity analysis; otherwise, leave unset for standard meta-analysis.",
+		"optional": true
+	},
+	"genomic_control": {
+		"description": "Set to 'ON' to apply genomic control; otherwise, leave unset.",
+		"optional": true
+	},
+	"column_counting": {
+		"description": "Options: STRICT, LENIENT. Default is 'STRICT'. If set to 'STRICT', METAL will require that all input files have the same number of columns. If set to 'LENIENT', METAL will allow input files to have different numbers of columns.",
+		"optional": true
+	},
+	"average_freq": {
+		"description": "Set to 'ON' to calculate mean allele frequency across all summary statistics files. Default is 'ON'.",
+		"optional": true
+	},
+	"min_max_freq": {
+		"description": "Set to 'ON' to calculate min/max allele frequency across all summary statistics files. Default is 'ON'.",
+		"optional": true
+	},
+	"track_positions": {
+		"description": "Set to 'ON' to check that positions match for variants with the same ID across all summary statistics files and include 'Chromosome' and 'Position' fields in results file. Default is 'ON'.",
+		"optional": true
+	},
+	"sum_stats_files_labels": {
+		"description": "Labels for the summary statistics files in joined METAL + summary statistics file.",
+		"optional": false
+	},
+	"metal_sum_stats_join_chunk_size": {
+		"description": "Chunk size (in number of variants) for joining summary statistics files with METAL results. Default is 2000000.",
+		"optional": true
+	},
+	"metal_sum_stats_join_cpu": {
+		"description": "Number of CPU cores to allocate for joining summary statistics files with METAL results. Default is 1.",
+		"optional": true
+	},
+	"metal_sum_stats_join_mem_gb": {
+		"description": "Amount of memory (in GB) to allocate for joining summary statistics files with METAL results. Default is 2.",
+		"optional": true
+	},
+	"p_threshold": {
+		"description": "P-value threshold for filtering variants. Default is 0.001.",
+		"optional": true
+	},
+	"p_filter_cpu": {
+		"description": "Number of CPU cores to allocate for filtering variants. Default is 1.",
+		"optional": true
+	},
+	"p_filter_mem_gb": {
+		"description": "Amount of memory (in GB) to allocate for filtering variants. Default is 2.",
+		"optional": true
+	},
+	"metal_cpu": {
+		"description": "Number of CPU cores to allocate for METAL. Default is 1.",
+		"optional": true
+	},
+	"metal_mem_gb": {
+		"description": "Amount of memory (in GB) to allocate for METAL. Default is 2.",
+		"optional": true
+	},
+	"plot_cpu": {
+		"description": "Number of CPU cores to allocate for generating plots. Default is 1.",
+		"optional": true
+	},
+	"plot_mem_gb": {
+		"description": "Amount of memory (in GB) to allocate for generating plots. Default is 2.",
+		"optional": true
+	},
+	"image_source": {
+		"description": "Image source. Options are: ecr, docker",
+        "optional": true
+	},
+	"ecr_repo": {
+		"description": "ECR repository URI if image_source is ecr",
+        "optional": true
+	}
+}

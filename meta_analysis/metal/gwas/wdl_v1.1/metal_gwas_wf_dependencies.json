@@ -1,0 +1,11 @@
+{
+    "workflows": [
+    ],
+    "wdl_tools": [
+        "biocloud_wdl_tools/metal/wdl_v1.1/metal.wdl",
+        "biocloud_wdl_tools/rti-tsv-utils/wdl_v1.1/rti-tsv-utils.wdl",
+        "biocloud_wdl_tools/tsv_utils/wdl_v1.1/tsv_utils.wdl",
+        "biocloud_wdl_tools/generate_gwas_plots/wdl_v1.1/generate_gwas_plots.wdl"
+    ],
+    "structs": []
+}

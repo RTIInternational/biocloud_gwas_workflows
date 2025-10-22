@@ -1,0 +1,87 @@
+{
+    "sum_stats_files": [
+        "<SUM_STATS_FILE_1>",
+        "<SUM_STATS_FILE_2>",
+        "<SUM_STATS_FILE_3>"
+    ],
+    "separators": [
+        "<SEPARATOR FILE 1 (COMMA|TAB|WHITESPACE)>",
+        "<SEPARATOR FILE 2 (COMMA|TAB|WHITESPACE)>",
+        "<SEPARATOR FILE 3 (COMMA|TAB|WHITESPACE)>"
+    ],
+    "marker_col_names": [
+        "<VARIANT_ID_COL_NAME_FILE_1>",
+        "<VARIANT_ID_COL_NAME_FILE_2>",
+        "<VARIANT_ID_COL_NAME_FILE_3>"
+    ],
+    "chrom_col_names": [
+        "<CHR_COL_NAME_FILE_1>",
+        "<CHR_COL_NAME_FILE_2>",
+        "<CHR_COL_NAME_FILE_3>"
+    ],
+    "pos_col_names": [
+        "<POS_COL_NAME_FILE_1>",
+        "<POS_COL_NAME_FILE_2>",
+        "<POS_COL_NAME_FILE_3>"
+    ],
+    "ref_allele_col_names": [
+        "<REF_ALLELE_COL_NAME_FILE_1>",
+        "<REF_ALLELE_COL_NAME_FILE_2>",
+        "<REF_ALLELE_COL_NAME_FILE_3>"
+    ],
+    "alt_allele_col_names": [
+        "<ALT_ALLELE_COL_NAME_FILE_1>",
+        "<ALT_ALLELE_COL_NAME_FILE_2>",
+        "<ALT_ALLELE_COL_NAME_FILE_3>"
+    ],
+    "effect_col_names": [
+        "<EFFECT_COL_NAME_FILE_1>",
+        "<EFFECT_COL_NAME_FILE_2>",
+        "<EFFECT_COL_NAME_FILE_3>"
+    ],
+    "freq_col_names": [
+        "<FREQ_COL_NAME_FILE_1>",
+        "<FREQ_COL_NAME_FILE_2>",
+        "<FREQ_COL_NAME_FILE_3>"
+    ],
+    "pvalue_col_names": [
+        "<PVALUE_COL_NAME_FILE_1>",
+        "<PVALUE_COL_NAME_FILE_2>",
+        "<PVALUE_COL_NAME_FILE_3>"
+    ],
+    "weight_col_names": [
+        "<WEIGHT_COL_NAME_FILE_1>",
+        "<WEIGHT_COL_NAME_FILE_2>",
+        "<WEIGHT_COL_NAME_FILE_3>"
+    ],
+    "std_err_col_names": [
+        "<SE_COL_NAME_FILE_1>",
+        "<SE_COL_NAME_FILE_2>",
+        "<SE_COL_NAME_FILE_3>"
+    ],
+    "sum_stats_files_labels": [
+        "<SUM_STATS_FILE_1_LABEL>",
+        "<SUM_STATS_FILE_2_LABEL>",
+        "<SUM_STATS_FILE_3_LABEL>"
+    ],
+    "metal_out_prefix": "cross_ancestry",
+    "metal_out_suffix": "metal",
+    "scheme": "STDERR",
+    "analyze": "HETEROGENEITY",
+    "genomic_control": "ON",
+    "column_counting": "STRICT",
+    "average_freq": "ON",
+    "min_max_freq": "ON",
+    "track_positions": "ON",
+    "metal_sum_stats_join_chunk_size": 2000000,
+    "metal_sum_stats_join_cpu": 1,
+    "metal_sum_stats_join_mem_gb": 16,
+    "p_threshold": 0.001,
+    "p_filter_cpu": 1,
+    "p_filter_mem_gb": 4,
+    "metal_mem_gb": 16,
+    "plot_cpu": 1,
+    "plot_mem_gb": 16,
+    "image_source": "ecr",
+    "ecr_repo": "<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com"
+}
