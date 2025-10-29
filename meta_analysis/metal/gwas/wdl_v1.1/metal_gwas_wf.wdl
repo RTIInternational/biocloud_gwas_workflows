@@ -17,7 +17,7 @@ workflow metal_gwas_wf {
         Array[String] ref_allele_col_names
         Array[String] alt_allele_col_names
         Array[String] effect_col_names
-        Array[String] freq_col_names
+        Array[String] freq_col_names = []
 
         # METAL input file sample size weighted meta parameters
         Array[String] pvalue_col_names = []
@@ -187,18 +187,19 @@ task combine_array_elements {
 
     command <<<
         set -e
-        perl -e '
-            use strict;
-            use warnings;
-            my @a1 = qw('~{sep(' ', array1)}');
-            my @a2 = qw('~{sep(' ', array2)}');
-            if (scalar(@a1) != scalar(@a2)) {
-                die "Input arrays must have the same length\n";
-            }
-            for (my $i = 0; $i < scalar(@a1); $i++) {
-                print "$a1[$i]'~{separator}'$a2[$i]\n";
-            }
-        ' > combined.tsv
+        array1_str="~{sep(' ', array1)}"
+        array1=($array1_str)
+        array1_length=${#array1[@]}
+        array2_str="~{sep(' ', array2)}"
+        array2=($array2_str)
+        array2_length=${#array2[@]}
+        if [ $array1_length -ne $array2_length ]; then
+            echo "Error: Input arrays must have the same length" >&2
+            exit 1
+        fi
+        for (( i=0; i<$array1_length; i++)); do
+            echo "${array1[$i]}~{separator}${array2[$i]}"
+        done > combined.tsv
     >>>
 
     output {

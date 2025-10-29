@@ -33,7 +33,7 @@
 	},
 	"freq_col_names": {
 		"description": "Array of frequency column names for each input file. If only one value provided, it will be used for all summary statistics files.",
-		"optional": false
+		"optional": true
 	},
 	"pvalue_col_names": {
 		"description": "Array of p-value column names for each input file. Required if <scheme> is set to <SAMPLESIZE>. If only one value provided, it will be used for all summary statistics files.",
