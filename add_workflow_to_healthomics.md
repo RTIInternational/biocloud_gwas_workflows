@@ -170,7 +170,7 @@ Example dependencies file:
 ```
 
 ## Create a parameters file for the workflow 
-The parameters file is a json file in the same directory as the workflow/sub-workflow. The name of the file should be `<WORKFLOW_NAME>_parameters.json`.
+The parameters file is a json file in the same directory as the workflow/sub-workflow that describes the input parameters for the workflow. The name of the file should be `<WORKFLOW_NAME>_parameters.json`.
 Example parameters file:
 ```json
 {
@@ -183,7 +183,7 @@ Example parameters file:
 	"dataset_fam": {
 		"description": "Dataset fam file"
 	},
-    	"ancestry_pop_type": {
+    "ancestry_pop_type": {
 		"description": "Population type (superpop or pop)",
         "optional": true
 	},
@@ -217,5 +217,40 @@ docker run -ti \
     -e description="Workflow for calculating the ancestral similarity of samples to reference populations based on Mahalanobis distance." \
     -e engine=WDL \
     -e storage_capacity=2000 \
+    --rm rtibiocloud/healthomics_tools:v1.0_f456174
+```
+
+## Run workflow
+### Create a json config file for the workflow containing run-specific parameters
+Example:
+```json
+{
+	"dataset_bed": "/path/to/bed",
+	"dataset_bim": "/path/to/bim",
+	"dataset_fam": "/path/to/bim",
+    "ancestry_pop_type": "super_pop",
+	"ancestries_to_include": ["AFR", "AMR", "EAS", "EUR", "SAS"]
+}
+```
+
+### Submit workflow
+Example:
+``` bash
+aws_access_key_id="<AWS_ACCESS_KEY_ID>"
+aws_secret_access_key="<AWS_SECRET_ACCESS_KEY>"
+aws_region_name="<AWS_REGION_NAME>"
+docker run -ti \
+    -v <HOST_DIR>:<CONTAINER_DIR> \
+    -e task=start_run \
+    -e charge_code=<CHARGE_CODE> \
+    -e aws_access_key_id=<AWS_ACCESS_KEY_ID> \
+    -e aws_secret_access_key=<AWS_SECRET_ACCESS_KEY> \
+    -e aws_region_name=<AWS_REGION_NAME> \
+    -e workflow_id=<WORKFLOW_ID> \
+    -e parameters=<PARAMETERS> \
+    -e name=<NAME> \
+    -e output_uri=<OUTPUT_URI> \
+    -e run_metadata_output_dir=<RUN_METADATA_OUTPUT_DIR> \
+    -e storage_capacity=<STORAGE_CAPACITY> \
     --rm rtibiocloud/healthomics_tools:v1.0_f456174
 ```
