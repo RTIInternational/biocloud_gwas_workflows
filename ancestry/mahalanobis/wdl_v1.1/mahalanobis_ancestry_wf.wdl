@@ -56,6 +56,7 @@ workflow mahalanobis_ancestry_wf{
         Int pc_count = 10
         Int use_pcs_count = 10
         String midpoint_formula = "median"
+        Boolean? scale_to_ref = false
         
         # Resources
         String image_source = "docker"
@@ -388,6 +389,7 @@ workflow mahalanobis_ancestry_wf{
             ref_pops_legend_labels = ancestries_display_names,
             use_pcs_count = use_pcs_count,
             midpoint_formula = midpoint_formula,
+            scale_to_ref = scale_to_ref,
             cpu = 8,
             mem_gb = 8,
             image_source = image_source,

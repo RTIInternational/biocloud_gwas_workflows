@@ -124,6 +124,10 @@
 		"description": "-",
         "optional": true
 	},
+	"scale_to_ref": {
+		"description": "-",
+		"optional": true
+	},
 	"image_source": {
 		"description": "-",
         "optional": true

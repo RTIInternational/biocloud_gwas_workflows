@@ -38,6 +38,11 @@
         "s3://rti-bioinformatics-resources/variants/b153/grch38/id_conversion/variant_lookup_chr22.tsv.gz"
     ],
     "ld_exclude_regions": "s3://rti-bioinformatics-resources/linkage_disequilibrium/regions_of_high_ld_for_pca_wdl_wf_hg38.bed",
+    "pc_count": 10,
+    "use_pcs_count": 10,
+    "midpoint_formula": "median",
+    "std_dev_cutoff": 3,
+    "scale_to_ref": false,
     "image_source": "ecr",
     "ecr_repo": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com"
 }
