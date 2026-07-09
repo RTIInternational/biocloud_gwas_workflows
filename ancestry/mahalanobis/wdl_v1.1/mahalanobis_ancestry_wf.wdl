@@ -56,7 +56,7 @@ workflow mahalanobis_ancestry_wf{
         Int pc_count = 10
         Int use_pcs_count = 10
         String midpoint_formula = "median"
-        Boolean? scale_to_ref = false
+        Boolean scale_to_ref = false
         
         # Resources
         String image_source = "docker"
