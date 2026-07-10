@@ -26,7 +26,7 @@ docker run -ti \
     -e storage_capacity="<STORAGE_CAPACITY>" \
     -e log_level="<LOG_LEVEL>" \
     -e retention_mode="<RETENTION_MODE>" \
-    --rm rtibiocloud/healthomics_tools:v2.0_0076eb5
+    --rm rtibiocloud/healthomics_tools:v2.0_bca3219
 ```
 
 #### Parameters
