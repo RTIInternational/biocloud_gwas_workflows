@@ -56,6 +56,7 @@ workflow mahalanobis_ancestry_wf{
         Int pc_count = 10
         Int use_pcs_count = 10
         String midpoint_formula = "median"
+        Int? std_dev_cutoff
         Boolean scale_to_ref = false
         
         # Resources
@@ -389,6 +390,7 @@ workflow mahalanobis_ancestry_wf{
             ref_pops_legend_labels = ancestries_display_names,
             use_pcs_count = use_pcs_count,
             midpoint_formula = midpoint_formula,
+            std_dev_cutoff = std_dev_cutoff,
             scale_to_ref = scale_to_ref,
             cpu = 8,
             mem_gb = 8,

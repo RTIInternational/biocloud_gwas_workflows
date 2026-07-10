@@ -124,6 +124,10 @@
 		"description": "-",
         "optional": true
 	},
+	"std_dev_cutoff": {
+		"description": "-",
+		"optional": true
+	},
 	"scale_to_ref": {
 		"description": "-",
 		"optional": true
