@@ -40,6 +40,7 @@ workflow mahalanobis_ancestry_wf{
         Boolean? id_conversion_rescue_rsids
 
         ## LD pruning parameters
+        Boolean do_ld_pruning = true
         String ld_type = "indep-pairwise"
         Int ld_window_size = 20000
         Int ld_step_size = 2000
@@ -56,7 +57,7 @@ workflow mahalanobis_ancestry_wf{
         Int pc_count = 10
         Int use_pcs_count = 10
         String midpoint_formula = "median"
-        Int? std_dev_cutoff
+        Array[Int] std_dev_cutoffs = [2,3,4]
         Boolean scale_to_ref = false
         
         # Resources
@@ -305,32 +306,38 @@ workflow mahalanobis_ancestry_wf{
         }
 
         # LD prune
-        call LD.ld_prune_wf as ld_prune{
-            input:
-                bed_in = combine_ref_and_data.bed_out,
-                bim_in = combine_ref_and_data.bim_out,
-                fam_in = combine_ref_and_data.fam_out,
-                exclude_regions = ld_exclude_regions,
-                output_basename = "ref_~{dataset_short_name}_chr~{chr}_ldpruned",
-                ld_type = ld_type,
-                window_size = ld_window_size,
-                step_size = ld_step_size,
-                r2_threshold = ld_r2_threshold,
-                maf = ld_maf_cutoff,
-                cpu = 4,
-                mem_gb = 2 * merged_mem_multiplier_chr,
-                image_source = image_source,
-                ecr_repo = ecr_repo
+        if (do_ld_pruning) {
+            call LD.ld_prune_wf as ld_prune{
+                input:
+                    bed_in = combine_ref_and_data.bed_out,
+                    bim_in = combine_ref_and_data.bim_out,
+                    fam_in = combine_ref_and_data.fam_out,
+                    exclude_regions = ld_exclude_regions,
+                    output_basename = "ref_~{dataset_short_name}_chr~{chr}_ldpruned",
+                    ld_type = ld_type,
+                    window_size = ld_window_size,
+                    step_size = ld_step_size,
+                    r2_threshold = ld_r2_threshold,
+                    maf = ld_maf_cutoff,
+                    cpu = 4,
+                    mem_gb = 2 * merged_mem_multiplier_chr,
+                    image_source = image_source,
+                    ecr_repo = ecr_repo
+            }
         }
+
+        File bed_for_chr_merge = select_first([ld_prune.bed_out, combine_ref_and_data.bed_out])
+        File bim_for_chr_merge = select_first([ld_prune.bim_out, combine_ref_and_data.bim_out])
+        File fam_for_chr_merge = select_first([ld_prune.fam_out, combine_ref_and_data.fam_out])
 
     }
 
     # Merge LD pruned chromosomes into single dataset
     call PLINK.merge_beds as merge_chrs{
         input:
-            bed_in = ld_prune.bed_out,
-            bim_in = ld_prune.bim_out,
-            fam_in = ld_prune.fam_out,
+            bed_in = bed_for_chr_merge,
+            bim_in = bim_for_chr_merge,
+            fam_in = fam_for_chr_merge,
             allow_no_sex = true,
             output_basename = "ref_~{dataset_short_name}_ldpruned",
             cpu = 2,
@@ -390,7 +397,7 @@ workflow mahalanobis_ancestry_wf{
             ref_pops_legend_labels = ancestries_display_names,
             use_pcs_count = use_pcs_count,
             midpoint_formula = midpoint_formula,
-            std_dev_cutoff = std_dev_cutoff,
+            std_dev_cutoffs = std_dev_cutoffs,
             scale_to_ref = scale_to_ref,
             cpu = 8,
             mem_gb = 8,
@@ -408,20 +415,20 @@ workflow mahalanobis_ancestry_wf{
     }
 
     output{
+        File dataset_ancestry_assignments = assign_ancestry_mahalanobis.dataset_ancestry_assignments
+        File dataset_ancestry_assignments_summary = assign_ancestry_mahalanobis.dataset_ancestry_assignments_summary
+        File ref_ancestry_assignments = assign_ancestry_mahalanobis.ref_ancestry_assignments
+        File ref_ancestry_assignments_summary = assign_ancestry_mahalanobis.ref_ancestry_assignments_summary
+        File ref_dropped_samples  = assign_ancestry_mahalanobis.ref_dropped_samples
+        Array[File] pre_processing_pc_plots  = assign_ancestry_mahalanobis.pre_processing_pc_plots
+        Array[File] dataset_ancestry_assignments_plots = assign_ancestry_mahalanobis.dataset_ancestry_assignments_plots
+        Array[File] dataset_ancestry_outliers_plots = assign_ancestry_mahalanobis.dataset_ancestry_outliers_plots
+        Array[File] dataset_ancestry_keep_lists = order_by_ancestry.ancestry_keep_files_out
+        File smartpca_input_variants_bim = merge_chrs.bim_out
         File evec = process_smartpca_results.evec_out
         File eval = process_smartpca_results.eval_out
         File snpweight = process_smartpca_results.snpweight_out
         File smartpca_log = smartpca.log
-        Array[File] pre_processing_pc_plots  = assign_ancestry_mahalanobis.pre_processing_pc_plots
-        File ref_dropped_samples  = assign_ancestry_mahalanobis.ref_dropped_samples
-        File ref_raw_ancestry_assignments = assign_ancestry_mahalanobis.ref_raw_ancestry_assignments
-        File ref_raw_ancestry_assignments_summary = assign_ancestry_mahalanobis.ref_raw_ancestry_assignments_summary
-        File dataset_ancestry_assignments = assign_ancestry_mahalanobis.dataset_ancestry_assignments
-        File dataset_ancestry_assignments_summary = assign_ancestry_mahalanobis.dataset_ancestry_assignments_summary
-        Array[File] dataset_ancestry_assignments_plots = assign_ancestry_mahalanobis.dataset_ancestry_assignments_plots
-        Array[File] dataset_ancestry_outliers_plots = assign_ancestry_mahalanobis.dataset_ancestry_outliers_plots
-        Array[File] dataset_ancestry_keep_lists = order_by_ancestry.ancestry_keep_files_out
-        Array[String] ancestry_labels = ancestries_to_include
     }
 
 }

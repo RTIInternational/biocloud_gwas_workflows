@@ -77,6 +77,10 @@
 		"description": "-",
         "optional": true
 	},
+	"do_ld_pruning": {
+		"description": "-",
+        "optional": true
+	},
 	"ld_type": {
 		"description": "-",
         "optional": true
@@ -124,7 +128,7 @@
 		"description": "-",
         "optional": true
 	},
-	"std_dev_cutoff": {
+	"std_dev_cutoffs": {
 		"description": "-",
 		"optional": true
 	},
