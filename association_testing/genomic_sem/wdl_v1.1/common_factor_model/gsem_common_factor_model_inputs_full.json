@@ -1,0 +1,47 @@
+{
+  "gsem_common_factor_model.sumstats_files": [
+    "/mnt/data/path/to/trait1.tsv",
+    "/mnt/data/path/to/trait2.tsv",
+    "/mnt/data/path/to/trait3.tsv"
+  ],
+  "gsem_common_factor_model.trait_names": [
+    "TRAIT1",
+    "TRAIT2",
+    "TRAIT3"
+  ],
+  "gsem_common_factor_model.sample_sizes": [
+    10000,
+    20000,
+    15000
+  ],
+  "gsem_common_factor_model.ref_snp_list": "/home/ubuntu/git/biocloud_docker_tools/genomic_sem/v0.0.5c/w_hm3.snplist",
+  "gsem_common_factor_model.sample_prevs": [
+    0.1,
+    0.1,
+    0.1
+  ],
+  "gsem_common_factor_model.population_prevs": [
+    0.01,
+    0.01,
+    0.01
+  ],
+  "gsem_common_factor_model.ld_dir": "/mnt/data/rti-bioinformatics-resources/wf_inputs/biocloud_gwas_workflows/genomic_sem/ld_scores/eur",
+  "gsem_common_factor_model.wld_dir": "/mnt/data/rti-bioinformatics-resources/wf_inputs/biocloud_gwas_workflows/genomic_sem/ld_scores/eur",
+  "gsem_common_factor_model.estimation_method": "DWLS",
+  "gsem_common_factor_model.info_filter": 0.9,
+  "gsem_common_factor_model.maf_filter": 0.01,
+  "gsem_common_factor_model.parallel": true,
+  "gsem_common_factor_model.cores": 4,
+  "gsem_common_factor_model.no_overwrite": false,
+  "gsem_common_factor_model.munge_out_dir": "munge_out",
+  "gsem_common_factor_model.ldsc_output_prefix": "ldsc/gsem_ldsc_output",
+  "gsem_common_factor_model.commonfactor_output_prefix": "commonfactor/gsem_commonfactor_output",
+  "gsem_common_factor_model.ecr_repo": "",
+  "gsem_common_factor_model.image_source": "docker",
+  "gsem_common_factor_model.munge_cpu": 1,
+  "gsem_common_factor_model.munge_memory": "8G",
+  "gsem_common_factor_model.ldsc_cpu": 1,
+  "gsem_common_factor_model.ldsc_memory": "8G",
+  "gsem_common_factor_model.commonfactor_cpu": 1,
+  "gsem_common_factor_model.commonfactor_memory": "8G"
+}

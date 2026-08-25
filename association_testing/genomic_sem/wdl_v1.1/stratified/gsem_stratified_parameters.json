@@ -1,0 +1,146 @@
+{
+  "sumstats_files": {
+    "description": "Input GWAS summary statistics files.",
+    "optional": false
+  },
+  "trait_names": {
+    "description": "Trait labels corresponding to sumstats_files.",
+    "optional": false
+  },
+  "sample_sizes": {
+    "description": "Per-trait sample sizes (N) for munging.",
+    "optional": false
+  },
+  "ref_snp_list": {
+    "description": "Reference SNP list (HM3) for munging.",
+    "optional": false
+  },
+  "sample_prevs": {
+    "description": "Sample prevalences per trait for stratified LDSC.",
+    "optional": false
+  },
+  "population_prevs": {
+    "description": "Population prevalences per trait for stratified LDSC.",
+    "optional": false
+  },
+  "ld_dir": {
+    "description": "Directory containing partitioned LD scores.",
+    "optional": false
+  },
+  "wld_dir": {
+    "description": "Directory containing LD score weights.",
+    "optional": false
+  },
+  "frq_dir": {
+    "description": "Directory containing allele frequency files for s_ldsc.",
+    "optional": false
+  },
+  "model_lavaan": {
+    "description": "Lavaan model file for enrich().",
+    "optional": false
+  },
+  "params": {
+    "description": "File listing target lavaan parameters for enrichment estimation.",
+    "optional": false
+  },
+  "fixparam": {
+    "description": "Optional file listing parameters to fix during enrichment estimation.",
+    "optional": true
+  },
+  "info_filter": {
+    "description": "INFO/R2 threshold used by gsem_munge.",
+    "optional": true
+  },
+  "maf_filter": {
+    "description": "MAF threshold used by gsem_munge.",
+    "optional": true
+  },
+  "parallel": {
+    "description": "Enable parallel processing where supported.",
+    "optional": true
+  },
+  "cores": {
+    "description": "Number of cores when parallel processing is enabled.",
+    "optional": true
+  },
+  "no_overwrite": {
+    "description": "If true, do not overwrite existing munged outputs.",
+    "optional": true
+  },
+  "n_blocks": {
+    "description": "Number of jackknife blocks for s_ldsc standard error estimation.",
+    "optional": true
+  },
+  "include_cont": {
+    "description": "If true, include continuous annotations in s_ldsc.",
+    "optional": true
+  },
+  "fix": {
+    "description": "Parameter class to fix in enrichment model (regressions, variances, covariances).",
+    "optional": true
+  },
+  "std_lv": {
+    "description": "If true, use unit-variance identification for latent variables.",
+    "optional": true
+  },
+  "not_rm_flank": {
+    "description": "If true, keep flanking-window and continuous annotations in enrich output.",
+    "optional": true
+  },
+  "tau": {
+    "description": "If true, use tau matrices instead of zero-order matrices in enrich.",
+    "optional": true
+  },
+  "not_base": {
+    "description": "If true, exclude baseline model estimates from enrich output.",
+    "optional": true
+  },
+  "toler": {
+    "description": "Optional matrix inversion tolerance for enrich.",
+    "optional": true
+  },
+  "munge_out_dir": {
+    "description": "Output directory for munged summary statistics.",
+    "optional": true
+  },
+  "s_ldsc_output_prefix": {
+    "description": "Output prefix for stratified LDSC outputs.",
+    "optional": true
+  },
+  "enrich_output_prefix": {
+    "description": "Output prefix for enrich output.",
+    "optional": true
+  },
+  "ecr_repo": {
+    "description": "Optional ECR repository URI prefix used with the task ecr image name.",
+    "optional": true
+  },
+  "image_source": {
+    "description": "Container source selector: docker or ecr.",
+    "optional": true
+  },
+  "munge_cpu": {
+    "description": "Requested CPU cores for munge task runtime.",
+    "optional": true
+  },
+  "munge_memory": {
+    "description": "Optional override for munge task runtime memory; if unset, memory is computed as 1.5x(sumstats file size + ref_snp_list size).",
+    "optional": true
+  },
+  "s_ldsc_cpu": {
+    "description": "Requested CPU cores for s_ldsc task runtime.",
+    "optional": true
+  },
+  "s_ldsc_memory": {
+    "description": "Requested memory for s_ldsc task runtime.",
+    "optional": true
+  },
+  "enrich_cpu": {
+    "description": "Requested CPU cores for enrich task runtime.",
+    "optional": true
+  },
+  "enrich_memory": {
+    "description": "Requested memory for enrich task runtime.",
+    "optional": true
+  }
+}

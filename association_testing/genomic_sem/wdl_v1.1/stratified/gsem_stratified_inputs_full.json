@@ -1,0 +1,58 @@
+{
+  "gsem_stratified.sumstats_files": [
+    "/mnt/data/path/to/trait1.tsv",
+    "/mnt/data/path/to/trait2.tsv",
+    "/mnt/data/path/to/trait3.tsv"
+  ],
+  "gsem_stratified.trait_names": [
+    "TRAIT1",
+    "TRAIT2",
+    "TRAIT3"
+  ],
+  "gsem_stratified.sample_sizes": [
+    10000,
+    20000,
+    15000
+  ],
+  "gsem_stratified.ref_snp_list": "/home/ubuntu/git/biocloud_docker_tools/genomic_sem/v0.0.5c/w_hm3.snplist",
+  "gsem_stratified.sample_prevs": [
+    0.1,
+    0.1,
+    0.1
+  ],
+  "gsem_stratified.population_prevs": [
+    0.01,
+    0.01,
+    0.01
+  ],
+  "gsem_stratified.ld_dir": "/mnt/data/rti-bioinformatics-resources/wf_inputs/biocloud_gwas_workflows/genomic_sem/ld_scores/eur",
+  "gsem_stratified.wld_dir": "/mnt/data/rti-bioinformatics-resources/wf_inputs/biocloud_gwas_workflows/genomic_sem/ld_scores/eur",
+  "gsem_stratified.frq_dir": "/mnt/data/rti-bioinformatics-resources/wf_inputs/biocloud_gwas_workflows/genomic_sem/ld_scores/eur",
+  "gsem_stratified.model_lavaan": "/mnt/data/temp/gsem/inputs/model.lav",
+  "gsem_stratified.params": "/mnt/data/temp/gsem/inputs/enrich_params.txt",
+  "gsem_stratified.fixparam": null,
+  "gsem_stratified.info_filter": 0.9,
+  "gsem_stratified.maf_filter": 0.01,
+  "gsem_stratified.parallel": true,
+  "gsem_stratified.cores": 4,
+  "gsem_stratified.no_overwrite": false,
+  "gsem_stratified.n_blocks": 200,
+  "gsem_stratified.include_cont": false,
+  "gsem_stratified.fix": "regressions",
+  "gsem_stratified.std_lv": false,
+  "gsem_stratified.not_rm_flank": false,
+  "gsem_stratified.tau": false,
+  "gsem_stratified.not_base": false,
+  "gsem_stratified.toler": null,
+  "gsem_stratified.munge_out_dir": "munge_out",
+  "gsem_stratified.s_ldsc_output_prefix": "s_ldsc/gsem_s_ldsc_output",
+  "gsem_stratified.enrich_output_prefix": "enrich/gsem_enrich_output",
+  "gsem_stratified.ecr_repo": "",
+  "gsem_stratified.image_source": "docker",
+  "gsem_stratified.munge_cpu": 1,
+  "gsem_stratified.munge_memory": "8G",
+  "gsem_stratified.s_ldsc_cpu": 1,
+  "gsem_stratified.s_ldsc_memory": "8G",
+  "gsem_stratified.enrich_cpu": 1,
+  "gsem_stratified.enrich_memory": "8G"
+}
