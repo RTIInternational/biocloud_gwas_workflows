@@ -88,7 +88,7 @@
     "optional": true
   },
   "ldsc_memory": {
-    "description": "Requested memory for ldsc task runtime.",
+    "description": "Optional override for ldsc task runtime memory; if unset, memory is computed from munged sumstats plus LD directories.",
     "optional": true
   },
   "commonfactor_cpu": {
@@ -96,7 +96,7 @@
     "optional": true
   },
   "commonfactor_memory": {
-    "description": "Requested memory for commonfactor task runtime.",
+    "description": "Optional override for commonfactor task runtime memory; if unset, memory is computed from ldsc_rds size.",
     "optional": true
   }
 }

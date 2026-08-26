@@ -116,7 +116,7 @@
     "optional": true
   },
   "ldsc_memory": {
-    "description": "Requested memory for ldsc task runtime.",
+    "description": "Optional override for ldsc task runtime memory; if unset, memory is computed from munged sumstats plus LD directories.",
     "optional": true
   },
   "usermodel_cpu": {
@@ -124,7 +124,7 @@
     "optional": true
   },
   "usermodel_memory": {
-    "description": "Requested memory for usermodel task runtime.",
+    "description": "Optional override for usermodel task runtime memory; if unset, memory is computed from ldsc_rds and model_lavaan sizes.",
     "optional": true
   }
 }

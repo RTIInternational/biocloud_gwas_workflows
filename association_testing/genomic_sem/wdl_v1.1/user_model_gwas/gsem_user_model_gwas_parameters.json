@@ -160,7 +160,7 @@
     "optional": true
   },
   "ldsc_memory": {
-    "description": "Requested memory for ldsc task runtime.",
+    "description": "Optional override for ldsc task runtime memory; if unset, memory is computed from munged sumstats plus LD directories.",
     "optional": true
   },
   "sumstats_cpu": {
@@ -168,7 +168,7 @@
     "optional": true
   },
   "sumstats_memory": {
-    "description": "Requested memory for sumstats task runtime.",
+    "description": "Optional override for sumstats task runtime memory; if unset, memory is computed from raw sumstats and ref_snp_list sizes.",
     "optional": true
   },
   "usergwas_cpu": {
@@ -176,7 +176,7 @@
     "optional": true
   },
   "usergwas_memory": {
-    "description": "Requested memory for usergwas task runtime.",
+    "description": "Optional override for usergwas task runtime memory; if unset, memory is computed from ldsc_rds, sumstats_rds, and model_lavaan sizes.",
     "optional": true
   }
 }

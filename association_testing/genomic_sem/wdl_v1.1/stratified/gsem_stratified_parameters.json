@@ -132,7 +132,7 @@
     "optional": true
   },
   "s_ldsc_memory": {
-    "description": "Requested memory for s_ldsc task runtime.",
+    "description": "Optional override for s_ldsc task runtime memory; if unset, memory is computed from munged sumstats plus LD/weight/frequency directories.",
     "optional": true
   },
   "enrich_cpu": {
@@ -140,7 +140,7 @@
     "optional": true
   },
   "enrich_memory": {
-    "description": "Requested memory for enrich task runtime.",
+    "description": "Optional override for enrich task runtime memory; if unset, memory is computed from s_ldsc_rds, model_lavaan, and params sizes.",
     "optional": true
   }
 }
