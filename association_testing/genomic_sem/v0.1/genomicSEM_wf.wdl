@@ -1,4 +1,4 @@
-import "biocloud_gwas_workflows/association_testing/genomic_sem/genomicSEM_chr_wf.wdl" as GSEM_CHR
+import "biocloud_gwas_workflows/association_testing/genomic_sem/v0.1/genomicSEM_chr_wf.wdl" as GSEM_CHR
 
 workflow genomic_sem_gwas_wf{
     File LDSC_file
