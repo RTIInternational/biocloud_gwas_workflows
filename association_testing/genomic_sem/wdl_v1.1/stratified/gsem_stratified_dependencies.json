@@ -1,7 +1,0 @@
-{
-    "workflows": [],
-    "wdl_tools": [
-        "biocloud_wdl_tools/genomic_sem/wdl_v1.1/genomic_sem.wdl"
-    ],
-    "structs": []
-}

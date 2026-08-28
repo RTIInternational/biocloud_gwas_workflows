@@ -1,0 +1,206 @@
+{
+  "sumstats_files": {
+    "description": "Input GWAS summary statistics files (either one genome sumstats file or per-chromosome sumstats files per trait/study).",
+    "optional": false
+  },
+  "trait_names": {
+    "description": "Trait labels corresponding to sumstats_files.",
+    "optional": false
+  },
+  "sample_sizes": {
+    "description": "Per-trait sample sizes (N) for munging/sumstats.",
+    "optional": false
+  },
+  "ref_snp_list": {
+    "description": "Reference SNP list (HM3) for munging and sumstats.",
+    "optional": false
+  },
+  "sumstats_columns": {
+    "description": "Per-file column-name mapping used for preprocessing.",
+    "optional": false
+  },
+  "sample_prevs": {
+    "description": "Sample prevalences per trait for LDSC.",
+    "optional": false
+  },
+  "population_prevs": {
+    "description": "Population prevalences per trait for LDSC.",
+    "optional": false
+  },
+  "ld_dir": {
+    "description": "Directory containing LD scores.",
+    "optional": false
+  },
+  "wld_dir": {
+    "description": "Directory containing LD score weights.",
+    "optional": false
+  },
+  "model_lavaan": {
+    "description": "Lavaan model file for userGWAS.",
+    "optional": false
+  },
+  "estimation_method": {
+    "description": "Estimation method for userGWAS (for example, DWLS).",
+    "optional": true
+  },
+  "se_logit": {
+    "description": "Per-trait indicator that SE is on the logistic scale.",
+    "optional": false
+  },
+  "ols": {
+    "description": "Optional per-trait OLS indicator for sumstats().",
+    "optional": true
+  },
+  "linprob": {
+    "description": "Optional per-trait linear probability indicator for sumstats().",
+    "optional": true
+  },
+  "betas": {
+    "description": "Optional per-trait beta column names for sumstats().",
+    "optional": true
+  },
+  "info_filter": {
+    "description": "INFO/R2 threshold used by gsem_munge and gsem_sumstats.",
+    "optional": true
+  },
+  "maf_filter": {
+    "description": "MAF threshold used by gsem_munge and gsem_sumstats.",
+    "optional": true
+  },
+  "parallel": {
+    "description": "Enable parallel processing where supported.",
+    "optional": true
+  },
+  "cores": {
+    "description": "Number of cores when parallel processing is enabled.",
+    "optional": true
+  },
+  "no_overwrite": {
+    "description": "If true, do not overwrite existing munged outputs.",
+    "optional": true
+  },
+  "keep_indel": {
+    "description": "If true, keep indels in gsem_sumstats processing.",
+    "optional": true
+  },
+  "not_printwarn": {
+    "description": "If true, suppress per-SNP lavaan warnings/errors in userGWAS output.",
+    "optional": true
+  },
+  "sub": {
+    "description": "Optional subset of model components to return from userGWAS.",
+    "optional": true
+  },
+  "toler": {
+    "description": "Optional matrix inversion tolerance for userGWAS.",
+    "optional": true
+  },
+  "snpse": {
+    "description": "Optional SNP standard error override for userGWAS.",
+    "optional": true
+  },
+  "gc": {
+    "description": "Genomic control mode: standard, conserv, or none.",
+    "optional": true
+  },
+  "mpi": {
+    "description": "Enable MPI/multi-node mode for userGWAS.",
+    "optional": true
+  },
+  "smooth_check": {
+    "description": "Enable smoothing diagnostics in userGWAS.",
+    "optional": true
+  },
+  "twas": {
+    "description": "Enable TWAS mode in userGWAS.",
+    "optional": true
+  },
+  "std_lv": {
+    "description": "If true, set latent variables to unit variance in userGWAS.",
+    "optional": true
+  },
+  "not_fix_measurement": {
+    "description": "If true, do not fix measurement model across SNPs.",
+    "optional": true
+  },
+  "q_snp": {
+    "description": "If true, compute Q_SNP statistics.",
+    "optional": true
+  },
+  "munge_out_dir": {
+    "description": "Output directory for munged summary statistics.",
+    "optional": true
+  },
+  "preprocessing_out_dir": {
+    "description": "Output directory for preprocessed summary statistics.",
+    "optional": true
+  },
+  "ldsc_output_prefix": {
+    "description": "Output prefix for LDSC outputs.",
+    "optional": true
+  },
+  "sumstats_output_prefix": {
+    "description": "Output prefix for sumstats output.",
+    "optional": true
+  },
+  "usergwas_output_prefix": {
+    "description": "Output prefix for user-model GWAS output.",
+    "optional": true
+  },
+  "ecr_repo": {
+    "description": "Optional ECR repository URI prefix used with the task ecr image name.",
+    "optional": true
+  },
+  "image_source": {
+    "description": "Container source selector: docker or ecr.",
+    "optional": true
+  },
+  "tsv_append_cpu": {
+    "description": "Requested CPU cores for tsv_append task runtime.",
+    "optional": true
+  },
+  "tsv_append_mem_gb": {
+    "description": "Requested memory for tsv_append task runtime in GB.",
+    "optional": true
+  },
+  "preprocessing_cpu": {
+    "description": "Requested CPU cores for preprocessing task runtime.",
+    "optional": true
+  },
+  "preprocessing_mem_gb": {
+    "description": "Requested memory for preprocessing task runtime in GB.",
+    "optional": true
+  },
+  "munge_cpu": {
+    "description": "Requested CPU cores for munge task runtime.",
+    "optional": true
+  },
+  "munge_mem_gb": {
+    "description": "Optional override for munge task runtime memory; if unset, memory is computed as 1.5x(sumstats file size + ref_snp_list size), rounded to (2^n - 1) GB.",
+    "optional": true
+  },
+  "ldsc_cpu": {
+    "description": "Requested CPU cores for ldsc task runtime.",
+    "optional": true
+  },
+  "ldsc_mem_gb": {
+    "description": "Optional override for ldsc task runtime memory; if unset, memory is computed as 1.5x(munged sumstats + ld_dir + wld_dir sizes), rounded to (2^n - 1) GB.",
+    "optional": true
+  },
+  "sumstats_cpu": {
+    "description": "Requested CPU cores for sumstats task runtime.",
+    "optional": true
+  },
+  "sumstats_mem_gb": {
+    "description": "Optional override for sumstats task runtime memory; if unset, memory is computed as 1.5x(preprocessed sumstats + ref_snp_list sizes), rounded to (2^n - 1) GB.",
+    "optional": true
+  },
+  "usergwas_cpu": {
+    "description": "Requested CPU cores for usergwas task runtime.",
+    "optional": true
+  },
+  "usergwas_mem_gb": {
+    "description": "Optional override for usergwas task runtime memory; if unset, memory is computed as 1.5x(ldsc_rds + sumstats_rds + model_lavaan sizes), rounded to (2^n - 1) GB.",
+    "optional": true
+  }
+}

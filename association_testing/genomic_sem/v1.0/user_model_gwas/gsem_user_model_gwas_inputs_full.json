@@ -1,0 +1,89 @@
+{
+  "gsem_user_model_gwas.sumstats_files": [
+    ["/mnt/data/path/to/trait1.tsv"],
+    ["/mnt/data/path/to/trait2.tsv"],
+    ["/mnt/data/path/to/trait3.tsv"]
+  ],
+  "gsem_user_model_gwas.trait_names": [
+    "TRAIT1",
+    "TRAIT2",
+    "TRAIT3"
+  ],
+  "gsem_user_model_gwas.sample_sizes": [
+    10000,
+    20000,
+    15000
+  ],
+  "gsem_user_model_gwas.ref_snp_list": "/home/ubuntu/git/biocloud_docker_tools/genomic_sem/v0.0.5c/w_hm3.snplist",
+  "gsem_user_model_gwas.sumstats_columns": {
+    "variant_id": ["SNP", "SNP", "SNP"],
+    "effect_allele": ["A1", "A1", "A1"],
+    "non_effect_allele": ["A2", "A2", "A2"],
+    "effect": ["BETA", "BETA", "BETA"],
+    "p": ["P", "P", "P"],
+    "z": [null, null, null],
+    "se": ["SE", "SE", "SE"],
+    "n": [null, null, null],
+    "effect_allele_freq": [null, null, null],
+    "info": [null, null, null],
+    "direction": [null, null, null]
+  },
+  "gsem_user_model_gwas.sample_prevs": [
+    0.1,
+    0.1,
+    0.1
+  ],
+  "gsem_user_model_gwas.population_prevs": [
+    0.01,
+    0.01,
+    0.01
+  ],
+  "gsem_user_model_gwas.ld_dir": "/mnt/data/rti-bioinformatics-resources/wf_inputs/biocloud_gwas_workflows/genomic_sem/ld_scores/eur",
+  "gsem_user_model_gwas.wld_dir": "/mnt/data/rti-bioinformatics-resources/wf_inputs/biocloud_gwas_workflows/genomic_sem/ld_scores/eur",
+  "gsem_user_model_gwas.model_lavaan": "/mnt/data/temp/gsem/inputs/model.lav",
+  "gsem_user_model_gwas.estimation_method": "DWLS",
+  "gsem_user_model_gwas.se_logit": [
+    true,
+    true,
+    true
+  ],
+  "gsem_user_model_gwas.ols": null,
+  "gsem_user_model_gwas.linprob": null,
+  "gsem_user_model_gwas.betas": null,
+  "gsem_user_model_gwas.info_filter": 0.9,
+  "gsem_user_model_gwas.maf_filter": 0.01,
+  "gsem_user_model_gwas.parallel": true,
+  "gsem_user_model_gwas.cores": 4,
+  "gsem_user_model_gwas.no_overwrite": false,
+  "gsem_user_model_gwas.keep_indel": true,
+  "gsem_user_model_gwas.not_printwarn": false,
+  "gsem_user_model_gwas.sub": null,
+  "gsem_user_model_gwas.toler": null,
+  "gsem_user_model_gwas.snpse": null,
+  "gsem_user_model_gwas.gc": "standard",
+  "gsem_user_model_gwas.mpi": false,
+  "gsem_user_model_gwas.smooth_check": false,
+  "gsem_user_model_gwas.twas": false,
+  "gsem_user_model_gwas.std_lv": false,
+  "gsem_user_model_gwas.not_fix_measurement": false,
+  "gsem_user_model_gwas.q_snp": false,
+  "gsem_user_model_gwas.munge_out_dir": "munge_out",
+  "gsem_user_model_gwas.preprocessing_out_dir": "preprocessing_out",
+  "gsem_user_model_gwas.ldsc_output_prefix": "ldsc/gsem_ldsc_output",
+  "gsem_user_model_gwas.sumstats_output_prefix": "sumstats/gsem_sumstats_output",
+  "gsem_user_model_gwas.usergwas_output_prefix": "usergwas/gsem_usergwas_output",
+  "gsem_user_model_gwas.ecr_repo": "",
+  "gsem_user_model_gwas.image_source": "docker",
+  "gsem_user_model_gwas.tsv_append_cpu": 1,
+  "gsem_user_model_gwas.tsv_append_mem_gb": 2,
+  "gsem_user_model_gwas.preprocessing_cpu": 1,
+  "gsem_user_model_gwas.preprocessing_mem_gb": 4,
+  "gsem_user_model_gwas.munge_cpu": 1,
+  "gsem_user_model_gwas.munge_mem_gb": 8,
+  "gsem_user_model_gwas.ldsc_cpu": 1,
+  "gsem_user_model_gwas.ldsc_mem_gb": 8,
+  "gsem_user_model_gwas.sumstats_cpu": 1,
+  "gsem_user_model_gwas.sumstats_mem_gb": 8,
+  "gsem_user_model_gwas.usergwas_cpu": 1,
+  "gsem_user_model_gwas.usergwas_mem_gb": 8
+}

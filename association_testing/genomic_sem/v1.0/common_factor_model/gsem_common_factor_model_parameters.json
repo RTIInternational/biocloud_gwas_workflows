@@ -1,0 +1,126 @@
+{
+  "sumstats_files": {
+    "description": "Input GWAS summary statistics files (either one genome sumstats file or per-chromosome sumstats files per trait/study).",
+    "optional": false
+  },
+  "trait_names": {
+    "description": "Trait labels corresponding to sumstats_files.",
+    "optional": false
+  },
+  "sample_sizes": {
+    "description": "Per-trait sample sizes (N) for munging.",
+    "optional": false
+  },
+  "ref_snp_list": {
+    "description": "Reference SNP list (HM3) for munging.",
+    "optional": false
+  },
+  "sumstats_columns": {
+    "description": "Per-file column-name mapping used for preprocessing.",
+    "optional": false
+  },
+  "sample_prevs": {
+    "description": "Sample prevalences per trait for LDSC.",
+    "optional": false
+  },
+  "population_prevs": {
+    "description": "Population prevalences per trait for LDSC.",
+    "optional": false
+  },
+  "ld_dir": {
+    "description": "Directory containing LD scores.",
+    "optional": false
+  },
+  "wld_dir": {
+    "description": "Directory containing LD score weights.",
+    "optional": false
+  },
+  "estimation_method": {
+    "description": "Estimation method for commonfactor() (for example, DWLS).",
+    "optional": true
+  },
+  "info_filter": {
+    "description": "INFO/R2 threshold used by gsem_munge.",
+    "optional": true
+  },
+  "maf_filter": {
+    "description": "MAF threshold used by gsem_munge.",
+    "optional": true
+  },
+  "parallel": {
+    "description": "Enable parallel processing where supported.",
+    "optional": true
+  },
+  "cores": {
+    "description": "Number of cores when parallel processing is enabled.",
+    "optional": true
+  },
+  "no_overwrite": {
+    "description": "If true, do not overwrite existing munged outputs.",
+    "optional": true
+  },
+  "munge_out_dir": {
+    "description": "Output directory for munged summary statistics.",
+    "optional": true
+  },
+  "preprocessing_out_dir": {
+    "description": "Output directory for preprocessed summary statistics.",
+    "optional": true
+  },
+  "ldsc_output_prefix": {
+    "description": "Output prefix for LDSC outputs.",
+    "optional": true
+  },
+  "commonfactor_output_prefix": {
+    "description": "Output prefix for common factor model output.",
+    "optional": true
+  },
+  "ecr_repo": {
+    "description": "Optional ECR repository URI prefix used with the task ecr image name.",
+    "optional": true
+  },
+  "image_source": {
+    "description": "Container source selector: docker or ecr.",
+    "optional": true
+  },
+  "tsv_append_cpu": {
+    "description": "Requested CPU cores for tsv_append task runtime.",
+    "optional": true
+  },
+  "tsv_append_mem_gb": {
+    "description": "Requested memory for tsv_append task runtime in GB.",
+    "optional": true
+  },
+  "preprocessing_cpu": {
+    "description": "Requested CPU cores for preprocessing task runtime.",
+    "optional": true
+  },
+  "preprocessing_mem_gb": {
+    "description": "Requested memory for preprocessing task runtime in GB.",
+    "optional": true
+  },
+  "munge_cpu": {
+    "description": "Requested CPU cores for munge task runtime.",
+    "optional": true
+  },
+  "munge_mem_gb": {
+    "description": "Optional override for munge task runtime memory; if unset, memory is computed as 1.5x(sumstats file size + ref_snp_list size), rounded to (2^n - 1) GB.",
+    "optional": true
+  },
+  "ldsc_cpu": {
+    "description": "Requested CPU cores for ldsc task runtime.",
+    "optional": true
+  },
+  "ldsc_mem_gb": {
+    "description": "Optional override for ldsc task runtime memory; if unset, memory is computed as 1.5x(munged sumstats + ld_dir + wld_dir sizes), rounded to (2^n - 1) GB.",
+    "optional": true
+  },
+  "commonfactor_cpu": {
+    "description": "Requested CPU cores for commonfactor task runtime.",
+    "optional": true
+  },
+  "commonfactor_mem_gb": {
+    "description": "Optional override for commonfactor task runtime memory; if unset, memory is computed as 1.5x(ldsc_rds size), rounded to (2^n - 1) GB.",
+    "optional": true
+  }
+}
