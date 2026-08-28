@@ -69,6 +69,9 @@ workflow gsem_user_model_gwas {
     String image_source = "docker"
     Int tsv_append_cpu = 1
     Int tsv_append_mem_gb = 2
+    Int gwas_chunk_size = 500000
+    Int tsv_split_cpu = 1
+    Int tsv_split_mem_gb = 2
     String preprocessing_out_dir = "preprocessing_out"
     Int preprocessing_cpu = 1
     Int preprocessing_mem_gb = 4
@@ -80,6 +83,8 @@ workflow gsem_user_model_gwas {
     Int? sumstats_mem_gb
     Int usergwas_cpu = 1
     Int? usergwas_mem_gb
+    Int merge_rds_cpu = 1
+    Int merge_rds_mem_gb = 8
 }
 
   parameter_meta {
@@ -122,6 +127,9 @@ workflow gsem_user_model_gwas {
     image_source: "Container source selector: docker or ecr."
     tsv_append_cpu: "Requested CPU cores for tsv_append task runtime."
     tsv_append_mem_gb: "Memory in GB for tsv_append task runtime."
+    gwas_chunk_size: "Number of lines (variants) per split chunk for sumstats and GWAS analysis."
+    tsv_split_cpu: "Requested CPU cores for tsv_split task runtime."
+    tsv_split_mem_gb: "Memory in GB for tsv_split task runtime."
     preprocessing_out_dir: "Output directory for preprocessed summary statistics."
     sumstats_columns: "Column mapping for preprocessing."
     preprocessing_cpu: "Requested CPU cores for preprocessing task runtime."
@@ -134,6 +142,8 @@ workflow gsem_user_model_gwas {
     sumstats_mem_gb: "Optional override for sumstats task runtime memory; if unset, memory is computed as 1.5x(sumstats file size + ref_snp_list size), rounded to (2^n - 1) GB."
     usergwas_cpu: "Requested CPU cores for usergwas task runtime."
     usergwas_mem_gb: "Optional override for usergwas task runtime memory; if unset, memory is computed as 1.5x(ldsc_rds + sumstats_rds + model_lavaan sizes), rounded to (2^n - 1) GB."
+    merge_rds_cpu: "Requested CPU cores for merge_rds task runtime."
+    merge_rds_mem_gb: "Memory in GB for merge_rds task runtime."
 }
 
   Int num_traits = length(sumstats_files)
@@ -306,43 +316,68 @@ workflow gsem_user_model_gwas {
       mem_gb = select_first([sumstats_mem_gb, calc_sumstats_mem_gb])
   }
 
-  if (!defined(usergwas_mem_gb)) {
-    call utils.get_total_file_size as usergwas_input_size {
-      input:
-        input_files = [ldsc.ldsc_rds, sumstats.sumstats_rds, model_lavaan]
-    }
-
-    call utils.round_power_of_two_minus_one as calc_usergwas_memory {
-      input:
-        input_value = usergwas_input_size.total_file_size_gb * 1.5
-    }
-    Int calc_usergwas_mem_gb = calc_usergwas_memory.rounded_value
-  }
-
-  call gsem.gsem_usergwas as usergwas {
+  call rti_tsv.tsv_split as split_sumstats {
     input:
-      ldsc_rds = ldsc.ldsc_rds,
-      sumstats_rds = sumstats.sumstats_rds,
-      model_lavaan = model_lavaan,
-      estimation_method = estimation_method,
-      output_prefix = usergwas_output_prefix,
-      not_printwarn = not_printwarn,
-      sub = sub,
-      toler = toler,
-      snpse = snpse,
-      gc = gc,
-      mpi = mpi,
-      smooth_check = smooth_check,
-      twas = twas,
-      std_lv = std_lv,
-      not_fix_measurement = not_fix_measurement,
-      q_snp = q_snp,
-      parallel = parallel,
-      cores = cores,
+      input_file = sumstats.sumstats_tsv,
+      lines_per_split = gwas_chunk_size,
+      output_prefix = "~{preprocessing_out_dir}/split_sumstats",
       ecr_repo = ecr_repo,
       image_source = image_source,
-      cpu = usergwas_cpu,
-      mem_gb = select_first([usergwas_mem_gb, calc_usergwas_mem_gb])
+      cpu = tsv_split_cpu,
+      mem_gb = tsv_split_mem_gb
+  }
+
+  scatter (chunk_idx in range(length(split_sumstats.split_files))) {
+    File current_chunk_sumstats = split_sumstats.split_files[chunk_idx]
+
+    if (!defined(usergwas_mem_gb)) {
+      call utils.get_total_file_size as usergwas_chunk_input_size {
+        input:
+          input_files = [ldsc.ldsc_rds, current_chunk_sumstats, model_lavaan]
+      }
+
+      call utils.round_power_of_two_minus_one as calc_usergwas_chunk_memory {
+        input:
+          input_value = usergwas_chunk_input_size.total_file_size_gb * 1.5
+      }
+      Int calc_usergwas_chunk_mem_gb = calc_usergwas_chunk_memory.rounded_value
+    }
+
+    call gsem.gsem_usergwas as usergwas_chunk {
+      input:
+        ldsc_rds = ldsc.ldsc_rds,
+        sumstats = current_chunk_sumstats,
+        model_lavaan = model_lavaan,
+        estimation_method = estimation_method,
+        output_prefix = "~{usergwas_output_prefix}_chunk_~{chunk_idx}",
+        not_printwarn = not_printwarn,
+        sub = sub,
+        toler = toler,
+        snpse = snpse,
+        gc = gc,
+        mpi = mpi,
+        smooth_check = smooth_check,
+        twas = twas,
+        std_lv = std_lv,
+        not_fix_measurement = not_fix_measurement,
+        q_snp = q_snp,
+        parallel = parallel,
+        cores = cores,
+        ecr_repo = ecr_repo,
+        image_source = image_source,
+        cpu = usergwas_cpu,
+        mem_gb = select_first([usergwas_mem_gb, calc_usergwas_chunk_mem_gb])
+    }
+  }
+
+  call gsem.gsem_merge_rds as merge_usergwas {
+    input:
+      rds_files = usergwas_chunk.usergwas_rds,
+      output_prefix = usergwas_output_prefix,
+      ecr_repo = ecr_repo,
+      image_source = image_source,
+      cpu = merge_rds_cpu,
+      mem_gb = merge_rds_mem_gb
   }
 
   output {
@@ -351,6 +386,6 @@ workflow gsem_user_model_gwas {
     File ldsc_rds = ldsc.ldsc_rds
     File ldsc_log = ldsc.ldsc_log
     File sumstats_rds = sumstats.sumstats_rds
-    File usergwas_rds = usergwas.usergwas_rds
+    File usergwas_rds = merge_usergwas.merged_rds
   }
 }

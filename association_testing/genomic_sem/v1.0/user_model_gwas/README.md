@@ -8,8 +8,9 @@ Runs a per-SNP GWAS under a user-specified GenomicSEM structural equation model 
 2. **Preprocesses** each summary statistics file in parallel to standardize column names and extract rsIDs from variant identifiers.
 3. **Munges** each preprocessed file in parallel using the reference SNP list.
 4. Runs **LDSC** on the munged summary statistics to estimate the genetic covariance/correlation matrix.
-5. Runs **sumstats()** to prepare per-SNP summary statistics for GWAS.
-6. Runs **userGWAS()** to run the per-SNP GWAS under the user-specified model.
+5. **Splits** the preprocessed summary statistics files into parallel chunks of size `gwas_chunk_size` using `tsv_split`.
+6. Runs **sumstats()** and **userGWAS()** in parallel (scattered) on each chunk.
+7. **Merges** the resulting chunked GWAS RDS outputs into a single consolidated result RDS file using `gsem_merge_rds`.
 
 All memory-intensive tasks (munge, ldsc, sumstats, usergwas) automatically size their runtime memory based on the size of their inputs unless an override is provided (see [Memory Calculation](#memory-calculation)).
 
@@ -25,8 +26,10 @@ All memory-intensive tasks (munge, ldsc, sumstats, usergwas) automatically size 
 | 2 | `genomic_sem_preprocessing.genomic_sem_preprocessing` (scattered) | Standardizes column names and extracts rsIDs for each input sumstats file. |
 | 3 | `gsem.gsem_munge` (scattered) | Munges each preprocessed sumstats file individually. |
 | 4 | `gsem.gsem_ldsc` | Runs LDSC on all munged sumstats to produce the genetic covariance matrix. |
-| 5 | `gsem.gsem_sumstats` | Prepares per-SNP summary statistics for GWAS. |
-| 6 | `gsem.gsem_usergwas` | Runs the per-SNP GWAS under the user-specified model. |
+| 5 | `rti_tsv.tsv_split` (scattered) | Splits each preprocessed summary statistics file into chunks of size `gwas_chunk_size`. |
+| 6 | `gsem.gsem_sumstats` (scattered) | Prepares per-SNP summary statistics for each chunk. |
+| 7 | `gsem.gsem_usergwas` (scattered) | Runs userGWAS in parallel on each chunk. |
+| 8 | `gsem.gsem_merge_rds` | Merges chunked GWAS results into a single RDS output file. |
 
 ## Inputs
 
@@ -71,6 +74,7 @@ All memory-intensive tasks (munge, ldsc, sumstats, usergwas) automatically size 
 | `std_lv` | `Boolean` | `false` | If true, set latent variables to unit variance in userGWAS. |
 | `not_fix_measurement` | `Boolean` | `false` | If true, do not fix the measurement model across SNPs. |
 | `q_snp` | `Boolean` | `false` | If true, compute Q_SNP statistics. |
+| `gwas_chunk_size` | `Int` | `500000` | Number of lines (variants) per split chunk for sumstats and GWAS. |
 | `munge_out_dir` | `String` | `"munge_out"` | Output directory for munged summary statistics. |
 | `preprocessing_out_dir` | `String` | `"preprocessing_out"` | Output directory for preprocessed summary statistics. |
 | `ldsc_output_prefix` | `String` | `"ldsc/gsem_ldsc_output"` | Output prefix for LDSC outputs. |
@@ -80,6 +84,8 @@ All memory-intensive tasks (munge, ldsc, sumstats, usergwas) automatically size 
 | `image_source` | `String` | `"docker"` | Container source selector: `docker` or `ecr`. |
 | `tsv_append_cpu` | `Int` | `1` | CPU cores for the tsv_append task. |
 | `tsv_append_mem_gb` | `Int` | `2` | Memory in GB for the tsv_append task. |
+| `tsv_split_cpu` | `Int` | `1` | CPU cores for the tsv_split task. |
+| `tsv_split_mem_gb` | `Int` | `2` | Memory in GB for the tsv_split task. |
 | `preprocessing_cpu` | `Int` | `1` | CPU cores for the preprocessing task. |
 | `preprocessing_mem_gb` | `Int` | `4` | Memory in GB for the preprocessing task. |
 | `munge_cpu` | `Int` | `1` | CPU cores for the munge task. |
@@ -90,6 +96,8 @@ All memory-intensive tasks (munge, ldsc, sumstats, usergwas) automatically size 
 | `sumstats_mem_gb` | `Int?` | — | Override for sumstats task memory (see [Memory Calculation](#memory-calculation)). |
 | `usergwas_cpu` | `Int` | `1` | CPU cores for the usergwas task. |
 | `usergwas_mem_gb` | `Int?` | — | Override for usergwas task memory (see [Memory Calculation](#memory-calculation)). |
+| `merge_rds_cpu` | `Int` | `1` | CPU cores for the merge_rds task. |
+| `merge_rds_mem_gb` | `Int` | `8` | Memory in GB for the merge_rds task. |
 
 ### `SUMSTATS_COLUMNS` struct
 
@@ -122,8 +130,8 @@ struct SUMSTATS_COLUMNS {
 | `munged_sumstats` | `Array[File]` | Munged summary statistics files. |
 | `ldsc_rds` | `File` | LDSC genetic covariance/correlation output (RDS). |
 | `ldsc_log` | `File` | LDSC log file. |
-| `sumstats_rds` | `File` | Prepared per-SNP summary statistics (RDS). |
-| `usergwas_rds` | `File` | User-model GWAS results (RDS). |
+| `sumstats_rds` | `Array[File]` | Prepared per-chunk per-SNP summary statistics (RDS). |
+| `usergwas_rds` | `File` | Merged user-model GWAS results (RDS). |
 
 ## Memory Calculation
 

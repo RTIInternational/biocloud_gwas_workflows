@@ -163,6 +163,18 @@
     "description": "Requested memory for tsv_append task runtime in GB.",
     "optional": true
   },
+  "gwas_chunk_size": {
+    "description": "Number of lines (variants) per split chunk for sumstats and GWAS analysis.",
+    "optional": true
+  },
+  "tsv_split_cpu": {
+    "description": "Requested CPU cores for tsv_split task runtime.",
+    "optional": true
+  },
+  "tsv_split_mem_gb": {
+    "description": "Requested memory for tsv_split task runtime in GB.",
+    "optional": true
+  },
   "preprocessing_cpu": {
     "description": "Requested CPU cores for preprocessing task runtime.",
     "optional": true
@@ -201,6 +213,14 @@
   },
   "usergwas_mem_gb": {
     "description": "Optional override for usergwas task runtime memory; if unset, memory is computed as 1.5x(ldsc_rds + sumstats_rds + model_lavaan sizes), rounded to (2^n - 1) GB.",
+    "optional": true
+  },
+  "merge_rds_cpu": {
+    "description": "Requested CPU cores for merge_rds task runtime.",
+    "optional": true
+  },
+  "merge_rds_mem_gb": {
+    "description": "Requested memory for merge_rds task runtime in GB.",
     "optional": true
   }
 }

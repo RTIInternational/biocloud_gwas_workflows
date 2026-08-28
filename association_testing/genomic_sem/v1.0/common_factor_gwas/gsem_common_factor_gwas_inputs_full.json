@@ -70,6 +70,9 @@
   "gsem_common_factor_gwas.image_source": "docker",
   "gsem_common_factor_gwas.tsv_append_cpu": 1,
   "gsem_common_factor_gwas.tsv_append_mem_gb": 2,
+  "gsem_common_factor_gwas.gwas_chunk_size": 500000,
+  "gsem_common_factor_gwas.tsv_split_cpu": 1,
+  "gsem_common_factor_gwas.tsv_split_mem_gb": 2,
   "gsem_common_factor_gwas.preprocessing_cpu": 1,
   "gsem_common_factor_gwas.preprocessing_mem_gb": 4,
   "gsem_common_factor_gwas.munge_cpu": 1,
@@ -79,5 +82,7 @@
   "gsem_common_factor_gwas.sumstats_cpu": 1,
   "gsem_common_factor_gwas.sumstats_mem_gb": 8,
   "gsem_common_factor_gwas.commonfactorgwas_cpu": 1,
-  "gsem_common_factor_gwas.commonfactorgwas_mem_gb": 8
+  "gsem_common_factor_gwas.commonfactorgwas_mem_gb": 8,
+  "gsem_common_factor_gwas.merge_rds_cpu": 1,
+  "gsem_common_factor_gwas.merge_rds_mem_gb": 8
 }

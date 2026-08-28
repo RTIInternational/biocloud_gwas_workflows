@@ -8,8 +8,10 @@ Runs a GenomicSEM common-factor GWAS analysis (multivariate GWAS of a latent com
 2. **Preprocesses** each summary statistics file in parallel to standardize column names and extract rsIDs from variant identifiers.
 3. **Munges** each preprocessed file in parallel using the reference SNP list.
 4. Runs **LDSC** on the munged summary statistics to estimate the genetic covariance/correlation matrix.
-5. Runs **sumstats()** to prepare per-SNP summary statistics for the common-factor GWAS.
-6. Runs **commonfactorgwas()** to estimate the common-factor GWAS.
+5. Runs **sumstats()** to prepare harmonized per-SNP summary statistics across all traits.
+6. **Splits** the harmonized summary statistics into parallel chunks of size `gwas_chunk_size` using `tsv_split`.
+7. Runs **commonfactorgwas()** in parallel (scattered) on each chunk.
+8. **Merges** the resulting chunked GWAS RDS outputs into a single consolidated result RDS file using `gsem_merge_rds`.
 
 All memory-intensive tasks (munge, ldsc, sumstats, commonfactorgwas) automatically size their runtime memory based on the size of their inputs unless an override is provided (see [Memory Calculation](#memory-calculation)).
 
@@ -25,8 +27,10 @@ All memory-intensive tasks (munge, ldsc, sumstats, commonfactorgwas) automatical
 | 2 | `genomic_sem_preprocessing.genomic_sem_preprocessing` (scattered) | Standardizes column names and extracts rsIDs for each input sumstats file. |
 | 3 | `gsem.gsem_munge` (scattered) | Munges each preprocessed sumstats file individually. |
 | 4 | `gsem.gsem_ldsc` | Runs LDSC on all munged sumstats to produce the genetic covariance matrix. |
-| 5 | `gsem.gsem_sumstats` | Prepares per-SNP summary statistics for GWAS. |
-| 6 | `gsem.gsem_commonfactorgwas` | Runs the common-factor GWAS. |
+| 5 | `gsem.gsem_sumstats` | Prepares harmonized per-SNP summary statistics for GWAS. |
+| 6 | `rti_tsv.tsv_split` | Splits the harmonized summary statistics into chunks of size `gwas_chunk_size`. |
+| 7 | `gsem.gsem_commonfactorgwas` (scattered) | Runs commonfactorgwas in parallel on each chunk. |
+| 8 | `gsem.gsem_merge_rds` | Merges chunked GWAS results into a single RDS output file. |
 
 ## Inputs
 
@@ -65,6 +69,7 @@ All memory-intensive tasks (munge, ldsc, sumstats, commonfactorgwas) automatical
 | `mpi` | `Boolean` | `false` | Enable MPI/multi-node mode for commonfactorgwas. |
 | `smooth_check` | `Boolean` | `false` | Enable smoothing diagnostics in commonfactorgwas. |
 | `twas` | `Boolean` | `false` | Enable TWAS mode in commonfactorgwas. |
+| `gwas_chunk_size` | `Int` | `500000` | Number of lines (variants) per split chunk for sumstats and GWAS. |
 | `munge_out_dir` | `String` | `"munge_out"` | Output directory for munged summary statistics. |
 | `preprocessing_out_dir` | `String` | `"preprocessing_out"` | Output directory for preprocessed summary statistics. |
 | `ldsc_output_prefix` | `String` | `"ldsc/gsem_ldsc_output"` | Output prefix for LDSC outputs. |
@@ -74,6 +79,8 @@ All memory-intensive tasks (munge, ldsc, sumstats, commonfactorgwas) automatical
 | `image_source` | `String` | `"docker"` | Container source selector: `docker` or `ecr`. |
 | `tsv_append_cpu` | `Int` | `1` | CPU cores for the tsv_append task. |
 | `tsv_append_mem_gb` | `Int` | `2` | Memory in GB for the tsv_append task. |
+| `tsv_split_cpu` | `Int` | `1` | CPU cores for the tsv_split task. |
+| `tsv_split_mem_gb` | `Int` | `2` | Memory in GB for the tsv_split task. |
 | `preprocessing_cpu` | `Int` | `1` | CPU cores for the preprocessing task. |
 | `preprocessing_mem_gb` | `Int` | `4` | Memory in GB for the preprocessing task. |
 | `munge_cpu` | `Int` | `1` | CPU cores for the munge task. |
@@ -84,6 +91,8 @@ All memory-intensive tasks (munge, ldsc, sumstats, commonfactorgwas) automatical
 | `sumstats_mem_gb` | `Int?` | — | Override for sumstats task memory (see [Memory Calculation](#memory-calculation)). |
 | `commonfactorgwas_cpu` | `Int` | `1` | CPU cores for the commonfactorgwas task. |
 | `commonfactorgwas_mem_gb` | `Int?` | — | Override for commonfactorgwas task memory (see [Memory Calculation](#memory-calculation)). |
+| `merge_rds_cpu` | `Int` | `1` | CPU cores for the merge_rds task. |
+| `merge_rds_mem_gb` | `Int` | `8` | Memory in GB for the merge_rds task. |
 
 ### `SUMSTATS_COLUMNS` struct
 

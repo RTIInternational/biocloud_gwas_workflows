@@ -65,6 +65,9 @@ workflow gsem_common_factor_gwas {
 
     Int tsv_append_cpu = 1
     Int tsv_append_mem_gb = 2
+    Int gwas_chunk_size = 500000
+    Int tsv_split_cpu = 1
+    Int tsv_split_mem_gb = 2
     Int preprocessing_cpu = 1
     Int preprocessing_mem_gb = 4
     Int munge_cpu = 1
@@ -75,6 +78,8 @@ workflow gsem_common_factor_gwas {
     Int? sumstats_mem_gb
     Int commonfactorgwas_cpu = 1
     Int? commonfactorgwas_mem_gb
+    Int merge_rds_cpu = 1
+    Int merge_rds_mem_gb = 8
 }
 
   parameter_meta {
@@ -112,6 +117,9 @@ workflow gsem_common_factor_gwas {
     image_source: "Container source selector: docker or ecr."
     tsv_append_cpu: "Requested CPU cores for tsv_append task runtime."
     tsv_append_mem_gb: "Memory in GB for tsv_append task runtime."
+    gwas_chunk_size: "Number of lines (variants) per split chunk for sumstats and GWAS analysis."
+    tsv_split_cpu: "Requested CPU cores for tsv_split task runtime."
+    tsv_split_mem_gb: "Memory in GB for tsv_split task runtime."
     preprocessing_cpu: "Requested CPU cores for preprocessing task runtime."
     preprocessing_mem_gb: "Requested memory for preprocessing task runtime in GB."
     munge_cpu: "Requested CPU cores for munge task runtime."
@@ -122,6 +130,8 @@ workflow gsem_common_factor_gwas {
     sumstats_mem_gb: "Optional override for sumstats task runtime memory; if unset, memory is computed as 1.5x(sumstats file size + ref_snp_list size), rounded to (2^n - 1) GB."
     commonfactorgwas_cpu: "Requested CPU cores for commonfactorgwas task runtime."
     commonfactorgwas_mem_gb: "Optional override for commonfactorgwas task runtime memory; if unset, memory is computed as 1.5x(ldsc_rds + sumstats_rds sizes), rounded to (2^n - 1) GB."
+    merge_rds_cpu: "Requested CPU cores for merge_rds task runtime."
+    merge_rds_mem_gb: "Memory in GB for merge_rds task runtime."
   }
 
   Int num_traits = length(sumstats_files)
@@ -265,7 +275,7 @@ workflow gsem_common_factor_gwas {
   if (!defined(sumstats_mem_gb)) {
     call utils.get_total_file_size as sumstats_input_size {
       input:
-        input_files = flatten([sumstats_files, [ref_snp_list]])
+        input_files = flatten([preprocess.processed_sumstats, [ref_snp_list]])
     }
     call utils.round_power_of_two_minus_one as calc_sumstats_mem {
       input:
@@ -277,7 +287,7 @@ workflow gsem_common_factor_gwas {
   # Run the sumstats task with the calculated or provided memory.
   call gsem.gsem_sumstats as sumstats {
     input:
-      sumstats_files = sumstats_files,
+      sumstats_files = preprocess.processed_sumstats,
       trait_names = trait_names,
       sample_sizes = sample_sizes,
       se_logit = se_logit,
@@ -297,38 +307,63 @@ workflow gsem_common_factor_gwas {
       mem_gb = select_first([sumstats_mem_gb, calc_sumstats_mem_gb])
   }
 
-  # Calculate the memory requirement for the commonfactorgwas task if it is not defined.
-  if (!defined(commonfactorgwas_mem_gb)) {
-    call utils.get_total_file_size as commonfactorgwas_input_size {
-      input:
-        input_files = [ldsc.ldsc_rds, sumstats.sumstats_rds]
-    }
-    call utils.round_power_of_two_minus_one as calc_commonfactorgwas_mem {
-      input:
-        input_value = commonfactorgwas_input_size.total_file_size_gb * 1.5
-    }
-    Int calc_commonfactorgwas_mem_gb = calc_commonfactorgwas_mem.rounded_value
-  }
-
-  # Run the commonfactorgwas task with the calculated or provided memory.
-  call gsem.gsem_commonfactorgwas as commonfactorgwas {
+  call rti_tsv.tsv_split as split_sumstats {
     input:
-      ldsc_rds = ldsc.ldsc_rds,
-      sumstats_rds = sumstats.sumstats_rds,
-      estimation_method = estimation_method,
-      output_prefix = commonfactorgwas_output_prefix,
-      toler = toler,
-      snpse = snpse,
-      gc = gc,
-      mpi = mpi,
-      smooth_check = smooth_check,
-      twas = twas,
-      parallel = parallel,
-      cores = cores,
+      input_file = sumstats.sumstats_tsv,
+      lines_per_split = gwas_chunk_size,
+      output_prefix = "~{preprocessing_out_dir}/split_sumstats",
       ecr_repo = ecr_repo,
       image_source = image_source,
-      cpu = commonfactorgwas_cpu,
-      mem_gb = select_first([commonfactorgwas_mem_gb, calc_commonfactorgwas_mem_gb])
+      cpu = tsv_split_cpu,
+      mem_gb = tsv_split_mem_gb
+  }
+
+  scatter (chunk_idx in range(length(split_sumstats.split_files))) {
+    File current_chunk_sumstats = split_sumstats.split_files[chunk_idx]
+
+    # Calculate the memory requirement for the commonfactorgwas task if it is not defined.
+    if (!defined(commonfactorgwas_mem_gb)) {
+      call utils.get_total_file_size as commonfactorgwas_chunk_input_size {
+        input:
+          input_files = [ldsc.ldsc_rds, current_chunk_sumstats]
+      }
+      call utils.round_power_of_two_minus_one as calc_commonfactorgwas_chunk_mem {
+        input:
+          input_value = commonfactorgwas_chunk_input_size.total_file_size_gb * 1.5
+      }
+      Int calc_commonfactorgwas_chunk_mem_gb = calc_commonfactorgwas_chunk_mem.rounded_value
+    }
+
+    # Run the commonfactorgwas task with the calculated or provided memory.
+    call gsem.gsem_commonfactorgwas as commonfactorgwas_chunk {
+      input:
+        ldsc_rds = ldsc.ldsc_rds,
+        sumstats = current_chunk_sumstats,
+        estimation_method = estimation_method,
+        output_prefix = "~{commonfactorgwas_output_prefix}_chunk_~{chunk_idx}",
+        toler = toler,
+        snpse = snpse,
+        gc = gc,
+        mpi = mpi,
+        smooth_check = smooth_check,
+        twas = twas,
+        parallel = parallel,
+        cores = cores,
+        ecr_repo = ecr_repo,
+        image_source = image_source,
+        cpu = commonfactorgwas_cpu,
+        mem_gb = select_first([commonfactorgwas_mem_gb, calc_commonfactorgwas_chunk_mem_gb])
+    }
+  }
+
+  call gsem.gsem_merge_rds as merge_commonfactorgwas {
+    input:
+      rds_files = commonfactorgwas_chunk.commonfactorgwas_rds,
+      output_prefix = commonfactorgwas_output_prefix,
+      ecr_repo = ecr_repo,
+      image_source = image_source,
+      cpu = merge_rds_cpu,
+      mem_gb = merge_rds_mem_gb
   }
 
   output {
@@ -337,6 +372,6 @@ workflow gsem_common_factor_gwas {
     File ldsc_rds = ldsc.ldsc_rds
     File ldsc_log = ldsc.ldsc_log
     File sumstats_rds = sumstats.sumstats_rds
-    File commonfactorgwas_rds = commonfactorgwas.commonfactorgwas_rds
+    File commonfactorgwas_rds = merge_commonfactorgwas.merged_rds
   }
 }
